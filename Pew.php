@@ -176,7 +176,7 @@ class Pew extends Registry
         $pew_class_name = __NAMESPACE__ . '\\libs\\' . $class_name; 
 
         if (class_exists($app_class_name)) {
-            $r = new \ReflectionClass($this['app_namespace'] . '\\lib\\' . $class_name);
+            $r = new \ReflectionClass($app_class_name);
             return $r->newInstanceArgs($arguments);
         } elseif (class_exists($pew_class_name)) {
             $r = new \ReflectionClass($pew_class_name);
