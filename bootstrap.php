@@ -1,4 +1,3 @@
 <?php
 
-# Configure the Pew object
-\pew\Pew::instance();
+require __DIR__ . '/functions.php';

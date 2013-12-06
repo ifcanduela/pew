@@ -2,8 +2,6 @@
 
 namespace pew;
 
-use pew\Pew;
-
 /**
  * The App class is a simple interface between the front controller and the
  * rest of the controllers.
@@ -13,32 +11,66 @@ use pew\Pew;
  */
 class App
 {
+    protected $pew;
+
     public function __construct($app_folder = 'app', $config = 'config')
     {
-        $pew = Pew::instance();
+        $this->pew = Pew::instance();
 
-        # load app/config/{$config}.php
-        $app_config = include getcwd() . "/{$app_folder}/config/{$config}.php";
+        # merge user config with Pew config
+        $app_config = $this->get_config("/{$app_folder}/config/{$config}.php");
+        $this->pew->import($app_config);
 
-        // merge user config with Pew config
-        $pew->import($app_config);
-
-        if (!isSet($pew['env'])) {
-            $pew['env'] = 'development';
+        # set a default environment if none is set
+        if (!isSet($this->pew['env'])) {
+            $this->pew['env'] = 'development';
         }
 
         # add application namespace and path
         $app_folder_name = trim(basename($app_folder));
-        $pew['app_namespace'] = '\\' . $app_folder_name;
-        $pew['app_folder'] = realpath($app_folder);
-        $pew['app_config'] = $config;
+        $this->pew['app_namespace'] = '\\' . $app_folder_name;
+        $this->pew['app_folder'] = realpath($app_folder);
+        $this->pew['app_config'] = $config;
 
-        # load app/config/bootstrap.php
-        if (file_exists($pew['app_folder'] . '/config/bootstrap.php')) {
-            require $pew['app_folder'] . '/config/bootstrap.php';
+        # user bootstrap
+        $this->bootstrap();
+
+        $this->pew['app'] = $this;
+    }
+
+    /**
+     * Get the application configuration array.
+     * 
+     * @param string $filename The file name, relative to the base path
+     * @return array
+     */
+    protected function get_config($filename)
+    {
+        $config_filename = getcwd() . '/' . trim($filename, '/\\');
+        
+        if (!file_exists($config_filename)) {
+            return [];
         }
 
-        $pew['app'] = $this;
+        # load {$app}/config/{$config}.php
+        $app_config = require $config_filename;
+
+        if (!is_array($app_config)) {
+            throw new \RuntimeException("Configuration file {$config_filename} does not return an array");
+        }
+
+        return $app_config;
+    }
+
+    /**
+     * Load the user bootstrap file.
+     */
+    protected function bootstrap()
+    {
+        # load app/config/bootstrap.php
+        if (file_exists($this->pew['app_folder'] . '/config/bootstrap.php')) {
+            require $this->pew['app_folder'] . '/config/bootstrap.php';
+        }
     }
 
     /**
@@ -50,20 +82,18 @@ class App
      */
     public function run()
     {
-        $pew = Pew::instance();
-
-        $request = $pew->request();
-        $router  = $pew->router();
-        $view = $pew->view();
+        $request = $this->pew->request();
+        $router  = $this->pew->router();
+        $view = $this->pew->view();
 
         $router->route($request->segments(), $request->method());
         
         # Instantiate the main view
         $view->template($router->controller() . '/' . $router->action());
-        $view->layout($pew['default_layout']);
+        $view->layout($this->pew['default_layout']);
         
         # instantiate the controller
-        $controller = $pew->controller($router->controller());
+        $controller = $this->pew->controller($router->controller());
         
         # check controller instantiation
         if (!is_object($controller)) {
@@ -105,7 +135,13 @@ class App
                     throw new \Exception('XML rendering is not yet implemented.');
                     break;
                 default:
-                    $page = $this->render($controller, $view, $view_data);
+                    $view_output = $this->render_view($view, $view_data);
+
+                    if (method_exists($controller, 'before_render')) {
+                        $output = $controller->before_render($output);
+                    }
+
+                    $page = $this->render_layout(clone $view, $view_output);
                     break;
             }
 
@@ -113,13 +149,18 @@ class App
         }
     }
 
-    public function render($controller, $view, $view_data)
+    /**
+     * Render the view template.
+     * 
+     * @param pew\View $view View object
+     * @param array $view_data [description]
+     * @return string Resulting HTML output
+     */
+    public function render_view($view, $view_data)
     {
-        $pew = Pew::instance();
-
         if (!$view->exists()) {
             $defaultView = clone $view;
-            $defaultView->folder($pew['system_folder'] . '/views');
+            $defaultView->folder($this->pew['system_folder'] . '/views');
 
             if ($defaultView->exists()) {
                 $output = $defaultView->render(null, $view_data);
@@ -130,13 +171,20 @@ class App
             $output = $view->render(null, $view_data);
         }
 
-        if (method_exists($controller, 'before_render')) {
-            $output = $controller->before_render($output);
-        }
+        return $output;
+    }
 
-        $layout = clone $view;
-        $layout->extension($pew['layout_ext']);
-        $layout->template($view->layout());
+    /**
+     * Render the layout template.
+     * 
+     * @param pew\View $view View object
+     * @param array $view_data [description]
+     * @return string Resulting HTML output
+     */
+    public function render_layout($layout, $output)
+    {
+        $layout->extension($this->pew['layout_ext']);
+        $layout->template($layout->layout());
 
         if (!$layout->exists()) {
             $defaultLayout = clone($layout);
@@ -149,7 +197,7 @@ class App
             $layout = $defaultLayout;
         }
 
-        $output = $layout->render(null, ['title' => $view->title, 'output' => $output]);
+        $output = $layout->render(null, ['title' => $layout->title, 'output' => $output]);
 
         return $output;
     }

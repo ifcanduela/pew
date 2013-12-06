@@ -38,40 +38,48 @@ class Request
     {
         $this->query_string_var = $query_string_var;
 
-        if (PHP_SAPI === 'cli') {
-            $this->method = 'CLI';
-        } else {
-            $this->method   = isSet($_POST['_method']) ? strtoupper($_POST['_method']) : strtoupper($_SERVER['REQUEST_METHOD']);
-            $this->scheme   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-            $this->host     = $_SERVER['SERVER_NAME'];
-            $this->port     = $_SERVER['SERVER_PORT'];
-            $this->path     = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
-            $this->script   = basename($_SERVER['SCRIPT_NAME']);
+        $this->init();
+    }
 
-            if (function_exists('getAllHeaders')) {
-                $this->headers  = getAllHeaders();
-            }
-
-            if ($this->query_string_var && isSet($_GET[$this->query_string_var])) {
-                $segments = '/' . ltrim($_GET[$this->query_string_var], '/');
-            } else {
-                $segments = $this->get_segments_from_path_info();
-
-                if (false === $segments) {
-                    $request_script_name = $this->get_script_name();
-                    $segments = $this->extract_segments_from_script_name($request_script_name);
-                }
-            }
-
-            $this->segments = $segments;
-            
-            $this->get      = $_GET;
-            $this->post     = $_POST;
-            $this->files    = $_FILES;
-            $this->cookie   = $_COOKIE;
-
-            $this->local = in_array($_SERVER['REMOTE_ADDR'], ['localhost', '127.0.0.1', '::1']);
+    public function init()
+    {
+        if (PHP_SAPI !== 'cli') {
+            $this->init_http();
         }
+    }
+
+    protected function init_http()
+    {
+        $this->method   = isSet($_POST['_method']) ? strtoupper($_POST['_method']) : strtoupper($_SERVER['REQUEST_METHOD']);
+        $this->scheme   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $this->host     = $_SERVER['SERVER_NAME'];
+        $this->port     = $_SERVER['SERVER_PORT'];
+        $this->path     = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
+        $this->script   = basename($_SERVER['SCRIPT_NAME']);
+
+        if (function_exists('getAllHeaders')) {
+            $this->headers  = getAllHeaders();
+        }
+
+        if ($this->query_string_var && isSet($_GET[$this->query_string_var])) {
+            $segments = '/' . ltrim($_GET[$this->query_string_var], '/');
+        } else {
+            $segments = $this->get_segments_from_path_info();
+
+            if (false === $segments) {
+                $request_script_name = $this->get_script_name();
+                $segments = $this->extract_segments_from_script_name($request_script_name);
+            }
+        }
+
+        $this->segments = $segments;
+        
+        $this->get      = $_GET;
+        $this->post     = $_POST;
+        $this->files    = $_FILES;
+        $this->cookie   = $_COOKIE;
+
+        $this->local = in_array($_SERVER['REMOTE_ADDR'], ['localhost', '127.0.0.1', '::1']);
     }
 
     /**
