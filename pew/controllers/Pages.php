@@ -21,7 +21,7 @@ class Pages extends \pew\Controller
      * 
      * @access public
      */
-    public function _action($action, array $parameters = [])
+    public function __call($action, array $parameters = [])
     {
     	$this->view->title(ucwords(str_replace('_', ' ', $action)));
         $this->view->template($this->url_slug . '/' . $action);

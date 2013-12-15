@@ -18,9 +18,8 @@ class App
         $this->pew = Pew::instance();
 
         # merge user config with Pew config
-        $app_config = $this->get_config("/{$app_folder}/config/{$config}.php");
-        $this->pew->import($app_config);
-
+        $this->setup("/{$app_folder}/config/{$config}.php");
+        
         # set a default environment if none is set
         if (!isSet($this->pew['env'])) {
             $this->pew['env'] = 'development';
@@ -44,22 +43,20 @@ class App
      * @param string $filename The file name, relative to the base path
      * @return array
      */
-    protected function get_config($filename)
+    protected function setup($filename)
     {
         $config_filename = getcwd() . '/' . trim($filename, '/\\');
         
-        if (!file_exists($config_filename)) {
-            return [];
+        if (file_exists($config_filename)) {
+            # load {$app}/config/{$config}.php
+            $app_config = require $config_filename;
+
+            if (!is_array($app_config)) {
+                throw new \RuntimeException("Configuration file {$config_filename} does not return an array");
+            }
+
+            $this->pew->import($app_config);
         }
-
-        # load {$app}/config/{$config}.php
-        $app_config = require $config_filename;
-
-        if (!is_array($app_config)) {
-            throw new \RuntimeException("Configuration file {$config_filename} does not return an array");
-        }
-
-        return $app_config;
     }
 
     /**
@@ -116,7 +113,7 @@ class App
         if (isSet($skip_action) && $skip_action) {
             $view_data = array();
         } else {
-            $view_data = $controller->_action($router->action(), $router->parameters());
+            $view_data = $controller->__call($router->action(), $router->parameters());
         }
 
         # call the after_action method if it's defined

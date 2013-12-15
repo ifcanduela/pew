@@ -3,6 +3,7 @@
 namespace pew;
 
 use \pew\libs\Registry as Registry;
+use \pew\libs\Str as Str;
 
 /**
  * An object store.
@@ -113,7 +114,7 @@ class Pew extends Registry
                 throw new \InvalidArgumentException("No current controller could be retrieved");
             }
         } else {
-            $class_name = file_name_to_class_name($controller_name);
+            $class_name = Str::camel_case($controller_name);
 
             $app_class_name = $this['app_namespace'] . '\\controllers\\' . $class_name;
             $pew_class_name = '\\pew\\controllers\\' . $class_name;
@@ -143,7 +144,7 @@ class Pew extends Registry
      */
     public function model($table_name)
     {
-        $class_base_name = file_name_to_class_name($table_name) . 'Model';
+        $class_base_name = Str::camel_case($table_name) . 'Model';
         $class_name = $this['app_namespace'] . '\\models\\' . $class_base_name;
 
         # Check that the model has not been previously instantiated

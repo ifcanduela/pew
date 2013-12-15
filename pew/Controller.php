@@ -6,6 +6,7 @@ use pew\Pew;
 use pew\libs\Request;
 use pew\libs\Router;
 use pew\libs\Session;
+use pew\libs\Str;
 
 /**
  * The basic controller class, with some common methods and fields.
@@ -185,7 +186,7 @@ class Controller
         unset($this->session);
         
         # Controller file name in the /views/ folder.
-        $this->url_slug = to_underscores(slugify(basename(get_class($this))));
+        $this->url_slug = Str::underscores(basename(get_class($this)));
 
         # Global action prefix override
         if (!$this->action_prefix && $this->pew['action_prefix']) {
@@ -241,7 +242,7 @@ class Controller
      * @param array $parameters Arguments for the action method
      * @return array An associative array to pass to the view
      */
-    public function _action($action, array $parameters = [])
+    public function __call($action, array $parameters = [])
     {
         if (!method_exists($this, $this->action_prefix . $action)) {
             # If the $action method does not exist, show an error page
@@ -293,6 +294,9 @@ class Controller
 
     public function __invoke()
     {
-        return call_user_func_array([$this, '_action'], func_get_args());
+        $args = func_get_args();
+        $action = array_shigt($args);
+
+        return $this->__call($action, $args);
     }
 }

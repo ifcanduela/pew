@@ -2,6 +2,8 @@
 
 namespace pew\controllers;
 
+use \pew\libs\Str;
+
 /**
  * Error management class.
  *
@@ -99,7 +101,7 @@ class Error extends \pew\Controller
             case self::CONTROLLER_FILE_MISSING:
                 $error_title = 'Controller File Missing';
                 $controller_name = $this->subject[1];
-                $controller_file_name = class_name_to_file_name($this->subject[1]) . '.class.php';
+                $controller_file_name = Str::underscores($this->subject[1]) . '.class.php';
                 $folder = CONTROLLERS;
                 $error_text = <<<ERROR_TEXT
 The file for the requested controller does not exist. Create 
@@ -129,7 +131,7 @@ ERROR_TEXT;
                 $error_title = 'Action Missing';
                 $controller_name = get_class($this->subject[1]);
                 $action_name = $this->subject[2];
-                $controller_file_name = class_name_to_file_name($controller_name) . CONTROLLER_EXT;
+                $controller_file_name = Str::underscores($controller_name) . CONTROLLER_EXT;
                 $folder = CONTROLLERS;
                 $error_text = <<<ERROR_TEXT
 The requested action is not defined. Create method <strong>$action_name</strong> for 
@@ -192,7 +194,7 @@ ERROR_TEXT;
             # not defined therein
             case self::LIBRARY_CLASS_MISSING:
                 $error_title = 'Library Missing';
-                $library_name = class_name_to_file_name($this->subject[1]) . ELEMENT_EXT;
+                $library_name = Str::underscores($this->subject[1]) . ELEMENT_EXT;
                 $library_name = $this->subject[1];
                 $folder = LIBRARIES;
                 $error_text = <<<ERROR_TEXT
@@ -207,7 +209,7 @@ ERROR_TEXT;
             case self::LIBRARY_FILE_MISSING:
                 $error_title = 'Library Missing';
                 $library_file_name = $this->subject[1] . LIBRARY_EXT;
-                $library_name = file_name_to_class_name($this->subject[1]);
+                $library_name = Str::camel_case($this->subject[1]);
                 $folder = LIBRARIES;
 $error_text = <<<ERROR_TEXT
 The library file does not exist. Create 

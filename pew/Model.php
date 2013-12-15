@@ -5,6 +5,7 @@ namespace pew;
 use pew\Pew;
 use pew\libs\Database;
 use pew\libs\ModelRelationship;
+use pew\libs\Str;
 
 class ModelTableNotSpecifiedException extends \Exception {}
 class ModelTableNotFoundException extends \RuntimeException {}
@@ -192,14 +193,14 @@ class Model implements \ArrayAccess, \IteratorAggregate
     {
         if (!is_null($table)) {
             $this->table = $table;
-        } elseif (class_base_name(get_class($this)) === 'Model') {
+        } elseif (Str::ends_with(get_class($this), '\\Model')) {
             # if this is an instance of the Model class, get the
             # table from the $table parameter
             throw new ModelTableNotSpecifiedException('Model class must be attached to a database table.');
         } elseif (!$this->table) {
             # else, if $table is not set in the Model class file,
             # guess the table name
-            $this->table = str_replace('_model', '', class_name_to_file_name(basename(get_class($this))));
+            $this->table = str_replace('_model', '', Str::underscores(basename(get_class($this))));
         }
 
         if (false === $this->db->table_exists($this->table)) {
@@ -408,8 +409,15 @@ class Model implements \ArrayAccess, \IteratorAggregate
         
         if ($success) {
             if ($clause == 'SELECT') {
-                # return an array of tuples
-                return $stm->fetchAll();
+                # return an array of Models
+                $result = $stm->fetchAll();
+
+                foreach ($result as $key => $value) {
+                    $result[$key] = clone $this;
+                    $result[$key]->record = $value;
+                }
+
+                return $result;
             } else {
                 # return number of affected rows
                 return $stm->rowCount($query);
