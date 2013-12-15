@@ -3,10 +3,11 @@
 namespace pew;
 
 use pew\Pew;
-use pew\libs\Request;
-use pew\libs\Router;
-use pew\libs\Session;
 use pew\libs\Str;
+use pew\libs\Router;
+use pew\libs\Request;
+use pew\libs\Session;
+use \pew\controllers\Error;
 
 /**
  * The basic controller class, with some common methods and fields.
@@ -166,13 +167,12 @@ class Controller
      * @param pew\libs\Request $request The request information
      * @return void
      */
-    public function __construct(Request $request = null, $view = false)
+    public function __construct($view = false)
     {
         $this->pew = Pew::instance();
 
         # Assign Request, Route and View objects
-        $this->request = $request ?: $this->pew->request();
-        $this->route = $this->pew->router();
+        $this->request = $this->pew['request'];
 
         if ($view) {
             $this->view = $view;
@@ -207,7 +207,7 @@ class Controller
             }
         }
         
-        $parameters = $this->request->segments();
+        $parameters = $this->request->arguments;
         
         # Manage the received URL parameters
         if (is_array($parameters)) {
@@ -246,7 +246,7 @@ class Controller
     {
         if (!method_exists($this, $this->action_prefix . $action)) {
             # If the $action method does not exist, show an error page
-            $error = new \pew\controllers\Error($this->pew->request(), \pew\controllers\Error::ACTION_MISSING);
+            $error = new \pew\controllers\Error($this->pew['request'], Error::ACTION_MISSING);
         }
 
         # Set default template before calling the action
@@ -276,17 +276,15 @@ class Controller
         if ($property === 'model') {
             $this->model = $this->pew->model($this->url_slug);
             return $this->model;
-        } elseif ($property === 'session') {
-            $this->session = $this->pew->session();
-            return $this->session;
-        } elseif ($property === 'auth') {
-            $this->auth = $this->pew->auth();
-            return $this->auth;
-        } elseif ($property === 'request') {
-            $this->request = $this->pew->request();
-            return $this->request;
-        } elseif (array_key_exists($property, $this->libs)) {
-            return $this->libs[$property];
+        } elseif (isSet($this->pew[$property])) {
+            return $this->pew[$property];
+        } 
+
+        $class_name = Str::camel_case($property);
+
+        if ($obj = $this->pew->get($class_name)) {
+            $this->pew[$property[$obj]];
+            return $obj;
         }
         
         throw new \RuntimeException("Property Controller::\$$property does not exist");

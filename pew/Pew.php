@@ -119,14 +119,10 @@ class Pew extends Registry
             $app_class_name = $this['app_namespace'] . '\\controllers\\' . $class_name;
             $pew_class_name = '\\pew\\controllers\\' . $class_name;
 
-            if (!$request) {
-                $request = self::request();
-            }
-            
             if (class_exists($app_class_name)) {
-                return new $app_class_name($request);
+                return new $app_class_name;
             } elseif (class_exists($pew_class_name)) {
-                return new $pew_class_name($request);
+                return new $pew_class_name;
             }
         }
 
@@ -233,22 +229,6 @@ class Pew extends Registry
         return $this['Database'];
     }
     
-    /**
-     * Retrieves and initialises the Request object for the current request.
-     * 
-     * @param string $uri_string A list of slash-separated segments.
-     * @return Request The initialised request object
-     */
-    public function request($uri_string = null)
-    {
-        if (!isset($this['Request'])) {
-            # instantiate the request object
-            $this['Request'] = new libs\Request;
-        }
-
-        return $this['Request'];
-    }
-
     /**
      * Retrieves and initialises a Router object.
      * 

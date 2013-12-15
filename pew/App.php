@@ -2,6 +2,11 @@
 
 namespace pew;
 
+use \pew\Pew;
+use \pew\libs\Env;
+use \pew\libs\Router;
+use \pew\libs\Request;
+
 /**
  * The App class is a simple interface between the front controller and the
  * rest of the controllers.
@@ -17,24 +22,22 @@ class App
     {
         $this->pew = Pew::instance();
 
+        # environment configuration
+        $this->pew['env'] = new Env;
+
         # merge user config with Pew config
         $this->setup("/{$app_folder}/config/{$config}.php");
         
-        # set a default environment if none is set
-        if (!isSet($this->pew['env'])) {
-            $this->pew['env'] = 'development';
-        }
-
         # add application namespace and path
         $app_folder_name = trim(basename($app_folder));
         $this->pew['app_namespace'] = '\\' . $app_folder_name;
         $this->pew['app_folder'] = realpath($app_folder);
         $this->pew['app_config'] = $config;
 
+        $this->pew['app'] = $this;
+
         # user bootstrap
         $this->bootstrap();
-
-        $this->pew['app'] = $this;
     }
 
     /**
@@ -79,23 +82,26 @@ class App
      */
     public function run()
     {
-        $request = $this->pew->request();
+        $env = $this->pew['env'];
         $router  = $this->pew->router();
         $view = $this->pew->view();
 
-        $router->route($request->segments(), $request->method());
+        $router->route($env->segments, $env->method);
+
+        $request = new Request($env, $router);
+        $this->pew['request'] = $request;
         
         # Instantiate the main view
-        $view->template($router->controller() . '/' . $router->action());
+        $view->template($request->controller . '/' . $request->action);
         $view->layout($this->pew['default_layout']);
         
         # instantiate the controller
-        $controller = $this->pew->controller($router->controller());
+        $controller = $this->pew->controller($request->controller);
         
         # check controller instantiation
         if (!is_object($controller)) {
             if ($view->exists()) {
-                $view->title($router->action());
+                $view->title($request->action);
                 $skip_action = true;
             } else {
                 # display an error page if the controller could not be instanced
@@ -113,7 +119,7 @@ class App
         if (isSet($skip_action) && $skip_action) {
             $view_data = array();
         } else {
-            $view_data = $controller->__call($router->action(), $router->parameters());
+            $view_data = $controller->__call($request->action, $request->arguments);
         }
 
         # call the after_action method if it's defined
@@ -123,7 +129,7 @@ class App
 
         # render the view, if not prevented
         if ($view->render) {
-            switch ($router->response_type()) {
+            switch ($request->response_type) {
                 case 'json':
                     $page = json_encode($view_data);
                     header('Content-type: application/json');
