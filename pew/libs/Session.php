@@ -61,7 +61,7 @@ class Session
     {
         $this->open();
 
-        if (!is_array($data)) {
+        if (is_array($data)) {
             $this->data =& $data;
         } elseif (isSet($_SESSION)) {
             $this->data =& $_SESSION;
@@ -97,6 +97,8 @@ class Session
     protected function init()
     {
         $this->session_id = session_id();
+
+        var_dump($this->data);
 
         if (!array_key_exists($this->group(), $this->data)) {
             $this->data[$this->group()] = array();
