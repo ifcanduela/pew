@@ -98,8 +98,6 @@ class Session
     {
         $this->session_id = session_id();
 
-        var_dump($this->data);
-
         if (!array_key_exists($this->group(), $this->data)) {
             $this->data[$this->group()] = array();
             $this->data[$this->group()][self::FLASH_DATA] = array();
