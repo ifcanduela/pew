@@ -379,6 +379,12 @@ class Str
     protected function substring($from, $length = null)
     {
         $str = $this->string;
+
+        if (is_null($length)) {
+            # mb_string uses 0 if $length is null
+            $length = mb_strlen($str);
+        }
+        
         $str = mb_substr($str, $from, $length);
 
         return new Str($str);
