@@ -280,7 +280,7 @@ class Pew extends Registry
     public function session()
     {
         if (!isset($this['Session'])) {
-            $this['Session'] = new \pew\libs\Session();
+            $this['Session'] = new \pew\libs\Session;
         }
 
         return $this['Session'];

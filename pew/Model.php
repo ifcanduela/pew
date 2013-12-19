@@ -189,6 +189,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $this->init($table);
     }
 
+    /**
+     * Initialize a model binding it to a database table.
+     * 
+     * @param $table Name of the table
+     */
     public function init($table)
     {
         if (!is_null($table)) {
@@ -200,7 +205,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
         } elseif (!$this->table) {
             # else, if $table is not set in the Model class file,
             # guess the table name
-            $this->table = str_replace('_model', '', Str::underscores(basename(get_class($this))));
+            $fqcn = new Str(get_class($this));
+            $class_base_name = $fqcn->substring($fqcn->last_of('\\'));
+            $this->table = str_replace('_model', '', $class_base_name->underscores());
+            var_dump($this->table);
         }
 
         if (false === $this->db->table_exists($this->table)) {
@@ -432,12 +440,9 @@ class Model implements \ArrayAccess, \IteratorAggregate
     /**
      * Retrieve a single item from the model table using its primary key.
      *
-     * Since 0.6, this function accepts an associative array as parameter,
-     * which enables custom conditions other than PK = $id.
-     *
      * @param int $id Value to match to the primary key of the model table, or
      *                an associative array with field name/ field value pairs.
-     * @return array An associative array with the row fields, or false
+     * @return Model A model instance
      */
     public function find($id)
     {
@@ -479,7 +484,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * Retrieve all items from a table.
      *
      * @param array $where An associative array with WHERE conditions.
-     * @return array An array with the resulting records
+     * @return Model[] An array with the resulting records
      */
     public function find_all($where = null)
     {
@@ -549,7 +554,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      * INSERTs the data.
      *
      * @param array $data An associative array with database fields and values
-     * @return mixed The saved item on success, false otherwise
+     * @return Model The saved item on success, false otherwise
      */
     public function save($data = null)
     {
@@ -564,7 +569,8 @@ class Model implements \ArrayAccess, \IteratorAggregate
         $record = [];
 
         foreach ($this->table_data['columns'] as  $key) {
-            if (isSet($key, $data)) {
+            if (array_key_exists($key, $data)) {
+                var_dump($data);
                 $record[$key] = $data[$key];
             }
         }
@@ -587,7 +593,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             $result = $this->after_save($result);
         }
 
-        return $result;
+        $model = new self($this->db, $this->table);
+        $model->attributes($result);
+
+        return $model;
     }
 
     /**

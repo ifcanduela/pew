@@ -225,6 +225,20 @@ class Router
     }
 
     /**
+     * Get the destination URI.
+     *
+     * @return string
+     */
+    public function destination()
+    {
+        $uri = $this->controller() 
+             . '/' . $this->action()
+             . '/' . join('/', $this->parameters());
+
+        return '/'. trim($uri, '/');
+    }
+
+    /**
      * Extracts controller, action and parameters from a URI.
      * 
      * @param string $uri Uri from the browser

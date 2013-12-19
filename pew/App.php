@@ -41,7 +41,7 @@ class App
     }
 
     /**
-     * Get the application configuration array.
+     * Import the application configuration.
      * 
      * @param string $filename The file name, relative to the base path
      * @return array
@@ -88,20 +88,20 @@ class App
 
         $router->route($env->segments, $env->method);
 
-        $request = new Request($env, $router);
+        $request = new Request($router, $env);
         $this->pew['request'] = $request;
         
         # Instantiate the main view
-        $view->template($request->controller . '/' . $request->action);
+        $view->template($request->controller() . '/' . $request->action());
         $view->layout($this->pew['default_layout']);
         
         # instantiate the controller
-        $controller = $this->pew->controller($request->controller);
+        $controller = $this->pew->controller($request->controller());
         
         # check controller instantiation
         if (!is_object($controller)) {
             if ($view->exists()) {
-                $view->title($request->action);
+                $view->title($request->action());
                 $skip_action = true;
             } else {
                 # display an error page if the controller could not be instanced
@@ -119,7 +119,7 @@ class App
         if (isSet($skip_action) && $skip_action) {
             $view_data = array();
         } else {
-            $view_data = $controller->__call($request->action, $request->arguments);
+            $view_data = $controller->__call($request->action(), $request->args());
         }
 
         # call the after_action method if it's defined
@@ -129,7 +129,7 @@ class App
 
         # render the view, if not prevented
         if ($view->render) {
-            switch ($request->response_type) {
+            switch ($request->response_type()) {
                 case 'json':
                     $page = json_encode($view_data);
                     header('Content-type: application/json');

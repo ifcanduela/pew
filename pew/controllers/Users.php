@@ -21,7 +21,7 @@ class Users extends \pew\Controller
     public function login()
     {
         # check if a login form was submitted
-        if ($post = $this->request->post->export()) {
+        if ($post = $this->request->post()) {
             # check if the user exists
             if ($user = $this->model->find_by_username($post['username'])) {
                 # check if passwords match
@@ -46,7 +46,7 @@ class Users extends \pew\Controller
     public function signup()
     {
         # check if a login form was submitted
-        if ($post = $this->request->post->export()) {
+        if ($post = $this->request->post()) {
             # check that the username is available
             if (!$this->model->find_by_username($post['username'])) {
                 # check password length if passwords match

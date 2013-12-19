@@ -29,14 +29,21 @@ class Session
      *
      * @var string
      */
-    private $group = '';
+    protected $group = '';
 
+    /**
+     * Data managed by the session object.
+     * 
+     * @var array
+     */
+    protected $data = [];
+    
     /**
      * Static session flash data.
      *
      * @var string
      */
-    private static $flash_data = array();
+    protected static $flash_data = array();
 
     /**
      * Session identifier.
@@ -50,14 +57,23 @@ class Session
      *
      * @param string $group
      */
-    public function __construct($group = null)
+    public function __construct(&$data = null, $group = null)
     {
+        $this->open();
+
+        if (!is_array($data)) {
+            $this->data =& $data;
+        } elseif (isSet($_SESSION)) {
+            $this->data =& $_SESSION;
+        }
+
         if (!$group) {
             $group = basename(getcwd());
         }
 
         $this->group($group);
-        $this->open();
+
+        $this->init();
     }
 
     /**
@@ -75,11 +91,16 @@ class Session
             session_start();
         }
 
+        return session_status();
+    }
+
+    protected function init()
+    {
         $this->session_id = session_id();
 
-        if (!array_key_exists($this->group(), $_SESSION)) {
-            $_SESSION[$this->group()] = array();
-            $_SESSION[$this->group()][self::FLASH_DATA] = array();
+        if (!array_key_exists($this->group(), $this->data)) {
+            $this->data[$this->group()] = array();
+            $this->data[$this->group()][self::FLASH_DATA] = array();
         }
 
         $this->setup_flash_data();
@@ -135,9 +156,9 @@ class Session
      */
     protected function setup_flash_data()
     {
-        if (!empty($_SESSION[$this->group()][self::FLASH_DATA])) {
-            self::$flash_data = $_SESSION[$this->group()][self::FLASH_DATA];
-            $_SESSION[$this->group()][self::FLASH_DATA] = array();
+        if (!empty($this->data[$this->group()][self::FLASH_DATA])) {
+            self::$flash_data = $this->data[$this->group()][self::FLASH_DATA];
+            $this->data[$this->group()][self::FLASH_DATA] = array();
         }
 
         return count(self::$flash_data);
@@ -178,7 +199,7 @@ class Session
      */
     public function set_flash($key, $message)
     {
-        $_SESSION[$this->group()][self::FLASH_DATA][$key] = $message;
+        $this->data[$this->group()][self::FLASH_DATA][$key] = $message;
     }
 
     /**
@@ -222,7 +243,7 @@ class Session
      */
     public function set($key, $value)
     {
-        $_SESSION[$this->group()][$key] = $value;
+        $this->data[$this->group()][$key] = $value;
     }
 
     /**
@@ -235,11 +256,11 @@ class Session
     public function get($key = null, $default = null)
     {
         if (is_null($key)) {
-            $return = $_SESSION[$this->group()];
+            $return = $this->data[$this->group()];
             unset($return[self::FLASH_DATA]);
             return $return;
         } else if ($this->exists($key)) {
-            return $_SESSION[$this->group()][$key];
+            return $this->data[$this->group()][$key];
         }
 
         return $default;
@@ -253,7 +274,7 @@ class Session
      */
     public function exists($key)
     {
-        return array_key_exists($key, $_SESSION[$this->group()]);
+        return array_key_exists($key, $this->data[$this->group()]);
     }
 
     /**
@@ -266,7 +287,7 @@ class Session
     {
         $return = $this->exists($key);
         
-        unset($_SESSION[$this->group()][$key]);
+        unset($this->data[$this->group()][$key]);
 
         return $return;
     }

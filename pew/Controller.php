@@ -4,9 +4,7 @@ namespace pew;
 
 use pew\Pew;
 use pew\libs\Str;
-use pew\libs\Router;
 use pew\libs\Request;
-use pew\libs\Session;
 use \pew\controllers\Error;
 
 /**
@@ -24,26 +22,6 @@ class Controller
      */
     protected $pew;
 
-    /**
-     * Data submitted by the browser agent via POST method.
-     *
-     * If no POST data is submitted for the current request, $post will be set
-     * to false.
-     *
-     * @var array
-     */
-    protected $post = array();
-
-    /**
-     * Data submitted within the URL string in key:value pairs.
-     *
-     * If no GET data is submitted for the current request, $get will be set to
-     * false.
-     *
-     * @var array
-     */
-    protected $get = array();
-    
     /**
      * Additional function libraries made available to the controller.
      *
@@ -74,37 +52,6 @@ class Controller
     public $render = true;
     
     /**
-     * The text resulting from processing the view
-     *
-     * @var string
-     * @ccess protected
-    */
-    public $output = '';
-    
-    /**
-     * Error flag for error pages.
-     *
-     * @var int
-     */
-    protected $error = '';
-    
-    /**
-     * Wheter to require user authentication to complete the action.
-     *
-     * This way of requiring authentication will be replaced in the future.
-     *
-     * @var bool
-     */
-    public $require_auth = false;
-    
-    /**
-     * Whether to instance a database controller or not.
-     *
-     * @var bool
-     */
-    protected $use_db = true;
-    
-    /**
      * Database access object instance.
      *
      * @var Model
@@ -119,26 +66,12 @@ class Controller
     public $request = null;
 
     /**
-     * The route information. 
-     * 
-     * @var Router
-     */
-    public $route = null;
-
-    /**
      * String prefixed to action names in this controller.
      * 
      * @var string
      */
     protected $action_prefix = '';
     
-    /**
-     * Auth instance.
-     *
-     * @var Auth
-     */
-    public $auth = null;
-
     /**
      * Session instance.
      *
@@ -147,31 +80,20 @@ class Controller
     public $session = null;
     
     /**
-     * Stores the controller's parameters.
-     *
-     * @var array
-     */
-    public $parameters = array();
-
-    /**
      * Base name of the class, slugified.
      *
      * @var string
      */
-    protected $url_slug = '';
+    public $url_slug = '';
 
     /**
-     * The constructor instantiates the database and populates the instance
-     * parameters.
+     * Set base objects and properties.
      * 
-     * @param pew\libs\Request $request The request information
-     * @return void
+     * @param pew\View $view View to use
      */
     public function __construct($view = false)
     {
         $this->pew = Pew::instance();
-
-        # Assign Request, Route and View objects
         $this->request = $this->pew['request'];
 
         if ($view) {
@@ -185,48 +107,14 @@ class Controller
         unset($this->auth);
         unset($this->session);
         
-        # Controller file name in the /views/ folder.
-        $this->url_slug = Str::underscores(basename(get_class($this)));
+        # Controller folder name in the /views/ folder.
+        $fqcn = new Str(get_class($this));
+        $class_base_name = $fqcn->substring(1 + $fqcn->last_of('\\'));
+        $this->url_slug = Str::underscores($class_base_name);
 
         # Global action prefix override
-        if (!$this->action_prefix && $this->pew['action_prefix']) {
+        if (!$this->action_prefix) {
             $this->action_prefix = $this->pew['action_prefix'];
-        }
-        
-        # Function libraries
-        # @todo Move this to the __get function
-        if (is_array($this->libs)) {
-            foreach ($this->libs as $p => $library_class_name) {
-                $lib = $this->pew->library($library_class_name);
-                
-                if ($lib === false) {
-                    throw new \RuntimeException("Library $library_class_name cound not be found.");
-                }
-
-                $this->libs[$p] = $lib;
-            }
-        }
-        
-        $parameters = $this->request->arguments;
-        
-        # Manage the received URL parameters
-        if (is_array($parameters)) {
-            # Copy the parameters to the controller property.
-            $this->parameters = $parameters;
-            
-            # Simplify access to POST data
-            if (isset($parameters['form']) && $parameters['form']) {
-                $this->post = $parameters['form'];
-            } else {
-                $this->post = false;
-            }
-
-            $this->get = array();
-
-            # Simplify access to named parameters as GET data 
-            if (isset($parameters['named']) && count($parameters['named']) !== 0) {
-                $this->get += $parameters['named'];
-            }
         }
     }
     
@@ -251,10 +139,10 @@ class Controller
 
         # Set default template before calling the action
         $this->view->template($this->url_slug . '/' . $action);
-        $this->view->title(ucwords(str_replace('_', ' ', $action)));
+        $this->view->title(Str::title_case($action));
 
         # Everything's clear pink
-        $view_data = call_user_func_array(array($this, $this->action_prefix . $action), $parameters);
+        $view_data = call_user_func_array([$this, $this->action_prefix . $action], $parameters);
 
         if ($view_data === false) {
             $this->view->render = false;
@@ -282,8 +170,8 @@ class Controller
 
         $class_name = Str::camel_case($property);
 
-        if ($obj = $this->pew->get($class_name)) {
-            $this->pew[$property[$obj]];
+        if ($obj = $this->pew->library($class_name)) {
+            $this->pew[$property] = $obj;
             return $obj;
         }
         

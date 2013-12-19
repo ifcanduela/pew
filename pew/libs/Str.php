@@ -20,6 +20,9 @@ class Str
      */
     public function __construct($str = '')
     {
+        mb_internal_encoding('UTF-8');
+        mb_regex_encoding('UTF-8');
+
         $this->string = $str;
     }
 
@@ -77,7 +80,8 @@ class Str
 
         array_walk($parts, function(&$part, $index) use($upper_case_first) {
             if ($index || $upper_case_first) {
-                $part = ucfirst($part);
+                $str = new Str($part);
+                $part = $str->upper_case_first();
             }
         });
 
@@ -95,14 +99,13 @@ class Str
      */
     protected function slug()
     {
-        $str = $this->string;
-
-        $str = iconv('UTF-8', 'ASCII//TRANSLIT', $str);
+        $str = $this->transliterate()->string;
+        
         $str = preg_replace('/[^\w\d +*._\-]/', '-', $str);
-        $str = strtolower(str_replace([' ', '+', '*', '.'], '-', trim($str)));
+        $str = mb_strtolower(str_replace([' ', '+', '*', '.'], '-', trim($str)));
         $str = preg_replace('/-+/', '-', $str);
         
-        return new Str($str);
+        return $str;
     }
 
     /**
@@ -119,15 +122,85 @@ class Str
         $str = $this->string;
 
         if ($from_camel_case) {
-            $str = preg_replace_callback('/([A-Z])/', function ($part) {
-                return '_' . $part[0];
-            }, $str);
-            $str = ltrim($str, '_');
-        } else {
-            $str = str_replace([' ', '-'], '_', $str);
+            $with_spaces = [];
+
+            for ($i = 0; $i < mb_strlen($str); $i++) {
+                $char = mb_substr($str, $i, 1);
+
+                if (mb_strtoupper($char) === $char) {
+                    $char = ' ' . mb_strtolower($char);
+                }
+
+                $with_spaces[] = $char;
+            }
+            
+            $str = join('', $with_spaces);
         }
 
-        return new Str(strtolower($str));
+        $str = mb_ereg_replace('([\s\-]+)', '_', $str);
+        $str = new Str(ltrim($str, '_'));
+
+        return $str->lower_case();
+    }
+
+    /**
+     * Convert an underscored or camel-case string to title case.
+     * 
+     * @return Str
+     */
+    protected function title_case($from_camel_case = false)
+    {
+        $str = $this->underscores($from_camel_case)->string;
+        $str = new Str(trim(str_replace('_', ' ', $str)));
+
+        $parts = $str->split(' ');
+
+        array_walk($parts, function (&$part) {
+            $str = new Str($part);
+            $part = $str->upper_case_first();
+        });
+
+        $title = new Str(" ");
+
+        return $title->join($parts);
+    }
+
+    /**
+     * Convert a string to lower-case letters.
+     * 
+     * @return Str
+     */
+    protected function lower_case()
+    {
+        $str = $this->string;
+
+        return new Str(mb_strtolower($str));
+    }
+
+    /**
+     * Convert a string to upper-case letters.
+     * 
+     * @return Str
+     */
+    protected function upper_case()
+    {
+        $str = $this->string;
+
+        return new Str(mb_strtoupper($str));
+    }
+
+    /**
+     * Convert the first letter of a string to upper-case.
+     * 
+     * @return Str
+     */
+    protected function upper_case_first()
+    {
+        $str = $this->string;
+        
+        $first = mb_substr($str, 0, 1);
+        $rest = mb_substr($str, 1);
+        return new Str(mb_strtoupper($first) . $rest);
     }
 
     /**
@@ -220,7 +293,7 @@ class Str
     {
         $str = $this->string;
 
-        return substr($str, 0, $n);
+        return mb_substr($str, 0, $n);
     }
 
     /**
@@ -233,7 +306,7 @@ class Str
     {
         $str = $this->string;
 
-        return substr($str, -$n);
+        return mb_substr($str, -$n);
     }
 
     /**
@@ -245,7 +318,7 @@ class Str
     protected function until($stop_before)
     {
         $str = $this->string;
-        $stop = strpos($str, $stop_before);
+        $stop = mb_strpos($str, $stop_before);
 
         $chunk = new Str($str);
 
@@ -261,11 +334,39 @@ class Str
     protected function from($start_after)
     {
         $str = $this->string;
-        $start = mb_strlen($start_after) + strpos($str, $start_after);
+        $start = mb_strlen($start_after) + mb_strpos($str, $start_after);
 
         $chunk = new Str($str);
 
         return $chunk->substring($start);
+    }
+
+    /**
+     * Find the position of the first ocurrence of a substring.
+     * 
+     * @param string $substring Character or string to search for
+     * @param integer $skip Number of characters to skip from the beginning of the string
+     * @return int Zero-based index
+     */
+    protected function first_of($substring, $skip = 0)
+    {
+        $str = $this->string;
+        
+        return mb_strpos($str, $substring, $skip);
+    }
+
+    /**
+     * Find the position of the last ocurrence of a substring.
+     * 
+     * @param string $substring Character or string to search for
+     * @param integer $skip Number of characters to skip from the end of the string
+     * @return int Zero-based index
+     */
+    protected function last_of($substring, $skip = 0)
+    {
+        $str = $this->string;
+
+        return mb_strrpos($str, $substring, -$skip);
     }
 
     /**
@@ -295,6 +396,47 @@ class Str
     }
 
     /**
+     * Convert a string to ASCII-only characters.
+     * 
+     * @return Str
+     */
+    protected function transliterate()
+    {
+        $str = $this->string;
+
+        $substitutions = [
+            'á' => 'a', 'Á' => 'A', 'à' => 'a', 'À' => 'A', 'ă' => 'a', 'Ă' => 'A', 'â' => 'a', 'Â' => 'A', 'å' => 'a', 'Å' => 'A', 'ã' => 'a', 'Ã' => 'A', 'ą' => 'a', 'Ą' => 'A', 'ā' => 'a', 'Ā' => 'A', 'ä' => 'ae', 'Ä' => 'AE', 'æ' => 'ae', 'Æ' => 'AE', 
+            'ḃ' => 'b', 'Ḃ' => 'B', 
+            'ć' => 'c', 'Ć' => 'C', 'ĉ' => 'c', 'Ĉ' => 'C', 'č' => 'c', 'Č' => 'C', 'ċ' => 'c', 'Ċ' => 'C', 'ç' => 'c', 'Ç' => 'C', 
+            'ď' => 'd', 'Ď' => 'D', 'ḋ' => 'd', 'Ḋ' => 'D', 'đ' => 'd', 'Đ' => 'D', 'ð' => 'dh', 'Ð' => 'Dh', 
+            'é' => 'e', 'É' => 'E', 'è' => 'e', 'È' => 'E', 'ĕ' => 'e', 'Ĕ' => 'E', 'ê' => 'e', 'Ê' => 'E', 'ě' => 'e', 'Ě' => 'E', 'ë' => 'e', 'Ë' => 'E', 'ė' => 'e', 'Ė' => 'E', 'ę' => 'e', 'Ę' => 'E', 'ē' => 'e', 'Ē' => 'E', 
+            'ḟ' => 'f', 'Ḟ' => 'F', 'ƒ' => 'f', 'Ƒ' => 'F', 
+            'ğ' => 'g', 'Ğ' => 'G', 'ĝ' => 'g', 'Ĝ' => 'G', 'ġ' => 'g', 'Ġ' => 'G', 'ģ' => 'g', 'Ģ' => 'G', 
+            'ĥ' => 'h', 'Ĥ' => 'H', 'ħ' => 'h', 'Ħ' => 'H', 
+            'í' => 'i', 'Í' => 'I', 'ì' => 'i', 'Ì' => 'I', 'î' => 'i', 'Î' => 'I', 'ï' => 'i', 'Ï' => 'I', 'ĩ' => 'i', 'Ĩ' => 'I', 'į' => 'i', 'Į' => 'I', 'ī' => 'i', 'Ī' => 'I', 
+            'ĵ' => 'j', 'Ĵ' => 'J', 
+            'ķ' => 'k', 'Ķ' => 'K', 
+            'ĺ' => 'l', 'Ĺ' => 'L', 'ľ' => 'l', 'Ľ' => 'L', 'ļ' => 'l', 'Ļ' => 'L', 'ł' => 'l', 'Ł' => 'L', 
+            'ṁ' => 'm', 'Ṁ' => 'M', 
+            'ń' => 'n', 'Ń' => 'N', 'ň' => 'n', 'Ň' => 'N', 'ñ' => 'n', 'Ñ' => 'N', 'ņ' => 'n', 'Ņ' => 'N', 
+            'ó' => 'o', 'Ó' => 'O', 'ò' => 'o', 'Ò' => 'O', 'ô' => 'o', 'Ô' => 'O', 'ő' => 'o', 'Ő' => 'O', 'õ' => 'o', 'Õ' => 'O', 'ø' => 'oe', 'Ø' => 'OE', 'ō' => 'o', 'Ō' => 'O', 'ơ' => 'o', 'Ơ' => 'O', 'ö' => 'oe', 'Ö' => 'OE', 
+            'ṗ' => 'p', 'Ṗ' => 'P', 
+            'ŕ' => 'r', 'Ŕ' => 'R', 'ř' => 'r', 'Ř' => 'R', 'ŗ' => 'r', 'Ŗ' => 'R', 
+            'ś' => 's', 'Ś' => 'S', 'ŝ' => 's', 'Ŝ' => 'S', 'š' => 's', 'Š' => 'S', 'ṡ' => 's', 'Ṡ' => 'S', 'ş' => 's', 'Ş' => 'S', 'ș' => 's', 'Ș' => 'S', 'ß' => 'SS', 
+            'ť' => 't', 'Ť' => 'T', 'ṫ' => 't', 'Ṫ' => 'T', 'ţ' => 't', 'Ţ' => 'T', 'ț' => 't', 'Ț' => 'T', 'ŧ' => 't', 'Ŧ' => 'T', 
+            'ú' => 'u', 'Ú' => 'U', 'ù' => 'u', 'Ù' => 'U', 'ŭ' => 'u', 'Ŭ' => 'U', 'û' => 'u', 'Û' => 'U', 'ů' => 'u', 'Ů' => 'U', 'ű' => 'u', 'Ű' => 'U', 'ũ' => 'u', 'Ũ' => 'U', 'ų' => 'u', 'Ų' => 'U', 'ū' => 'u', 'Ū' => 'U', 'ư' => 'u', 'Ư' => 'U', 'ü' => 'ue', 'Ü' => 'UE', 
+            'ẃ' => 'w', 'Ẃ' => 'W', 'ẁ' => 'w', 'Ẁ' => 'W', 'ŵ' => 'w', 'Ŵ' => 'W', 'ẅ' => 'w', 'Ẅ' => 'W', 
+            'ý' => 'y', 'Ý' => 'Y', 'ỳ' => 'y', 'Ỳ' => 'Y', 'ŷ' => 'y', 'Ŷ' => 'Y', 'ÿ' => 'y', 'Ÿ' => 'Y', 
+            'ź' => 'z', 'Ź' => 'Z', 'ž' => 'z', 'Ž' => 'Z', 'ż' => 'z', 'Ż' => 'Z', 
+            'þ' => 'th', 'Þ' => 'Th', 'µ' => 'u', 'а' => 'a', 'А' => 'a', 'б' => 'b', 'Б' => 'b', 'в' => 'v', 'В' => 'v', 'г' => 'g', 'Г' => 'g', 'д' => 'd', 'Д' => 'd', 'е' => 'e', 'Е' => 'e', 'ё' => 'e', 'Ё' => 'e', 'ж' => 'zh', 'Ж' => 'zh', 'з' => 'z', 'З' => 'z', 'и' => 'i', 'И' => 'i', 'й' => 'j', 'Й' => 'j', 'к' => 'k', 'К' => 'k', 'л' => 'l', 'Л' => 'l', 'м' => 'm', 'М' => 'm', 'н' => 'n', 'Н' => 'n', 'о' => 'o', 'О' => 'o', 'п' => 'p', 'П' => 'p', 'р' => 'r', 'Р' => 'r', 'с' => 's', 'С' => 's', 'т' => 't', 'Т' => 't', 'у' => 'u', 'У' => 'u', 'ф' => 'f', 'Ф' => 'f', 'х' => 'h', 'Х' => 'h', 'ц' => 'c', 'Ц' => 'c', 'ч' => 'ch', 'Ч' => 'ch', 'ш' => 'sh', 'Ш' => 'sh', 'щ' => 'sch', 'Щ' => 'sch', 'ъ' => '', 'Ъ' => '', 'ы' => 'y', 'Ы' => 'y', 'ь' => '', 'Ь' => '', 'э' => 'e', 'Э' => 'e', 'ю' => 'ju', 'Ю' => 'ju', 'я' => 'ja', 'Я' => 'ja'
+        ];
+
+        $str = str_replace(array_keys($substitutions), array_values($substitutions), $str);
+
+        return new Str($str);
+    }
+
+    /**
      * Convert the object into string for use in string contexts.
      * 
      * @return string
@@ -314,7 +456,7 @@ class Str
     public function __call($method, $args)
     {
         if (method_exists($this, $method)) {
-            return $this->$method($args);
+            return call_user_func_array([$this, $method], $args);
         }
 
         throw new \BadMethodCallException("Class Str does not have a method called '{$method}'");        
