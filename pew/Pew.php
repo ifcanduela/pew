@@ -70,12 +70,8 @@ class Pew extends Registry
             # load app/config/{$config}.php
             $app_config = include getcwd() . '/' . $app_folder . '/config/' . $config_file . '.php';
 
-            // merge user config with Pew config
+            # merge user config with Pew config
             $this['import']($app_config);
-
-            if (!isSet($this['env'])) {
-                $this['env'] = 'development';
-            }
 
             # add application namespace and path
             $app_folder_name = trim(basename($app_folder));
@@ -345,7 +341,7 @@ class Pew extends Registry
      * @param array $arguments Method call argument
      * @return mixed Result of relayed instance call
      */
-    public static function __callstatic($name, array $arguments)
+    public static function __callStatic($name, array $arguments)
     {
         if (method_exists(self::$instance, $name)) {
             return self::$instance->$name($arguments);
