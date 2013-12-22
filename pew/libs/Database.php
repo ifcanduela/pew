@@ -555,8 +555,13 @@ class Database
                             $tags[$tag] = $v[1];  
                         }
                     } else {
-                        # The comparison operator defaults to '='
-                        $atoms[] = "$k = $tag";
+                        # The comparison operator defaults to '=' or IS
+                        if (is_null($v)) {
+                            $atoms[] = "$k IS NULL";
+                        } else {
+                            $atoms[] = "$k = $tag";
+                        }
+
                         $tags[$tag] = $v;
                     }
                 }
