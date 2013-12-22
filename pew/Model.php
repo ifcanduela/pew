@@ -1018,7 +1018,7 @@ class Model implements \ArrayAccess, \IteratorAggregate
      */
     public function __sleep()
     {
-        $this->db->disconnect();
+        $this->db = null;
         return array_keys(get_object_vars($this));
     }
 }
