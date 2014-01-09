@@ -10,6 +10,7 @@ namespace pew\libs;
  */
 class Env
 {
+    public $cwd;
     public $method;
     public $headers;
     public $scheme;
@@ -37,6 +38,8 @@ class Env
 
     public function init()
     {
+        $this->cwd = getcwd();
+        
         if (isSet($_SERVER['SERVER_NAME'])) {
             $this->local = in_array($_SERVER['REMOTE_ADDR'], ['localhost', '127.0.0.1', '::1']);
 
