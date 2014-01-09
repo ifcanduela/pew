@@ -535,7 +535,7 @@ class Database
                     # If the key is a table field, use PDO parameters
                     ++self::$tag_count;
                     # Build a tag as :PREFIX_fieldname_TAGCOUNT
-                    $tag = str_replace('.', '_', $k);
+                    $tag = str_replace(['.', '*', '(', ')'], '_', $k);
                     $tag = ':' . $prefix . $tag . '_' . self::$tag_count;
                     
                     if (is_array($v)) {
