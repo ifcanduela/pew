@@ -16,7 +16,7 @@ class ModelTableNotFoundException extends \RuntimeException {}
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Model implements \ArrayAccess, \IteratorAggregate
+class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
 {
     /**
      * @var string|boolean Database configuration preset to use.
@@ -82,11 +82,11 @@ class Model implements \ArrayAccess, \IteratorAggregate
     protected $related_parents = [];
 
     /**
-     * Whether to query the related tables or not.
+     * Related models to eagerly load on find() operations.
      *
-     * @var boolean
+     * @var array
      */
-    protected $find_related = false;
+    protected $eager_load = [];
 
     /**
      * An associative array of child tables.
@@ -473,6 +473,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             return false;
         }
 
+        foreach ($this->eager_load as $related_model) {
+            $this->record[$related_model] = $this->$related_model;
+        }
+
         if (method_exists($this, 'after_find')) {
             $this->record = current($this->after_find([$result]));
         }
@@ -508,6 +512,10 @@ class Model implements \ArrayAccess, \IteratorAggregate
             foreach ($result as $key => $value) {
                 $result[$key] = clone $this;
                 $result[$key]->record = $value;
+
+                foreach ($this->eager_load as $related_model) {
+                    $result[$key]->record[$related_model] = $result[$key]->$related_model;
+                }
             }
         } else {
             # return an empty array if there was no result
@@ -580,10 +588,25 @@ class Model implements \ArrayAccess, \IteratorAggregate
         }
         
         if (isset($record[$this->primary_key])) {
+            # set modification timestamp
+            if ($this->offsetExists('modified')) {
+                $record['modified'] = time();
+            }
+
             # if $id is set, perform an UPDATE
             $result = $this->db->set($record)->where([$this->primary_key => $record[$this->primary_key]])->update($this->table);
             $result = $this->db->where([$this->primary_key => $record[$this->primary_key]])->single($this->table);
         } else {
+            # set creation timestamp
+            if ($this->offsetExists('created')) {
+                $record['created'] = time();
+            }
+
+            # set modification timestamp
+            if ($this->offsetExists('modified')) {
+                $record['modified'] = time();
+            }
+
             # if $id is not set, perform an INSERT
             $result = $this->db->values($record)->insert($this->table);
             $result = $this->db->where([$this->primary_key => $result])->single($this->table);
@@ -629,6 +652,23 @@ class Model implements \ArrayAccess, \IteratorAggregate
             # no valid configuration
             throw new \RuntimeException('Delete requires conditions or parameters');
         }
+    }
+
+    /**
+     * Set which related models to retrieve eagerly in a find() operaton.
+     *
+     * @param $related_model One or more related models
+     * @return Model The model
+     */
+    public function with()
+    {
+        $m = $this;
+
+        $this->eager_load = array_filter(func_get_args(), function($r) use ($m) {
+            return $m->has_child($r) || $m->has_parent($r);
+        });
+
+        return $this;
     }
 
     /**
@@ -867,15 +907,48 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * Check if the field exists in the model.
+     * 
+     * @param string $field
+     * @return boolean
+     */
+    public function has_field($field)
+    {
+        return array_key_exists($field, $this->record);
+    }
+
+    /**
+     * Check if a parent model is defined.
+     * 
+     * @param string $parent
+     * @return boolean
+     */
+    public function has_parent($parent)
+    {
+        return array_key_exists($parent, $this->related_parents);
+    }
+
+    /**
+     * Check if a child model is defined.
+     * 
+     * @param string $child
+     * @return boolean
+     */
+    public function has_child($child)
+    {
+        return array_key_exists($child, $this->related_children);
+    }
+
+    /**
      * Check if an column or related model exists.
      * 
      * @return bool True if the offset exists, false otherwise
      */
     public function offsetExists($offset)
     {
-        $has_column = array_key_exists($offset, $this->record);
-        $has_related_parent = array_key_exists($offset, $this->related_parents);
-        $has_related_child = array_key_exists($offset, $this->related_children);
+        $has_column = $this->has_field($offset);
+        $has_related_parent = $this->has_parent($offset);
+        $has_related_child = $this->has_child($offset);
 
         return $has_column || $has_related_parent || $has_related_child;
     }
@@ -1012,9 +1085,19 @@ class Model implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
+     * JSON representation of the model object.
+     * 
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        return $this->attributes();
+    }
+
+    /**
      * Disconnect the PDO instance before serialization.
      * 
-     * @return array [description]
+     * @return array
      */
     public function __sleep()
     {
