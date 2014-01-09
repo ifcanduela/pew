@@ -65,15 +65,6 @@ $cfg['www_url'] = $cfg['app_url'] . 'www/';
 $cfg['app_namespace'] = 'app';
 
 /**
- * @var string Framework version numbers.
- */
-$cfg['version_major'] = '0';
-$cfg['version_minor'] = '2';
-$cfg['version_patch'] = '1';
-$cfg['version_date'] = '2013-04-16';
-$cfg['version_string'] = "{$cfg['version_major']}.{$cfg['version_minor']}.{$cfg['version_patch']} ({$cfg['version_date']})";
-
-/**
  * @var boolean Whether the App is running on the localhost space.
  */
 $cfg['localhost'] = isSet($_SERVER['REMOTE_ADDR']) 
