@@ -377,8 +377,10 @@ class Router
 
             $segments = join('/', $destination_segments);
         }
-    
-        $segments = array_values(array_filter(explode('/', $segments)));
+
+        $segments = array_values(array_filter(explode('/', $segments), function ($item) {
+            return !is_null($item) && $item !== '';
+        }));
 
         return $segments;
     }
