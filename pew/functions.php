@@ -962,3 +962,15 @@ function flash($key = null, $default = null)
         return $flash_data;
     }
 }
+
+/**
+ * Checks is a value is defined exists and returns ir or a default.
+ * 
+ * @param mixed $ref A value reference to check
+ * @param mixed $default A fallback value to return
+ * @return mixed
+ */
+function set_or_default(&$ref, $default = null)
+{
+    return isSet($ref) ? $ref : $default;
+}
