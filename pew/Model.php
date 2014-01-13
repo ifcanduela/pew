@@ -208,7 +208,6 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             $fqcn = new Str(get_class($this));
             $class_base_name = $fqcn->substring($fqcn->last_of('\\'));
             $this->table = str_replace('_model', '', $class_base_name->underscores());
-            var_dump($this->table);
         }
 
         if (false === $this->db->table_exists($this->table)) {
@@ -578,7 +577,6 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
 
         foreach ($this->table_data['columns'] as  $key) {
             if (array_key_exists($key, $data)) {
-                var_dump($data);
                 $record[$key] = $data[$key];
             }
         }
