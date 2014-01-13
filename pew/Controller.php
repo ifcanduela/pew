@@ -40,6 +40,13 @@ class Controller
      * @var View
      */
     public $view = null;
+
+    /**
+     * Layout to use to render the controller's views.
+     *
+     * @var string
+     */
+    public $layout;
     
     /**
      * Whether to render a view after the action completes.
@@ -101,7 +108,12 @@ class Controller
         } else {
             $this->view = $this->pew->view();
         }
-        
+
+        # Setup the layout if it´s set
+        if ($this->layout) {
+            $this->view->layout($this->layout);
+        }
+                
         # Make sure $model is read through the __get magic method the first time
         unset($this->model);
         unset($this->auth);
