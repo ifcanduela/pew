@@ -75,6 +75,26 @@ class Router
     }
 
     /**
+     * Add RESTful routes for a controller name.
+     *
+     * GET    /resource/id   -> /resource/:view/id
+     * GET    /resource      -> /resource/:index
+     * PUT    /resource/id   -> /resource/:edit/id
+     * POST   /resource      -> /resource/:add
+     * DELETE /resource/id   -> /resource/:delete/id
+     * 
+     * @param string $resource_name A controller resource name
+     */
+    public function resource($resource_name)
+    {
+        $this->add(["/{$resource_name}/#id", "/{$resource_name}/:view/!id",   "GET"]);
+        $this->add(["/{$resource_name}",     "/{$resource_name}/:index",      "GET"]);
+        $this->add(["/{$resource_name}/#id", "/{$resource_name}/:edit/!id",   "PUT"]);
+        $this->add(["/{$resource_name}",     "/{$resource_name}/:add",        "POST"]);
+        $this->add(["/{$resource_name}/#id", "/{$resource_name}/:delete/!id", "DELETE"]);
+    }
+
+    /**
      * Set or get the default controller.
      *
      * @param string $controller

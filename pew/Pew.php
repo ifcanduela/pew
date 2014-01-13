@@ -236,15 +236,25 @@ class Pew extends Registry
     {
         if (!isset($this['Router'])) {
             $routes = [];
-            # fetch the routes configuration
+            $resources = [];
 
-            // load app/config/routes.php
+            # load app/config/routes.php
             if (file_exists($this['app_folder'] . '/config/routes.php')) {
                 $routes = include $this['app_folder'] . '/config/routes.php';
+                if (array_key_exists('resources', $routes)) {
+                    $resources = $routes['resources'];
+                    unset($routes['resources']);
+                }
             }
 
             # instantiate the router object
             $router = new libs\Router($routes);
+
+            # configure resource routes
+            foreach ($resources as $controller) {
+                $router->resource($controller);
+            }
+
             $router->default_controller($this['default_controller']);
             $router->default_action($this['default_action']);
 
