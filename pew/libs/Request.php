@@ -203,6 +203,18 @@ class Request
     }
 
     /**
+     * Get one or all the values in the input stream.
+     * 
+     * @param string $key Input key name
+     * @param mixed $default Value to return in case none is present
+     * @return array One or all entries in the input stream
+     */
+    public function input($key = null, $default = null)
+    {
+        return $this->data('input', $key, $default);
+    }
+
+    /**
      * Get the site-relative URI.
      * 
      * @return string

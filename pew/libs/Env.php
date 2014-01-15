@@ -25,6 +25,7 @@ class Env
     public $post;
     public $files;
     public $cookie;
+    public $input;
 
     public $local;
 
@@ -36,14 +37,14 @@ class Env
         $this->init();
     }
 
-    public function init()
+    protected function init()
     {
         $this->cwd = getcwd();
         
         if (isSet($_SERVER['SERVER_NAME'])) {
             $this->local = in_array($_SERVER['REMOTE_ADDR'], ['localhost', '127.0.0.1', '::1']);
 
-            $this->method = isSet($_POST['_method']) ? strtoupper($_POST['_method']) : strtoupper($_SERVER['REQUEST_METHOD']);
+            $this->method = isSet($_REQUEST['_method']) ? strtoupper($_REQUEST['_method']) : strtoupper($_SERVER['REQUEST_METHOD']);
             $this->scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
             $this->host = $_SERVER['SERVER_NAME'];
             $this->port = $_SERVER['SERVER_PORT'];
@@ -79,6 +80,7 @@ class Env
         $this->post = $_POST;
         $this->files = $_FILES;
         $this->cookie = $_COOKIE;
+        $this->input = $this->process_input_stream();
     }
 
     /**
@@ -86,7 +88,7 @@ class Env
      * 
      * @return string A segment string like /segment1/segment2/segment3, or false
      */
-    public function get_segments_from_path_info()
+    protected function get_segments_from_path_info()
     {
         if (isSet($_SERVER['PATH_INFO'])) {
             return $_SERVER['PATH_INFO'];
@@ -100,7 +102,7 @@ class Env
      * 
      * @return string URL to the script name, as provided by the server.
      */
-    public function get_script_name()
+    protected function get_script_name()
     {
         if (!isSet($_SERVER['REQUEST_URI'])) {
             return $_SERVER['SCRIPT_NAME'];
@@ -121,11 +123,34 @@ class Env
      * @param string $request_script_name URL to the current script
      * @return string A segments string like /segment1/segment2/segment3
      */
-    public function extract_segments_from_script_name($request_script_name)
+    protected function extract_segments_from_script_name($request_script_name)
     {
         $script_relative = str_replace(dirname($_SERVER['SCRIPT_NAME']), '', $request_script_name);
         $segments = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $script_relative);
 
         return '/' . trim($segments, '/');    
+    }
+
+    /**
+     * Read the php://input stream.
+     * 
+     * @return array An associative array of keys and values
+     */
+    protected function process_input_stream()
+    {
+        if (isSet($_SERVER['CONTENT_TYPE'])) {
+            $content_type = $_SERVER['CONTENT_TYPE'];
+        } elseif (isSet($_SERVER['HTTP_CONTENT_TYPE'])) {
+            $content_type = $_SERVER['HTTP_CONTENT_TYPE'];
+        } else {
+            return [];
+        }
+
+        if ($content_type === 'application/x-www-form-urlencoded') {
+            parse_str(file_get_contents('php://input'), $input);
+            return $input;
+        }
+
+        return [];
     }
 }
