@@ -6,6 +6,7 @@ use \pew\libs\Registry;
 
 class ViewException extends \Exception {}
 class ViewTemplateNotFoundException extends ViewException {}
+class ViewLayoutNotFoundException extends ViewException {}
 class ViewElementFileNotFoundException extends ViewTemplateNotFoundException {}
 
 /**
@@ -62,7 +63,7 @@ class View extends \pew\libs\Registry
 
         if (is_null($templates_folder)) {
             $templates_folder = getcwd();
-        }
+        } else
 
         $this->folder($templates_folder);
     }
@@ -73,7 +74,7 @@ class View extends \pew\libs\Registry
      * @param type $data Template data
      * @param type $view View to render
      */
-    public function render($template = null, $data = array())
+    public function render(array $data = array(), $template = null)
     {
         if (!$template) {
             $template = $this->template;
@@ -91,7 +92,7 @@ class View extends \pew\libs\Registry
 
         # Output the view and save it into a buffer.
         ob_start();
-        require $template_file;
+            require $template_file;
         $template_output = ob_get_clean();
         
         return $template_output;
