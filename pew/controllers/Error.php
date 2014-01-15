@@ -67,9 +67,9 @@ class Error extends \pew\Controller
      *                       
      * @access public
      */
-    public function __construct($request)
+    public function __construct(\Exception $exception = null)
     {
-        parent::__construct($request);
+        parent::__construct();
 
         # If the script is not running on DEBUG, execution is definitely stopped
         if (!$this->pew['debug']) {
@@ -93,7 +93,7 @@ class Error extends \pew\Controller
         switch ($this->error_code)
         {
             case 404:
-                $this->view = '404';
+                $this->view->template('error/404');
                 $this->show_404();
                 break;
             # The file for the requested controller is not found in
@@ -240,8 +240,7 @@ ERROR_TEXT;
      */
     public function show_404()
     {
-        header("HTTP/1.0 404 Not Found");
-        include($this->pew['system_folder'] . '/views/' . $this->url_slug . '/404.php');
-        exit(404);
+        $this->view->layout('error.layout');
+        $this->view->template('error/404');
     }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 
 <html>
 <head>
@@ -37,7 +37,10 @@
 </head>
 
 <body>
+-->
     <div>
+    <?php header("HTTP/1.0 404 Not Found") ?>
+
         <h1>The Error Four Oh Four</h1>
         
         <p>Sorry, the page you were looking for does not exist. Try one of the following:</p>
@@ -54,5 +57,7 @@
         
         <img src="http://<?= $cat ?>.jpg.to" alt="This cat">
     </div>
+<!-- 
 </body>
 </html>
+ -->

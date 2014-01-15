@@ -105,7 +105,7 @@ class App
                 $skip_action = true;
             } else {
                 # display an error page if the controller could not be instanced
-                $controller = new controllers\Error($request);
+                $controller = new controllers\Error();
                 $controller->set_error(controllers\Error::CONTROLLER_MISSING);
             }
         }
@@ -115,9 +115,11 @@ class App
             $controller->before_action();
         }
 
+        $view_data = [];
+
         # call the action method and let the controller decide what to do
         if (isSet($skip_action) && $skip_action) {
-            $view_data = array();
+            # nothing to do
         } else {
             $view_data = $controller->__call($request->action(), $request->args());
         }
@@ -166,12 +168,12 @@ class App
             $defaultView->folder($this->pew['system_folder'] . '/views');
 
             if ($defaultView->exists()) {
-                $output = $defaultView->render(null, $view_data);
+                $output = $defaultView->render($view_data);
             } else {
-                throw new ViewTemplateNotFoundException("View file could not be found: {$view->folder()}/{$view->template()}{$view->template()}");
+                throw new ViewTemplateNotFoundException("View file could not be found: {$view->folder()}/{$view->template()}{$view->extension()}");
             }
         } else {
-            $output = $view->render(null, $view_data);
+            $output = $view->render($view_data);
         }
 
         return $output;
@@ -191,16 +193,16 @@ class App
 
         if (!$layout->exists()) {
             $defaultLayout = clone($layout);
-            $defaultLayout->folder($pew['system_folder'] . 'views');
+            $defaultLayout->folder($this->pew['system_folder'] . '/views');
 
             if (!$defaultLayout->exists()) {
-                 throw new \Exception("Layout file could not be found: {$layout->folder()}/{$layout->template()}{$layout->extension()}");
+                 throw new ViewLayoutNotFoundException("Layout file could not be found: {$layout->folder()}/{$layout->template()}{$layout->extension()}");
             }
 
             $layout = $defaultLayout;
         }
 
-        $output = $layout->render(null, ['title' => $layout->title, 'output' => $output]);
+        $output = $layout->render(['title' => $layout->title, 'output' => $output]);
 
         return $output;
     }

@@ -7,6 +7,9 @@ use pew\libs\Str;
 use pew\libs\Request;
 use \pew\controllers\Error;
 
+class ControllerException extends \RuntimeException {}
+class ControllerActionMissingException extends ControllerException {}
+
 /**
  * The basic controller class, with some common methods and fields.
  * 
@@ -146,7 +149,7 @@ class Controller
     {
         if (!method_exists($this, $this->action_prefix . $action)) {
             # If the $action method does not exist, show an error page
-            $error = new \pew\controllers\Error($this->pew['request'], Error::ACTION_MISSING);
+            throw new ControllerActionMissingException("Action {$this->action_prefix}{$action} for controller ". get_class($this) . " not found");
         }
 
         # Set default template before calling the action
@@ -158,6 +161,8 @@ class Controller
 
         if ($view_data === false) {
             $this->view->render = false;
+        } elseif (empty($view_data)) {
+            $view_data = [];
         } elseif (!is_array($view_data)) {
             $view_data = compact('view_data');
         }
