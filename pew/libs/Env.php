@@ -125,8 +125,13 @@ class Env
      */
     protected function extract_segments_from_script_name($request_script_name)
     {
-        $script_relative = str_replace(dirname($_SERVER['SCRIPT_NAME']), '', $request_script_name);
-        $segments = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $script_relative);
+        $dirname = dirname($_SERVER['SCRIPT_NAME']);
+        
+        if ($dirname !== '/') {
+            $request_script_name = str_replace($dirname, '', $request_script_name);
+        }
+
+        $segments = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $request_script_name);
 
         return '/' . trim($segments, '/');    
     }
