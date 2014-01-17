@@ -143,16 +143,10 @@ class Env
      */
     protected function process_input_stream()
     {
-        if (isSet($_SERVER['CONTENT_TYPE'])) {
-            $content_type = $_SERVER['CONTENT_TYPE'];
-        } elseif (isSet($_SERVER['HTTP_CONTENT_TYPE'])) {
-            $content_type = $_SERVER['HTTP_CONTENT_TYPE'];
-        } else {
-            return [];
-        }
+        $input_stream = file_get_contents('php://input');
 
-        if ($content_type === 'application/x-www-form-urlencoded') {
-            parse_str(file_get_contents('php://input'), $input);
+        if ($input_stream) {
+            parse_str($input_stream, $input);
             return $input;
         }
 
