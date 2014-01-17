@@ -139,7 +139,7 @@ class Request
      * @param mixed $default Value to return in case none is present
      * @return array One or all entries in the array
      */
-    public function data($source, $key, $default = null)
+    public function data($source, $key = null, $default = null)
     {
         if (!isSet($this->env->$source)) {
             return $default;
