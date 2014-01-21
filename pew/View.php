@@ -88,12 +88,7 @@ class View extends \pew\libs\Registry
         }
 
         $view_data = array_merge($this->export(), $data);
-        extract($view_data);
-
-        # Output the view and save it into a buffer.
-        ob_start();
-            require $template_file;
-        $output = ob_get_clean();
+        $output = $view_data['output'] = $this->_render($template_file, $view_data);
 
         if ($this->layout && $this->layout !== 'none') {
             $layout_file = $this->resolve($this->layout . $this->extension());
@@ -102,9 +97,7 @@ class View extends \pew\libs\Registry
                 throw new ViewLayoutNotFoundException("Layout {$layout_file} not found");
             }
 
-            ob_start();
-                require $layout_file;
-            $output = ob_get_clean();
+            $output = $this->_render($layout_file, $view_data);
         }
 
         return $output;
@@ -236,12 +229,14 @@ class View extends \pew\libs\Registry
 
     /**
      * Load and output a snippet into the current view.
+     *
+     * Elements only inherit view data set with __set(), accesible via $this->{key}.
      * 
      * @param string $element The snippet to be loaded, relative to the templates folder
      * @param array $element_data Additional variables for use in the element
      * @return void
      */
-    public function element($element, $element_data = null)
+    public function element($element, $element_data = [])
     {
         $element_file = $this->resolve($element . $this->extension());
 
@@ -249,15 +244,26 @@ class View extends \pew\libs\Registry
             throw new ViewElementFileNotFoundException("The element file $element_file could not be found.");
         }
         
-        # If there are variables, make them easily available to the template.
-        if (is_array($element_data)) {
-            extract($element_data);
-        } elseif (count(func_get_args()) > 1) {
-            $args = array_slice(func_get_args(), 1);
-            extract($args, EXTR_PREFIX_ALL, 'param');
-        }
-        
         # Render the element.
-        require $element_file;
+        return $this->_render($element_file, $element_data);
+    }
+
+    /**
+     * Import and process a template file.
+     *
+     * This method encapsulates the replacement of template variables, avoiding the 
+     * creation of extra variables in its scope.
+     *
+     * @param string $filename Template file name
+     * @param array $data Template data
+     * @return string
+     */
+    protected function _render()
+    {
+        extract(func_get_arg(1));
+
+        ob_start();
+            require func_get_arg(0);
+        return ob_get_clean();
     }
 }
