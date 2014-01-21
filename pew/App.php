@@ -140,70 +140,11 @@ class App
                     throw new \Exception('XML rendering is not yet implemented.');
                     break;
                 default:
-                    $view_output = $this->render_view($view, $view_data);
-
-                    if (method_exists($controller, 'before_render')) {
-                        $output = $controller->before_render($output);
-                    }
-
-                    $page = $this->render_layout(clone $view, $view_output);
+                    $page = $view->render($view_data);
                     break;
             }
 
             echo $page;
         }
-    }
-
-    /**
-     * Render the view template.
-     * 
-     * @param pew\View $view View object
-     * @param array $view_data [description]
-     * @return string Resulting HTML output
-     */
-    public function render_view($view, $view_data)
-    {
-        if (!$view->exists()) {
-            $defaultView = clone $view;
-            $defaultView->folder($this->pew['system_folder'] . '/views');
-
-            if ($defaultView->exists()) {
-                $output = $defaultView->render($view_data);
-            } else {
-                throw new ViewTemplateNotFoundException("View file could not be found: {$view->folder()}/{$view->template()}{$view->extension()}");
-            }
-        } else {
-            $output = $view->render($view_data);
-        }
-
-        return $output;
-    }
-
-    /**
-     * Render the layout template.
-     * 
-     * @param pew\View $view View object
-     * @param array $view_data [description]
-     * @return string Resulting HTML output
-     */
-    public function render_layout($layout, $output)
-    {
-        $layout->extension($this->pew['layout_ext']);
-        $layout->template($layout->layout());
-
-        if (!$layout->exists()) {
-            $defaultLayout = clone($layout);
-            $defaultLayout->folder($this->pew['system_folder'] . '/views');
-
-            if (!$defaultLayout->exists()) {
-                 throw new ViewLayoutNotFoundException("Layout file could not be found: {$layout->folder()}/{$layout->template()}{$layout->extension()}");
-            }
-
-            $layout = $defaultLayout;
-        }
-
-        $output = $layout->render(['title' => $layout->title, 'output' => $output]);
-
-        return $output;
     }
 }

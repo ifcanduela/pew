@@ -308,13 +308,15 @@ class Pew extends Registry
         $view_key = "View_$key";
 
         if (!isset($this[$view_key])) {
-            $prefix = in_array($this['views_folder']{0}, ['/', '\\']) 
-                          ? $this['root_folder']
-                          : $this['app_folder'];
+            $views_folder = trim($this['views_folder'], '/\\');
+            $pew_views_folder = $this['system_folder'];
+            $app_views_folder = $this['app_folder'];
+            
+            $v = new View($pew_views_folder . DIRECTORY_SEPARATOR . $views_folder);
+            $v->folder($app_views_folder . DIRECTORY_SEPARATOR . $views_folder);
+            $v->layout($this['default_layout']);
 
-            $views_folder = $prefix . '/' . trim($this['views_folder'], '/\\');
-
-            $this[$view_key] = new View($views_folder);
+            $this[$view_key] = $v;
         }
 
         return $this[$view_key];

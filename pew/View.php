@@ -29,7 +29,7 @@ class View extends \pew\libs\Registry
      * 
      * @var string
      */
-    protected $folder = '';
+    protected $folder_stack = [];
 
     /**
      * Template name.
@@ -43,7 +43,7 @@ class View extends \pew\libs\Registry
      * 
      * @var string
      */
-    protected $layout= 'default.layout';
+    protected $layout= '';
 
     /**
      * Templates file extension.
@@ -65,7 +65,7 @@ class View extends \pew\libs\Registry
             $templates_folder = getcwd();
         } else
 
-        $this->folder($templates_folder);
+        $this->add_folder($templates_folder);
     }
 
     /**
@@ -81,9 +81,9 @@ class View extends \pew\libs\Registry
         }
 
         # Get the view file
-        $template_file = $this->folder() . DIRECTORY_SEPARATOR . $template . $this->extension();
+        $template_file = $this->resolve($template . $this->extension());
 
-        if (!file_exists($template_file)) {
+        if ($template_file === false) {
             throw new ViewTemplateNotFoundException("Template {$template_file} not found");
         }
 
@@ -93,13 +93,25 @@ class View extends \pew\libs\Registry
         # Output the view and save it into a buffer.
         ob_start();
             require $template_file;
-        $template_output = ob_get_clean();
-        
-        return $template_output;
+        $output = ob_get_clean();
+
+        if ($this->layout && $this->layout !== 'none') {
+            $layout_file = $this->resolve($this->layout . $this->extension());
+            
+            if ($layout_file === false) {
+                throw new ViewLayoutNotFoundException("Layout {$layout_file} not found");
+            }
+
+            ob_start();
+                require $layout_file;
+            $output = ob_get_clean();
+        }
+
+        return $output;
     }
     
     /**
-     * Check if a template file exists in the templates folder.
+     * Check if a template file exists in a templates folder.
      * 
      * @param string $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
@@ -110,7 +122,39 @@ class View extends \pew\libs\Registry
             $template = $this->template;
         }
 
-        return file_exists($this->folder() . DIRECTORY_SEPARATOR . $template . $this->extension());
+        try {
+            $this->resolve($template . $this->extension());
+        } catch (ViewTemplateNotFoundException $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Add a views folder to the current stack.
+     * 
+     * @param string $folder Folder location
+     */
+    protected function add_folder($folder)
+    {
+        array_unshift($this->folder_stack, rtrim($folder, '\\/'));
+    }
+
+    /**
+     * Find a view s folder
+     * @param  [type] $template_file [description]
+     * @return [type]                [description]
+     */
+    protected function resolve($template_file)
+    {
+        foreach ($this->folder_stack as $index => $folder) {
+            if (file_exists($folder . DIRECTORY_SEPARATOR . $template_file)) {
+                return $folder . DIRECTORY_SEPARATOR . $template_file;
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -124,14 +168,14 @@ class View extends \pew\libs\Registry
     public function folder($folder = null)
     {
         if (!is_null($folder)) {
-            $this->folder = rtrim($folder, '\\/');
+            $this->add_folder($folder);
         }
 
-        return rtrim($this->folder, '\\/');
+        return $this->folder_stack[0];
     }
 
     /**
-     * Set and get the templates to render.
+     * Set and get the template to render.
      * 
      * @param string $template Name of the template
      * @return string Name of the template
@@ -199,13 +243,12 @@ class View extends \pew\libs\Registry
      */
     public function element($element, $element_data = null)
     {
-        $element_file = $this->folder() . '/' . $element . $this->extension();
-        
-        # If the element .php file cannot be found, show an error page.
-        if (!file_exists($element_file)) {
+        $element_file = $this->resolve($element . $this->extension());
+
+        if ($element_file === false) {
             throw new ViewElementFileNotFoundException("The element file $element_file could not be found.");
         }
-
+        
         # If there are variables, make them easily available to the template.
         if (is_array($element_data)) {
             extract($element_data);
