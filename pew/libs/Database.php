@@ -556,7 +556,7 @@ class Database
                         }
                     } else {
                         # The comparison operator defaults to '=' or IS
-                        if (is_null($v)) {
+                        if (is_null($v) && $clause === 'WHERE') {
                             $atoms[] = "$k IS NULL";
                         } else {
                             $atoms[] = "$k = $tag";
