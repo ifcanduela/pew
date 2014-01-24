@@ -184,7 +184,7 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     public function __construct($db = null, $table = null)
     {
         # get the Database class instance
-        $this->db = ($db instanceof Database) ? $db : Pew::database($this->db_config);
+        $this->db = ($db instanceof Database) ? $db : Pew::instance()->singleton('db');
 
         $this->init($table);
     }

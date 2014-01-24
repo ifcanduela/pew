@@ -847,9 +847,7 @@ function url($path = '')
  */
 function here()
 {
-    $uri = pew()->router()->uri();
-
-    return $uri;
+    return pew()->singleton('request')->uri();
 }
 
 /**
@@ -882,21 +880,7 @@ function www($path = '')
  */
 function user()
 {
-    static $return = null;
-    
-    if (!isset($return)) {
-        $return = false;
-        
-        if (class_exists('Pew') && USEAUTH) {
-            $user = pew()->auth()->user();
-
-            if (is_array($user)) {
-                $return = (object) $user;
-            }
-        }
-    }
-    
-    return $return;
+    return session('user') ? (object) session('user') : false;
 }
 
 /**
@@ -911,13 +895,13 @@ function user()
 function session($path = null, $default = null)
 {
     if (is_null($path)) {
-        return pew()->session()->get();
+        return pew()->singleton('session')->get();
     }
 
     $indexes = explode('.', $path);
     $first_index = array_shift($indexes);
 
-    $value = pew()->session()->$first_index;
+    $value = pew()->singleton('session')->$first_index;
 
     while (!empty($indexes)) {
         $index = array_shift($indexes);

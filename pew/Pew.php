@@ -28,7 +28,7 @@ class Pew extends Registry
      * 
      * @var \pew\libs\Registry
      */
-    protected $instances;
+    protected $singletons;
 
     /**
      * Constructor is out of bounds.
@@ -53,41 +53,102 @@ class Pew extends Registry
             $pew_config = require_once __DIR__ . '/config.php';
             $this->import($pew_config);
         }
+
+        $this['db_config'] = function ($pew) {
+            if (file_exists($pew['app_folder'] . '/config/database.php')) {
+                return include $pew['app_folder'] . '/config/database.php';
+            }
+
+            return [];
+        };
+
+        $this['db'] = function ($pew) {
+            $db_config = $pew['db_config'];
+
+            if (isSet($pew['use_db'])) {
+                $use_db = $pew['use_db'];
+            } else {
+                $use_db = 'default';
+            }
+
+            if (!array_key_exists($use_db, $db_config)) {
+                throw new \RuntimeException("Database configuration preset '$use_db' does not exist");
+            }
+
+            $config = $db_config[$use_db];
+        
+            if (!isSet($config)) {
+                throw new \RuntimeException("Database is disabled.");
+            }
+
+            return new \pew\libs\Database($config);
+        };
+
+        $this['env'] = function ($pew) {
+            return new \pew\libs\Env;
+        };
+
+        $this['routes'] = function ($pew) {
+            if (file_exists($this['app_folder'] . '/config/routes.php')) {
+                return include $this['app_folder'] . '/config/routes.php';
+            }
+
+            return [];
+        };
+
+        $this['router'] = function ($pew) {
+            $routes = $this['routes'];
+            $resources = [];
+
+            if (array_key_exists('resources', $routes)) {
+                    $resources = $routes['resources'];
+                    unset($routes['resources']);
+            }
+
+            # instantiate the router object
+            $router = new libs\Router($routes);
+
+            # configure resource routes
+            foreach ($resources as $controller) {
+                $router->resource($controller);
+            }
+
+            $router->default_controller($this['default_controller']);
+            $router->default_action($this['default_action']);
+
+            return $router;
+        };
+
+        $this['log'] = function ($pew) {
+            return new \pew\libs\FileLogger('logs', $this['log_level']);
+        };
+
+        $this['session'] = function($pew) {
+            // @todo Use a specific $group 
+            return new \pew\libs\Session;
+        };
+
+        $this['view'] = function ($pew) {
+            $views_folder = trim($this['views_folder'], '/\\');
+            $pew_views_folder = $this['system_folder'];
+            $app_views_folder = $this['app_folder'];
+
+            $v = new \pew\View($pew_views_folder . DIRECTORY_SEPARATOR . $views_folder);
+            $v->folder($app_views_folder . DIRECTORY_SEPARATOR . $views_folder);
+            $v->layout($this['default_layout']);
+
+            return $v;
+        };
     }
 
     /**
      * Obtains the current instance of the Pew-Pew-Pew application.
      *
-     * The folder parameter must be a sub-folder of the folder in which the
-     * main index.php file resides.
-     *
-     * @param $app_folder Folder name that holds the application folders and files
      * @return App Instance of the application
      */
-    public function app($app_folder = 'app', $config_file = 'config')
+    public function app()
     {
-        if (!isset($this['App'])) {
-            # load app/config/{$config}.php
-            $app_config = include getcwd() . '/' . $app_folder . '/config/' . $config_file . '.php';
-
-            # merge user config with Pew config
-            $this['import']($app_config);
-
-            # add application namespace and path
-            $app_folder_name = trim(basename($app_folder));
-            $this['app_namespace'] = '\\' . $app_folder_name;
-            $this['app_folder'] = realpath($app_folder);
-            $this['app_config'] = $config_file;
-
-            # load app/config/bootstrap.php
-            if (file_exists($this['app_folder'] . '/config/bootstrap.php')) {
-                require $this['app_folder'] . '/config/bootstrap.php';
-            }
-
-            $this['App'] = new App;
-        }
-
-        return $this['App'];
+        return $this['app'];
     }
 
     /**
@@ -139,21 +200,14 @@ class Pew extends Registry
         $class_base_name = Str::camel_case($table_name) . 'Model';
         $class_name = $this['app_namespace'] . '\\models\\' . $class_base_name;
 
-        # Check that the model has not been previously instantiated
-        if (!isset($this[$class_name])) {
-            # Instantiate Model if the derived class is not available
-            if (!class_exists($class_name)) {
-                $class_name = '\\pew\\Model';
-            }
-        
-            # Dependencies
-            $database = self::database();
-
-            # Instantiation and storage
-            $this[$class_name] = new $class_name($database, $table_name);
+        # Use the base Model class if the user-defined model is not available
+        if (!class_exists($class_name)) {
+            $class_name = '\\pew\\Model';
         }
+
+        $model = new $class_name($this['db'], $table_name);
         
-        return $this[$class_name];
+        return $model;
     }
 
     /**
@@ -193,75 +247,7 @@ class Pew extends Registry
      */
     public function database($config = null)
     {
-        if (!isset($this['Database'])) {
-            if (!is_array($config)) {
-                # load app/config/database.php
-                if (file_exists($this['app_folder'] . '/config/database.php')) {
-                    $this['database_config'] = include $this['app_folder'] . '/config/database.php';
-                }
-
-                $db_config = $this['database_config'];
-
-                if (isSet($this['use_db'])) {
-                    $use_db = $this['use_db'];
-                } else {
-                    $use_db = 'default';
-                }
-
-                if (!array_key_exists($use_db, $db_config)) {
-                    throw new \RuntimeException("Database configuration preset '$use_db' does not exist");
-                }
-
-                $config = $db_config[$use_db];
-            }
-
-            if (isset($config)) {
-                $this['Database'] = new libs\Database($config);
-            } else {
-                throw new \RuntimeException("Database is disabled.");
-            }
-        }
-
-        return $this['Database'];
-    }
-    
-    /**
-     * Retrieves and initialises a Router object.
-     * 
-     * @param string $uri_string A list of slash-separated segments.
-     * @return Router The initialised request object
-     * @throws Exception When the class does not exist.
-     */
-    public function router($uri_string = null)
-    {
-        if (!isset($this['Router'])) {
-            $routes = [];
-            $resources = [];
-
-            # load app/config/routes.php
-            if (file_exists($this['app_folder'] . '/config/routes.php')) {
-                $routes = include $this['app_folder'] . '/config/routes.php';
-                if (array_key_exists('resources', $routes)) {
-                    $resources = $routes['resources'];
-                    unset($routes['resources']);
-                }
-            }
-
-            # instantiate the router object
-            $router = new libs\Router($routes);
-
-            # configure resource routes
-            foreach ($resources as $controller) {
-                $router->resource($controller);
-            }
-
-            $router->default_controller($this['default_controller']);
-            $router->default_action($this['default_action']);
-
-            $this['Router'] = $router;
-        }
-
-        return $this['Router'];
+        return $this->singleton('db');
     }
 
     /**
@@ -271,11 +257,7 @@ class Pew extends Registry
      */
     public function log()
     {
-        if (!isset($this['FileLogger'])) {
-            $this['FileLogger'] = new libs\FileLogger('logs', $this['log_level']);
-        }
-
-        return $this['FileLogger'];
+        return $this->singleton('log');
     }
 
     /**
@@ -285,11 +267,7 @@ class Pew extends Registry
      */
     public function session()
     {
-        if (!isset($this['Session'])) {
-            $this['Session'] = new \pew\libs\Session;
-        }
-
-        return $this['Session'];
+        return $this->singleton('session');
     }
 
     /**
@@ -305,21 +283,7 @@ class Pew extends Registry
      */
     public function view($key = '')
     {
-        $view_key = "View_$key";
-
-        if (!isset($this[$view_key])) {
-            $views_folder = trim($this['views_folder'], '/\\');
-            $pew_views_folder = $this['system_folder'];
-            $app_views_folder = $this['app_folder'];
-            
-            $v = new View($pew_views_folder . DIRECTORY_SEPARATOR . $views_folder);
-            $v->folder($app_views_folder . DIRECTORY_SEPARATOR . $views_folder);
-            $v->layout($this['default_layout']);
-
-            $this[$view_key] = $v;
-        }
-
-        return $this[$view_key];
+        return $this->singleton('view');
     }
 
     /**
@@ -334,15 +298,15 @@ class Pew extends Registry
         if (isSet($value)) {
             $this[$key] = $value;
         } else {
-            if (!isSet($this->singleton[$key])) {
+            if (!isSet($this->singletons[$key])) {
                 if (!isSet($this[$key])) {
                     throw new \Exception(__CLASS__ . " does not know what to do with the key ${key}");
                 }
 
-                $this->singleton[$key] = $this[$key];
+                $this->singletons[$key] = $this[$key];
             }
 
-            return $this[$key];
+            return $this->singletons[$key];
         }
     }
 

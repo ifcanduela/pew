@@ -59,8 +59,6 @@ class View extends \pew\libs\Registry
      */
     public function __construct($templates_folder = null)
     {
-        $this->pew = Pew::instance();
-
         if (is_null($templates_folder)) {
             $templates_folder = getcwd();
         } else
@@ -79,7 +77,7 @@ class View extends \pew\libs\Registry
         if (!$template) {
             $template = $this->template;
         }
-
+        
         # Get the view file
         $template_file = $this->resolve($template . $this->extension());
 
@@ -221,10 +219,10 @@ class View extends \pew\libs\Registry
     public function title($title = null)
     {
         if (!is_null($title)) {
-            $this->title = $title;
+            $this['title'] = $title;
         }
 
-        return $this->title;
+        return $this['title'];
     }
 
     /**

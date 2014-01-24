@@ -22,9 +22,6 @@ class App
     {
         $this->pew = Pew::instance();
 
-        # environment configuration
-        $this->pew['env'] = new Env;
-
         # merge user config with Pew config
         $this->setup("/{$app_folder}/config/{$config}.php");
         
@@ -82,14 +79,14 @@ class App
      */
     public function run()
     {
-        $env = $this->pew['env'];
-        $router  = $this->pew->router();
-        $view = $this->pew->view();
+        $env = $this->pew->singleton('env');
+        $router  = $this->pew->singleton('router');
+        $view = $this->pew->singleton('view');
 
         $router->route($env->segments, $env->method);
 
         $request = new Request($router, $env);
-        $this->pew['request'] = $request;
+        $this->pew->singleton('request', $request);
         
         # Instantiate the main view
         $view->template($request->controller() . '/' . $request->action());
