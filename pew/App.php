@@ -95,6 +95,9 @@ class App
         # instantiate the controller
         $controller = $this->pew->controller($request->controller());
         
+        $skip_action = false;
+        $view_data = [];
+
         # check controller instantiation
         if (!is_object($controller)) {
             if ($view->exists()) {
@@ -112,12 +115,8 @@ class App
             $controller->before_action();
         }
 
-        $view_data = [];
-
         # call the action method and let the controller decide what to do
-        if (isSet($skip_action) && $skip_action) {
-            # nothing to do
-        } else {
+        if (!$skip_action) {
             $view_data = $controller->__call($request->action(), $request->args());
         }
 

@@ -28,13 +28,18 @@ class Users extends \pew\Controller
                 if ($user['password'] === crypt($post['password'], $user['password'])) {
                     unset($user['password']);
                     $this->session->user = $user->attributes();
-                    redirect('');
+
+                    if (isSet($this->session->redirect_to)) {
+                        redirect($this->session->redirect_to);
+                    } else {
+                        redirect('');
+                    }
                 }
             }
 
             # wrong username or password
             $this->session->flash('login error', 'Invalid username or password');
-            redirect('users/login');
+            redirect(here());
         }
         
         # the login view will be displayed if execution reaches this point
@@ -52,9 +57,16 @@ class Users extends \pew\Controller
                 # check password length if passwords match
                 if (strlen($post['password']) >= 6) {
                     if ($post['password'] === $post['password_confirm']) {
-                        $post['password'] = crypt($post['password']);
+                        # create a nice salt
+                        $salt = $post['username'] . uniqid(rand(), true);
+                        # salt and encrypt the password
+                        $post['password'] = crypt($post['password'], $salt);
+                        # update the dates
                         $post['created'] = time();
+                        $post['modified'] = time();
+
                         $this->model->save($post);
+
                         redirect('users/login');
                     } else {
                         # password and password_confirm fields do not match

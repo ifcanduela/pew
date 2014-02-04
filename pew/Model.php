@@ -670,10 +670,11 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     }
 
     /**
-     * Validate the data agains a validator.
+     * Validate the data against a validator.
      * 
-     * @param  [type] $record [description]
-     * @return [type]         [description]
+     * @param array $record Fields and values to validate
+     * @param array $rules Validation configuration
+     * @return array Validation errors
      */
     public function validate($record = null, array $rules = null)
     {
@@ -689,9 +690,10 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             $record = $this->record;
         }
 
-        $validator = new \pew\libs\Validator($rules);
+        $validator = Pew::instance()->library('Validator', [$rules]);
+        $validator->validate($record);
 
-        return $validator->validate($record);
+        return $validator->errors();
     }
 
     /**

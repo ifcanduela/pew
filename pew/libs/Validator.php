@@ -75,6 +75,7 @@ class Validator
                     }
 
                     $validator_method = 'validate_' . $validator;
+                    
                     if (method_exists($this, $validator_method)) {
                         $validation_result = call_user_func([$this, $validator_method], $item, $field, $values);
                         

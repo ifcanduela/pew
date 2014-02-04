@@ -17,13 +17,6 @@ use \pew\libs\Str as Str;
 class Pew extends Registry
 {
     /**
-     * Framework and application configuration settings.
-     * 
-     * @var \pew\libs\Registry
-     */
-    protected $config;
-
-    /**
      * Singleton-like instances.
      * 
      * @var \pew\libs\Registry
@@ -39,8 +32,8 @@ class Pew extends Registry
     {
         parent::__construct();
 
-        $this->import($config);
         $this->instances = new Registry();
+        $this->import($config);
         $this->init();
     }
 
@@ -148,7 +141,7 @@ class Pew extends Registry
      */
     public function app()
     {
-        return $this['app'];
+        return $this-singleton('app');
     }
 
     /**
@@ -159,11 +152,11 @@ class Pew extends Registry
      * @return Object An instance of the required Controller
      * @throws InvalidArgumentException When no current controller exists and no class name is provided
      */
-    public function controller($controller_name = null, \pew\libs\Request $request = null)
+    public function controller($controller_name = null)
     {
         # check if the class name is omitted
-        if (!isset($controller_name)) {
-            if (isset($this['CurrentRequestController'])) {
+        if (!isSet($controller_name)) {
+            if (isSet($this['CurrentRequestController'])) {
                 # if exists, return the current controller
                 return $this['CurrentRequestController'];
             } else {
@@ -174,12 +167,12 @@ class Pew extends Registry
             $class_name = Str::camel_case($controller_name);
 
             $app_class_name = $this['app_namespace'] . '\\controllers\\' . $class_name;
-            $pew_class_name = '\\pew\\controllers\\' . $class_name;
+            $pew_class_name = __NAMESPACE__ . '\\controllers\\' . $class_name;
 
             if (class_exists($app_class_name)) {
-                return new $app_class_name;
+                return new $app_class_name($this->singleton('view'));
             } elseif (class_exists($pew_class_name)) {
-                return new $pew_class_name;
+                return new $pew_class_name($this->singleton('view'));
             }
         }
 
@@ -202,7 +195,7 @@ class Pew extends Registry
 
         # Use the base Model class if the user-defined model is not available
         if (!class_exists($class_name)) {
-            $class_name = '\\pew\\Model';
+            $class_name = __NAMESPACE__ . '\\Model';
         }
 
         $model = new $class_name($this['db'], $table_name);
