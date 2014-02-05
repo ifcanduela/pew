@@ -79,16 +79,11 @@ class App
      */
     public function run()
     {
-        $env = $this->pew->singleton('env');
-        $router  = $this->pew->singleton('router');
-        $view = $this->pew->singleton('view');
-
-        $router->route($env->segments, $env->method);
-
-        $request = new Request($router, $env);
-        $this->pew->singleton('request', $request);
+        # fetch the request object
+        $request = $this->pew->singleton('request');
         
-        # Instantiate the main view
+        # instantiate and configure the view
+        $view = $this->pew->singleton('view');
         $view->template($request->controller() . '/' . $request->action());
         $view->layout($this->pew['default_layout']);
         

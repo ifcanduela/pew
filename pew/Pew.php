@@ -47,6 +47,8 @@ class Pew extends Registry
             $this->import($pew_config);
         }
 
+        $this['env'] = new \pew\libs\Env;
+
         $this['db_config'] = function ($pew) {
             if (file_exists($pew['app_folder'] . '/config/database.php')) {
                 return include $pew['app_folder'] . '/config/database.php';
@@ -77,8 +79,17 @@ class Pew extends Registry
             return new \pew\libs\Database($config);
         };
 
-        $this['env'] = function ($pew) {
-            return new \pew\libs\Env;
+        $this['log'] = function ($pew) {
+            return new \pew\libs\FileLogger('logs', $this['log_level']);
+        };
+
+        $this['request'] = function ($pew) {
+            $router = $this->singleton('router');
+            $env = $this['env'];
+
+            $router->route($env->segments, $env->method);
+
+            return new \pew\libs\Request($router, $env);
         };
 
         $this['routes'] = function ($pew) {
@@ -112,10 +123,6 @@ class Pew extends Registry
             return $router;
         };
 
-        $this['log'] = function ($pew) {
-            return new \pew\libs\FileLogger('logs', $this['log_level']);
-        };
-
         $this['session'] = function($pew) {
             // @todo Use a specific $group 
             return new \pew\libs\Session;
@@ -128,7 +135,6 @@ class Pew extends Registry
 
             $v = new \pew\View($pew_views_folder . DIRECTORY_SEPARATOR . $views_folder);
             $v->folder($app_views_folder . DIRECTORY_SEPARATOR . $views_folder);
-            $v->layout($this['default_layout']);
 
             return $v;
         };
