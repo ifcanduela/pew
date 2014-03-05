@@ -51,6 +51,13 @@ class View extends \pew\libs\Registry
      * @var string
      */
     protected $extension = '.php';
+
+    /**
+     * Result of rendering the view.
+     * 
+     * @var string
+     */
+    protected $output = '';
     
     /**
      * Creates a View object based on a folder.
@@ -86,7 +93,7 @@ class View extends \pew\libs\Registry
         }
 
         $view_data = array_merge($this->export(), $data);
-        $output = $view_data['output'] = $this->_render($template_file, $view_data);
+        $this->output = $output = $view_data['output'] = $this->_render($template_file, $view_data);
 
         if ($this->layout && $this->layout !== 'none') {
             $layout_file = $this->resolve($this->layout . $this->extension());
@@ -223,6 +230,16 @@ class View extends \pew\libs\Registry
         }
 
         return $this['title'];
+    }
+
+    /**
+     * Get the output of the previous render call.
+     * 
+     * @return string View output
+     */
+    public function child()
+    {
+        return $this->output;
     }
 
     /**

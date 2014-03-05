@@ -57,13 +57,10 @@ class Users extends \pew\Controller
                 # check password length if passwords match
                 if (strlen($post['password']) >= 6) {
                     if ($post['password'] === $post['password_confirm']) {
-                        # create a nice salt
-                        $salt = $post['username'] . uniqid(rand(), true);
-                        # salt and encrypt the password
-                        $post['password'] = crypt($post['password'], $salt);
+                        # encrypt the password
+                        $post['password'] = crypt($post['password']);
                         # update the dates
-                        $post['created'] = time();
-                        $post['modified'] = time();
+                        $post['created'] = $post['modified'] = time();
 
                         $this->model->save($post);
 
