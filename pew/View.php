@@ -89,7 +89,7 @@ class View extends \pew\libs\Registry
         $template_file = $this->resolve($template . $this->extension());
 
         if ($template_file === false) {
-            throw new ViewTemplateNotFoundException("Template {$template_file} not found");
+            throw new ViewTemplateNotFoundException("Template {$template} not found");
         }
 
         $view_data = array_merge($this->export(), $data);
@@ -99,7 +99,7 @@ class View extends \pew\libs\Registry
             $layout_file = $this->resolve($this->layout . $this->extension());
             
             if ($layout_file === false) {
-                throw new ViewLayoutNotFoundException("Layout {$layout_file} not found");
+                throw new ViewLayoutNotFoundException("Layout {$this->layout} not found");
             }
 
             $output = $this->_render($layout_file, $view_data);
@@ -256,7 +256,7 @@ class View extends \pew\libs\Registry
         $element_file = $this->resolve($element . $this->extension());
 
         if ($element_file === false) {
-            throw new ViewElementFileNotFoundException("The element file $element_file could not be found.");
+            throw new ViewElementFileNotFoundException("The element file $element could not be found.");
         }
         
         # Render the element.
