@@ -569,7 +569,12 @@ class Image
             throw new ImageNotLoadedException("Image not loaded");
         }
 
-        $rgb = imageColorAt($this->resource, $x, $y);
+        try {
+            $rgb = imageColorAt($this->resource, $x, $y);
+        } catch (\Exception $e) {
+            throw new \ErrorException($e->getMessage());
+        }
+
         $r = ($rgb >> 16) & 0xFF;
         $g = ($rgb >> 8)  & 0xFF;
         $b =  $rgb        & 0xFF;

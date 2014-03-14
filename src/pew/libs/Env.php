@@ -128,7 +128,7 @@ class Env
         $dirname = dirname($_SERVER['SCRIPT_NAME']);
         
         if ($dirname !== '/') {
-            $request_script_name = str_replace($dirname, '', $request_script_name);
+            $request_script_name = ltrim(str_replace($dirname, '', $request_script_name), '\\/');
         }
 
         $segments = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $request_script_name);

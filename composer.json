@@ -12,10 +12,10 @@
     },
     "autoload": {
         "files": [
-            "pew/bootstrap.php"
+            "src/pew/bootstrap.php"
         ],
         "psr-0": {
-            "pew": ""
+            "pew": "src"
         }
     }
 }
