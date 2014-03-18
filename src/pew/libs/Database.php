@@ -12,13 +12,6 @@ namespace pew\libs;
  *
  * The methods contained within this class are aimed to simplify basic database
  * operations, such as simple selects, inserts and updates.
- *
- * One of the ways of using this class is the following:
- *
- *      $pdb = new \pew\libs\Database($config);
- *      $my_cat = $pdb->where(array('name' => 'Cuddles'))->single('cats');
- *
- * There are more examples at the bottom of this file.
  * 
  * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
@@ -170,7 +163,7 @@ class Database
      *
      * @return bool True if the connection was successful, false otherwise
      */
-    public function connect($config)
+    protected function connect($config)
     {
         if (!$this->is_connected) {
             extract($config);
@@ -197,9 +190,10 @@ class Database
                 $this->is_connected = false;
                 throw $e;
             }
+
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
          }
         
-        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
         return $this->is_connected;
     }
@@ -230,7 +224,7 @@ class Database
 
         return $this->pdo;
     }
-        
+    
     /**
      * Sets the FROM field for subsequent queries.
      *
@@ -722,6 +716,10 @@ class Database
      */
     public function insert($table = null)
     {
+        if (!$this->is_writable) {
+            throw new \PDOException("Database is not writable.");
+        }
+        
         if (isset($table)) {
             $this->from = $table;
         } else {
@@ -749,6 +747,10 @@ class Database
      */
     public function update($table = null)
     {
+        if (!$this->is_writable) {
+            throw new \PDOException("Database is not writable.");
+        }
+
         if (isset($table)) {
             $this->from = $table;
         } else {
@@ -774,6 +776,10 @@ class Database
      */
     public function delete($table = null)
     {
+        if (!$this->is_writable) {
+            throw new \PDOException("Database is not writable.");
+        }
+        
         if (isset($table)) {
             $this->from = $table;
         } else {
@@ -856,21 +862,3 @@ class Database
         return $this;
     }
 }
-
-/**
- * $pdb = new \pew\libs\Database(['engine' => 'sqlite', 'file' => 'db.sqlite']);
- *
- * $pdb = new PewDatabase();
- *
- * $eighties_movies = $pdb->where(array('year' => array('between', 1980, 1990)))->select('movies', 'title, year, director');
- *
- * $how_many_kubrick_movies = $pdb->fields('count(*)')->where(array('director_name' => 'Stanley Kubrick'))->cell('movies');
- *
- * $new_id = $pdb->values(array('title' => 'The Dark Knight Rises', 'director' => 'Christopher Nolan'))->insert('movies');
- *
- * $modified_studios = $pdb->set(array('country' => 51))->where(array('country' => null))->update('studios');
- *
- * $all_movies = $pdb->select('movies');
- *
- * $all_black_and_white_movies = $pdb->pdo->query("SELECT id, name, year FROM movies WHERE color = FALSE");
- */
