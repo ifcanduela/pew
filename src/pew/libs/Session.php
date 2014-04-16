@@ -143,6 +143,10 @@ class Session
     protected function group($group = null)
     {
         if (!is_null($group)) {
+            if (is_numeric($group{0})) {
+                $group = '_' . $group;
+            }
+
             $this->group = $group;
         }
 
