@@ -89,6 +89,21 @@ class FileCache
     }
 
     /**
+     * Configure the cache folder.
+     * 
+     * @param string $folder Folder name
+     * @return string Folder name
+     */
+    public function folder($folder = null)
+    {
+        if (!is_null($folder)) {
+            $this->folder = $folder;
+        }
+
+        return $this->folder;
+    }
+
+    /**
      * Configure the default cache interval.
      * 
      * @param integer $seconds Interval duration in seconds
