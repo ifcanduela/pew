@@ -3,6 +3,7 @@
 namespace pew;
 
 use \pew\libs\Registry;
+use \pew\libs\FileCache;
 
 class ViewException extends \Exception {}
 class ViewTemplateNotFoundException extends ViewException {}
@@ -68,7 +69,7 @@ class View extends \pew\libs\Registry
     {
         if (is_null($templates_folder)) {
             $templates_folder = getcwd();
-        } else
+        }
 
         $this->add_folder($templates_folder);
     }
@@ -109,7 +110,7 @@ class View extends \pew\libs\Registry
     }
     
     /**
-     * Check if a template file exists in a templates folder.
+     * Check if a template file exists.
      * 
      * @param string $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
@@ -120,17 +121,13 @@ class View extends \pew\libs\Registry
             $template = $this->template;
         }
 
-        try {
-            $this->resolve($template . $this->extension());
-        } catch (ViewTemplateNotFoundException $e) {
-            return false;
-        }
-
-        return true;
+        $exists = $this->resolve($template . $this->extension());
+        
+        return $exists !== false;
     }
 
     /**
-     * Add a views folder to the current stack.
+     * Add a template folder to the current stack.
      * 
      * @param string $folder Folder location
      */
@@ -140,15 +137,16 @@ class View extends \pew\libs\Registry
     }
 
     /**
-     * Find a view s folder
-     * @param  [type] $template_file [description]
-     * @return [type]                [description]
+     * Find a template in the folder stack.
+     * 
+     * @param string $template_file Template file name and extension
+     * @return tring|bool The location of the template, or false
      */
     protected function resolve($template_file)
     {
         foreach ($this->folder_stack as $index => $folder) {
-            if (file_exists($folder . DIRECTORY_SEPARATOR . $template_file)) {
-                return $folder . DIRECTORY_SEPARATOR . $template_file;
+            if (file_exists($folder . '/' . $template_file)) {
+                return $folder . '/' . $template_file;
             }
         }
         
@@ -280,5 +278,49 @@ class View extends \pew\libs\Registry
         ob_start();
             require func_get_arg(0);
         return ob_get_clean();
+    }
+
+    /**
+     * Attempt to insert a cached fragment into the view.
+     *
+     * This method automatically inserts the cached fragment if it's found and
+     * then returns TRUE. If the return value is FALSE, the cached fragment was 
+     * not found.
+     * 
+     * @param string $key Name key of the cached fragment to load
+     * @param string $open_buffer Set to false to prevent the opening of a buffer
+     * @return bool True if the cached fragment could be inserted, false otherwise.
+     */
+    public function load($key, $duration, $open_buffer = true)
+    {
+        $cache = Pew::instance()->singleton('file_cache');
+
+        if ($cache->cached($key, $duration)) {
+            $fragment = $cache->load($key);
+            echo $fragment;
+            return true;
+        }
+
+        if ($open_buffer) {
+            ob_start();
+        }
+
+        return false;
+    }
+
+    /**
+     * Save a fragment to the cache.
+     * 
+     * @param string $key Name key for the cached fragment
+     */
+    public function save($key)
+    {
+        # save the output into a cache key
+        $cache = Pew::instance()->singleton('file_cache');
+
+        $output = ob_end_clean();
+        $cache->save($key, $output);
+
+        echo $output;
     }
 }
