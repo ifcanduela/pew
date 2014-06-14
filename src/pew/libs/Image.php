@@ -155,7 +155,8 @@ class Image
         }
 
         if (!$this->resource) {
-            throw new ImageNotLoadedException("The file {$filename} is not a valid image resouce. " . error_get_last());
+            $error = error_get_last();
+            throw new ImageNotLoadedException("The file {$filename} is not a valid image resouce. " . $error['message']);
         }
 
         return false;
