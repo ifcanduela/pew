@@ -29,33 +29,33 @@ class Image
     /**
      * @var string Original file name.
      */
-    private $source_filename;
+    protected $source_filename;
 
     /**
      * @var string Destination file name.
      */
-    private $filename;
+    protected $filename;
 
     /**
      * @var resource A GD resource containing the image data
      */
-    private $resource;
+    protected $resource;
 
     /**
      * @var int Image type
      * @see http://www.php.net/manual/en/function.image-type-to-mime-type.php
      */
-    private $image_type;
+    protected $image_type;
 
     /**
      * @var string Image file MIME type.
      */
-    private $mime_type;
+    protected $mime_type;
 
     /**
      * @var int Output quality.
      */
-    private $quality;
+    protected $quality;
 
     /**
      * Build a new image object.
@@ -135,23 +135,27 @@ class Image
      * @param int $image_type One of the IMAGETYPE_* constants
      * @return int Return value from the imageCreateFrom* function
      */
-    private function load_file($filename, $image_type)
+    protected function load_file($filename, $image_type)
     {
         switch ($image_type) {
             case IMAGETYPE_JPEG:
-                $this->resource = imageCreateFromJPEG($filename);
+                $this->resource = @imageCreateFromJPEG($filename);
                 break;
 
             case IMAGETYPE_PNG:
-                $this->resource = imageCreateFromPNG($filename);
+                $this->resource = @imageCreateFromPNG($filename);
                 break;
 
             case IMAGETYPE_GIF:
-                $this->resource = imageCreateFromGIF($filename);
+                $this->resource = @imageCreateFromGIF($filename);
                 break;
 
             default:
                 throw new ImageNotSupportedException("The image format of file {$filename} is not supported");
+        }
+
+        if (!$this->resource) {
+            throw new ImageNotLoadedException("The file {$filename} is not a valid image resouce. " . error_get_last());
         }
 
         return false;
@@ -176,7 +180,7 @@ class Image
      * 
      * @return Image Then image object
      */
-    private function init()
+    protected function init()
     {
         $fileinfo = getImageSize($this->source_filename);
         list($this->width, $this->height, $this->image_type) = $fileinfo;
