@@ -861,4 +861,23 @@ class Database
         
         return $this;
     }
+
+    /**
+     * Prepare and execute a query.
+     * 
+     * @param string $sql SQL Statement to execute
+     * @param array $params Placeholder and value pairs
+     * @return mixed Number of affected rows or selected records
+     */
+    public function query($sql, $params = [])
+    {
+        $stm = $this->pdo->prepare($sql);
+        $stm->execute($params);
+
+        if (substr($sql, 0, 6) === 'SELECT') {
+            return $stm->fetchAll();
+        } else {
+            return $stm->rowCount();
+        }
+    }
 }
