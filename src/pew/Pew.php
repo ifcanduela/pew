@@ -86,7 +86,7 @@ class Pew extends Registry
             $cache->folder($pew['root_folder'] . '/cache');
 
             return $cache;
-        }
+        };
 
         $this['log'] = function ($pew) {
             return new \pew\libs\FileLogger('logs', $this['log_level']);
