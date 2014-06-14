@@ -241,7 +241,7 @@ class View extends \pew\libs\Registry
     }
 
     /**
-     * Load and output a snippet into the current view.
+     * Load and render another view into the current view.
      *
      * Elements only inherit view data set with __set(), accesible via $this->{key}.
      * 
@@ -249,7 +249,7 @@ class View extends \pew\libs\Registry
      * @param array $element_data Additional variables for use in the element
      * @return void
      */
-    public function element($element, $element_data = [])
+    public function insert($element, $element_data = [])
     {
         $element_file = $this->resolve($element . $this->extension());
 
@@ -260,7 +260,7 @@ class View extends \pew\libs\Registry
         # Render the element.
         return $this->_render($element_file, $element_data);
     }
-
+    
     /**
      * Import and process a template file.
      *
