@@ -122,7 +122,7 @@ class App
 
         # render the view, if not prevented
         if ($view->render) {
-            switch ($request->response_type()) {
+            switch ($this->get_response_type($request)) {
                 case 'json':
                     $page = json_encode($view_data);
                     header('Content-type: application/json');
@@ -137,5 +137,24 @@ class App
 
             echo $page;
         }
+    }
+
+    /**
+     * Get response type for the current request.
+     * 
+     * @param \pew\libs\Request $request
+     * @return string One of 'html', 'json'or 'xml'
+     */
+    public function get_response_type($request)
+    {
+        $response_type = 'html';
+
+        if ($this->pew['autodetect_ajax'] && $this->pew['request_is_ajax']) {
+            $response_type = 'json';
+        } else {
+            $response_type = $request->response_type();
+        }
+
+        return $response_type;
     }
 }

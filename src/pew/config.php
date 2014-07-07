@@ -72,6 +72,18 @@ $cfg['localhost'] = isSet($_SERVER['REMOTE_ADDR'])
                   : php_sapi_name() == 'cli';
 
 /**
+ * @var boolean Autodetect if the source of the request was an XmlHttpRequest
+ */
+$cfg['request_is_ajax'] = isSet($_SERVER['HTTP_X_REQUESTED_WITH'])
+                        ? strToLower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+                        : false;
+
+/**
+ * @var boolean Use the automatically-detected AJAX flag.
+ */
+$cfg['autodetect_ajax'] = false;
+
+/**
  * @var string Option to use a prefix for action method names in controllers.
  */
 $cfg['action_prefix'] = '';
