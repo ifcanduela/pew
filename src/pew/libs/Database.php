@@ -2,6 +2,10 @@
 
 namespace pew\libs;
 
+use PDO;
+use PDOStatement;
+use PDOException;
+
 /**
  * The Database class encapsulates database access.
  *
@@ -32,7 +36,7 @@ class Database
     /**
      * @var int PDO statement fetch mode.
      */
-    public $fetch_mode = \PDO::FETCH_ASSOC;
+    public $fetch_mode = PDO::FETCH_ASSOC;
 
     /**
      * @var string PDO statement fetch class.
@@ -107,7 +111,7 @@ class Database
     /**
      * @var array Key/value pairs for prepared statements.
      */
-    private $tags = array();
+    private $tags = [];
     
     /**
      * @var int Number of tagged parameters in a prepared statement.
@@ -115,24 +119,24 @@ class Database
     protected static $tag_count = 0;
     
     /**
-     * @var array Kag/value pairs for WHERE clauses in prepared statements.
+     * @var array Key/value pairs for WHERE clauses in prepared statements.
      */
-    private $where_tags = array();
+    private $where_tags = [];
     
     /**
      * @var array Key/value pairs for SET clauses in prepared statements.
      */
-    private $set_tags = array();
+    private $set_tags = [];
     
     /**
      * @var array Key/value pairs for use in prepared statements with INSERT.
      */
-    private $insert_tags = array();
+    private $insert_tags = [];
     
     /**
      * @var array Key/value pairs for HAVING clauses in prepared statements.
      */
-    private $having_tags = array();
+    private $having_tags = [];
     
     /**
      * Build the connection string and connect to the selected database engine.
@@ -146,14 +150,14 @@ class Database
     public function __construct($config = null)
     {
         if (is_array($config)) {
-            if (!isset($config['engine'])) {
+            if (!isSet($config['engine'])) {
                 throw new \InvalidArgumentException('Database engine was not selected');
             }
 
             $this->config = $config;
             
             $this->connect($config);
-        } elseif (is_object($config)) {
+        } elseif ($config instanceof PDO) {
             $this->pdo($config);
         }
     }
@@ -171,7 +175,7 @@ class Database
             try {
                 switch ($engine) {
                     case self::SQLITE:
-                        $this->pdo = new \PDO($engine . ':' . $file);
+                        $this->pdo = new PDO($engine . ':' . $file);
                         
                         # check if file and containing folder are writable
                         $this->is_writable = is_writable(dirname($file)) && is_writable($file);
@@ -179,22 +183,21 @@ class Database
                     
                     case self::MYSQL:
                     default:
-                        $this->pdo = new \PDO(
+                        $this->pdo = new PDO(
                             $engine . ':dbname=' . $name . ';host=' . $host,
-                            $user, $pass, array(\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'")
+                            $user, $pass, [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"]
                         );
                 }
                 
                 $this->is_connected = true;
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 $this->is_connected = false;
                 throw $e;
             }
 
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
          }
         
-
         return $this->is_connected;
     }
 
@@ -215,7 +218,7 @@ class Database
      * @param PDO $pdo Set a PDO instance for the wrapper.
      * @return PDO The PDO instance
      */
-    public function pdo(\PDO $pdo = null)
+    public function pdo(PDO $pdo = null)
     {
         if ($pdo) {
             $this->pdo = $pdo;
@@ -328,7 +331,7 @@ class Database
     /**
      * Sets the LIMIT clause for a prepared statement.
      *
-     * E.G.: Use "1" to return one row or "4,1" to return the fourth row.
+     * E.g.: Use "1" to return one row or "4,1" to return the fourth row.
      *
      * @param string $limit Either "row_count", or "offset, row_count"
      * @return \pew\libs\Database The Database object
@@ -367,6 +370,7 @@ class Database
         list($this->insert_tags) = $this->build_tags($values, 'i_');
         $this->fields = join(', ', array_keys($values));
         $this->values = ' VALUES (' . join(', ', array_keys($this->insert_tags)) . ') ';
+
         return $this;
     }
     
@@ -387,10 +391,10 @@ class Database
     public function get_pk($table, $as_array = false)
     {
         if (!$this->is_connected) {
-            throw new \PDOException;
+            throw new PDOException;
         }
         
-        $pk = array();
+        $pk = [];
         
         try {
             $sql = "SHOW COLUMNS FROM {$table}";
@@ -399,7 +403,7 @@ class Database
             $table_name_index = 'Field';
             $stm = $this->pdo->query($sql);
             $r = $stm->fetchAll();
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             try {
                 $sql = "PRAGMA table_info({$table})";
                 $primary_key_index = 'pk';
@@ -407,7 +411,7 @@ class Database
                 $table_name_index = 'name';
                 $stm = $this->pdo->query($sql);
                 $r = $stm->fetchAll();
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 throw $e;
             }
         }
@@ -437,10 +441,10 @@ class Database
     public function get_cols($table)
     {
         if (!$this->is_connected) {
-            throw new \PDOException;
+            throw new PDOException;
         }
         
-        $cols = array();
+        $cols = [];
         
         try {
             $sql = "SHOW COLUMNS FROM {$table}";
@@ -448,14 +452,14 @@ class Database
 
             # Get all columns from a selected table
             $r = $this->pdo->query($sql)->fetchAll();
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             try {
                 $sql = "PRAGMA table_info({$table})";
                 $table_name_index = 'name';
                 
                 # Get all columns from a selected table
                 $r = $this->pdo->query($sql)->fetchAll();
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 throw $e;
             }
         }
@@ -481,7 +485,7 @@ class Database
         try {
             $this->pdo->prepare("SELECT 1 FROM $table");
             $exists = true;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $exists = false;
         }
         
@@ -512,12 +516,12 @@ class Database
     {
         # When no conditions are given, provide a neutral set of data
         if (count($conditions) == 0) {
-            return array(array(), '');
+            return [[], ''];
         }
         
         $where = '';
-        $atoms = array();
-        $tags = array();
+        $atoms = [];
+        $tags = [];
         
         if (count($conditions) > 0) {
             foreach ($conditions as $k => $v) {
@@ -564,7 +568,7 @@ class Database
             $where_string = " $clause " . join($separator, $atoms);
         }
         
-        return array($tags, $where_string, 'tags' => $tags, 'clause' => $where_string);
+        return [$tags, $where_string, 'tags' => $tags, 'clause' => $where_string];
     }
 
     /**
@@ -577,21 +581,21 @@ class Database
     protected function run_query($query)
     {
         if (!$this->is_connected) {
-            throw new \PDOException;
+            throw new PDOException;
         }
 
         # Try to prepare the statement
         try {
             $stm = $this->pdo->prepare($query);
-        } catch (\PDOException $e) {
-            throw new \PDOException("Query could not be prepared: $query");
+        } catch (PDOException $e) {
+            throw new PDOException("Query could not be prepared: $query");
         }
         
         # Execute the prepared statement
         try {
             $stm->execute($this->tags);
-        } catch(\PDOException $e) {
-            throw new \PDOException("Query could not be executed: $query");
+        } catch(PDOException $e) {
+            throw new PDOException("Query could not be executed: $query");
         }
         
         # Everything's OK, return the complete statement
@@ -697,7 +701,7 @@ class Database
         $this->reset();
 
         if ($this->fetch_class) {
-            $stm->setFetchMode(\PDO::FETCH_CLASS, $this->fetch_class);
+            $stm->setFetchMode(PDO::FETCH_CLASS, $this->fetch_class);
         } else {
             $stm->setFetchMode($this->fetch_mode);
         }
@@ -717,7 +721,7 @@ class Database
     public function insert($table = null)
     {
         if (!$this->is_writable) {
-            throw new \PDOException("Database is not writable.");
+            throw new PDOException("Database is not writable.");
         }
         
         if (isset($table)) {
@@ -748,7 +752,7 @@ class Database
     public function update($table = null)
     {
         if (!$this->is_writable) {
-            throw new \PDOException("Database is not writable.");
+            throw new PDOException("Database is not writable.");
         }
 
         if (isset($table)) {
@@ -777,7 +781,7 @@ class Database
     public function delete($table = null)
     {
         if (!$this->is_writable) {
-            throw new \PDOException("Database is not writable.");
+            throw new PDOException("Database is not writable.");
         }
         
         if (isset($table)) {
@@ -853,7 +857,7 @@ class Database
         $this->where =      $this->set =         null;
         
         $this->tags =       $this->where_tags =  $this->having_tags =
-        $this->set_tags =   $this->insert_tags = array();
+        $this->set_tags =   $this->insert_tags = [];
         
         $this->fields = '*';
         
@@ -864,17 +868,35 @@ class Database
 
     /**
      * Prepare and execute a query.
+     *
+     * Examples:
+     *
+     *     # get an array of all rows that match the query
+     *     $db->query("SELECT * FROM table1 WHERE name = ?", [$name]);
+     * 
+     *     # get the resulting PDOStatement object
+     *     $db->query("SELECT * FROM table1 LIMIT 100", [], true);
+     * 
+     *     # get the count of affected rows
+     *     $db->query("INSERT INTO table3 () VALLUES (:alpha, :beta, :gamma)", [
+     *         ':alpha' => $alpha,
+     *         ':beta' => $beta,
+     *         ':gamma' => $gamma,
+     *     ]);
      * 
      * @param string $sql SQL Statement to execute
      * @param array $params Placeholder and value pairs
+     * @param boolean $return_stm Return the PDOStatement object
      * @return mixed Number of affected rows or selected records
      */
-    public function query($sql, $params = [])
+    public function query($sql, array $params = [], $return_stm = false)
     {
         $stm = $this->pdo->prepare($sql);
         $stm->execute($params);
 
-        if (substr($sql, 0, 6) === 'SELECT') {
+        if ($return_stm) {
+            return $stm;
+        } elseif (substr(trim($sql), 0, 6) === 'SELECT') {
             return $stm->fetchAll();
         } else {
             return $stm->rowCount();
