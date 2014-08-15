@@ -64,6 +64,15 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     protected $record = [];
 
     /**
+     * Related items.
+     *
+     * Holds an index for each related table resultset.
+     *
+     * @var array
+     */
+    protected $related = [];
+
+    /**
      * Related child models.
      *
      * Holds an index for each related child model (has-many relationship).
@@ -367,7 +376,11 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      */
     public function blank()
     {
-        return $this->table_data['column_names'];
+        $class = '\\' . get_class($this);
+        $blank = new $class($this->db, $this->table);
+        $blank->attributes($this->table_data['column_names']);
+
+        return $blank;
     }
 
     /**
@@ -381,7 +394,8 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     public function attributes(array $attributes = null)
     {
         if (!is_null($attributes)) {
-            $this->record = array_merge($this->record, $attributes);
+            $base_fields = $this->table_data['column_names'];
+            $this->record = array_intersect_key($attributes, $base_fields) + $base_fields;
         }
 
         return $this->record;
@@ -969,6 +983,10 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             return $this->record[$offset];
         }
 
+        if (isSet($this->related[$offset])) {
+            return $this->related[$offset];
+        }
+
         if (isSet($this->related_children[$offset])) {
             $fk = $this->record[$this->primary_key];
 
@@ -982,8 +1000,8 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
                 # update the model clauses
                 $related_model->clauses($clauses);
                 # fetch the related records
-                $this->record[$offset] = $related_model->find_all();
-                return $this->record[$offset];
+                $this->related[$offset] = $related_model->find_all();
+                return $this->related[$offset];
             } else {
                 return false;
             }
