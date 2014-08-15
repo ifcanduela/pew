@@ -10,7 +10,7 @@ use \pew\libs\Request;
 /**
  * The App class is a simple interface between the front controller and the
  * rest of the controllers.
- * 
+ *
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
@@ -24,7 +24,7 @@ class App
 
         # merge user config with Pew config
         $this->setup("/{$app_folder}/config/{$config}.php");
-        
+
         # add application namespace and path
         $app_folder_name = trim(basename($app_folder));
         $this->pew['app_namespace'] = '\\' . $app_folder_name;
@@ -39,14 +39,14 @@ class App
 
     /**
      * Import the application configuration.
-     * 
+     *
      * @param string $filename The file name, relative to the base path
      * @return array
      */
     protected function setup($filename)
     {
         $config_filename = getcwd() . '/' . trim($filename, '/\\');
-        
+
         if (file_exists($config_filename)) {
             # load {$app}/config/{$config}.php
             $app_config = require $config_filename;
@@ -81,15 +81,15 @@ class App
     {
         # fetch the request object
         $request = $this->pew->singleton('request');
-        
+
         # instantiate and configure the view
         $view = $this->pew->singleton('view');
         $view->template($request->controller() . '/' . $request->action());
         $view->layout($this->pew['default_layout']);
-        
+
         # instantiate the controller
         $controller = $this->pew->controller($request->controller());
-        
+
         $skip_action = false;
         $view_data = [];
 
@@ -104,7 +104,7 @@ class App
                 $controller->set_error(controllers\Error::CONTROLLER_MISSING);
             }
         }
-        
+
         # call the before_action method if it's defined
         if (method_exists($controller, 'before_action')) {
             $controller->before_action();
@@ -141,11 +141,11 @@ class App
 
     /**
      * Get response type for the current request.
-     * 
+     *
      * @param \pew\libs\Request $request
      * @return string One of 'html', 'json'or 'xml'
      */
-    public function get_response_type($request)
+    public function get_response_type(Request $request)
     {
         $response_type = 'html';
 
