@@ -847,7 +847,7 @@ function url($path = '')
  */
 function here()
 {
-    return pew()->singleton('request')->uri();
+    return pew()->request->uri();
 }
 
 /**
@@ -895,13 +895,13 @@ function user()
 function session($path = null, $default = null)
 {
     if (is_null($path)) {
-        return pew()->singleton('session')->get();
+        return pew()->session->get();
     }
 
     $indexes = explode('.', $path);
     $first_index = array_shift($indexes);
 
-    $value = pew()->singleton('session')->$first_index;
+    $value = pew()->session->$first_index;
 
     while (!empty($indexes)) {
         $index = array_shift($indexes);
