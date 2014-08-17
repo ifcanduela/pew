@@ -11,184 +11,163 @@ namespace pew\libs;
  * @package pew/libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Registry implements \Countable, \ArrayAccess
+class Registry implements \ArrayAccess
 {
-    /**
-     * @var Registry Singleton instance of the registry
-     */
-    protected static $instance = null;
+    protected $factories = [];
 
-    /** 
-     * @var array Key/value list
-     */
-    protected $items = [];
+    protected $data = [];
 
-    /**
-     * Constructor.
-     *
-     * Set to public to allow instantiation of multiple registries.
-     */
-    public function __construct(array $items = [])
+    public function import(array $values)
     {
-        $this->items = $items;
-    }
-
-    /**
-     * Retrieves a singleton instance of the class.
-     * 
-     * @return Registry Singleton registry
-     * @static
-     */
-    public static function instance()
-    {
-        if (!isset(static::$instance)) {
-            static::$instance = new static;
-        }
-
-        return static::$instance;
-    }
-
-    /**
-     * Import a set of keys and values into the current registry.
-     * 
-     * @param array $data Associative array with keys and values to import.
-     */
-    public function import(array $data)
-    {
-        foreach ($data as $key => $value) {
-            $this->offsetSet($key, $value);
+        foreach ($values as $k => $v) {
+            $this->data[$k] = $v;
         }
     }
 
-    /**
-     * Export all keys and values in the current registry.
-     * 
-     * @return array An associative array
-     */
     public function export()
     {
-        return $this->items;
+        return $this->data;
     }
 
-    /**
-     * Retrieve all the keys stored in the registry.
-     * 
-     * @return array Array of stored keys
-     */
-    public function keys()
+    protected function check_path($path, $collection)
     {
-        return array_keys($this->items);
-    }
+        $offsets = explode('.', $path);
+        $data = $this->$collection;
 
-    /**
-     * Count the number of stored items.
-     *
-     * Countable implementation.
-     * 
-     * @return int Number of stored items
-     */
-    public function count()
-    {
-        return count($this->items);
-    }
+        while ($k = array_shift($offsets)) {
+            if (!array_key_exists($k, $data)) {
+                return false;
+            }
 
-    /**
-     * Check if an offset exists.
-     *
-     * ArrayAccess implementation.
-     * 
-     * @return bool True if the offset exists, false otherwise
-     */
-    public function offsetExists($offset)
-    {
-        return array_key_exists($offset, $this->items);
-    }
-
-    /**
-     * Get the value at an offset.
-     *
-     * ArrayAccess implementation.
-     * 
-     * @return mixed The value at the offset.
-     * @throws \InvalidArgumentException When the offset does not exist
-     */
-    public function offsetGet($offset)
-    {
-        if (!array_key_exists($offset, $this->items)) {
-            throw new \InvalidArgumentException("The key {$offset} is not defined");
+            $data = $data[$k];
         }
 
-        $value = $this->items[$offset];
-
-        $is_callable = is_object($value) && method_exists($value, '__invoke');
-
-        return $is_callable ? $value($this) : $value;
+        return true;
     }
 
-    /**
-     * Set the value for an offset.
-     *
-     * ArrayAccess implementation.
-     * 
-     * @return void
-     */
-    public function offsetSet($offset, $value)
+    protected function get_path($path, $collection = 'data')
     {
-        $this->items[$offset] = $value;
+        $offsets = explode('.', $path);
+        $data = $this->$collection;
+
+        while ($k = array_shift($offsets)) {
+            if (!array_key_exists($k, $data)) {
+                throw new \RuntimeException("Key does not exist: {$path}");
+            }
+
+            $data = $data[$k];
+        }
+
+        return $data;
     }
 
-    /**
-     * Remove an offset.
-     *
-     * ArrayAccess implementation.
-     *
-     * @param string $offset The offset to remove
-     */
-    public function offsetUnset($offset)
+    protected function set_path($path, $value, $collection = 'data')
     {
-        unset($this->items[$offset]);
+        $offsets = explode('.', $path);
+        $data =& $this->$collection;
+
+        while ($k = array_shift($offsets)) {
+            if (!array_key_exists($k, $data)) {
+                $data[$k] = [];
+            }
+
+            $data =& $data[$k];
+        }
+
+        $data = $value;
     }
 
-    /**
-     * Set a value in the registry.
-     * 
-     * @param string $key Key for the value
-     * @param mixed Value to store
-     */
-    public function __set($key, $value)
+    public function unset_path($path, $collection = 'data')
     {
-        return $this->offsetSet($key, $value);
+        $offsets = explode('.', $path);
+        $data =& $this->$collection;
+
+        while ($k = array_shift($offsets)) {
+            if (!array_key_exists($k, $data)) {
+                return;
+            }
+
+            $data =& $data[$k];
+        }
+
+        unset($data);
     }
 
-    /**
-     * Get a stored value from the registry.
-     * 
-     * @param mixed $key Key for the value
-     * @return mixed Stored value
-     */
-    public function __get($key)
-    {
-        return $this->offsetGet($key);
-    }
-
-    /**
-     * Check if a key is in use.
-     * 
-     * @param mixed $key Key to check
-     * @return bool True if the key has been set, false otherwise.
-     */
     public function __isset($key)
     {
         return $this->offsetExists($key);
     }
 
-    /**
-     * Remove a stored value from the registry.
-     * 
-     * @param mixed $key Key to delete
-     */
+    public function offsetExists($offset)
+    {
+        try {
+            $this->get_path($offset, 'data');
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function __get($key)
+    {
+        return $this->offsetGet($key);
+    }
+
+    public function offsetGet($offset)
+    {
+        try {
+            $return = $this->get_path($offset, 'data');
+        } catch (\Exception $e) {
+            $return = $this->build($offset);
+
+            if ($return) {
+                $this->set_path($offset, $return, 'data');
+            }
+        }
+
+        return $return;
+    }
+
+    public function __set($key, $value)
+    {
+        return $this->offsetSet($key, $value);
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        return $this->set_path($offset, $value, 'data');
+    }
+
     public function __unset($key)
     {
-        $this->offsetUnset($key);
+        return $this->offsetUnset($key);
+    }
+
+    public function offsetUnset($offset)
+    {
+        return $this->unset_path($offset, 'data');
+    }
+
+    public function register($key, callable $factory)
+    {
+        $this->set_path($key, $factory, 'factories');
+    }
+
+    public function unregister($key)
+    {
+        $this->unset_path($key, 'factories');
+    }
+
+    public function registered($key)
+    {
+        return $this->check_path($key, 'factories');
+    }
+
+    public function build($key)
+    {
+        $factory = $this->get_path($key, 'factories');
+
+        return $factory($this);
     }
 }

@@ -104,12 +104,12 @@ class Controller
     public function __construct($view = null)
     {
         $this->pew = Pew::instance();
-        $this->request = $this->pew->singleton('request');
+        $this->request = $this->pew['request'];
 
         if ($view) {
             $this->view = $view;
         } else {
-            $this->view = $this->pew->singleton('view');
+            $this->view = $this->pew['view'];
         }
 
         # Setup the layout if it´s set

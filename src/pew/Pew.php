@@ -17,24 +17,30 @@ use \pew\libs\Str as Str;
 class Pew extends Registry
 {
     /**
-     * Singleton-like instances.
+     * Singleton instance.
      * 
-     * @var \pew\libs\Registry
+     * @var \pew\Pew
      */
-    protected $singletons;
+    protected static $instance;
 
     /**
      * Constructor is out of bounds.
      *
      * @throws Exception
      */
-    public function __construct(array $config = [])
+    protected function __construct(array $config = [])
     {
-        parent::__construct();
-
-        $this->instances = new Registry();
         $this->import($config);
         $this->init();
+    }
+
+    public static function instance()
+    {
+        if (is_null(self::$instance)) {
+            self::$instance = new self;
+        }
+
+        return self::$instance;
     }
 
     /**
@@ -49,68 +55,67 @@ class Pew extends Registry
 
         $this['env'] = new \pew\libs\Env;
 
-        $this['db_config'] = function ($pew) {
-            if (file_exists($pew['app_folder'] . '/config/database.php')) {
-                return include $pew['app_folder'] . '/config/database.php';
-            }
+        $this->register('db_config', function ($pew) {
+                    if (file_exists($pew['app_folder'] . '/config/database.php')) {
+                        return include $pew['app_folder'] . '/config/database.php';
+                    }
+        
+                    return [];
+                });
 
-            return [];
-        };
-
-        $this['db'] = function ($pew) {
+        $this->register('db', function ($pew) {
             $db_config = $pew['db_config'];
-
             if (isSet($pew['use_db'])) {
                 $use_db = $pew['use_db'];
             } else {
                 $use_db = 'default';
             }
-
+            
             if (!array_key_exists($use_db, $db_config)) {
                 throw new \RuntimeException("Database configuration preset '$use_db' does not exist");
             }
 
             $config = $db_config[$use_db];
-        
+
             if (!isSet($config)) {
                 throw new \RuntimeException("Database is disabled.");
             }
 
             return new \pew\libs\Database($config);
-        };
+        });
 
-        $this['file_cache'] = function ($pew) {
+        $this->register('file_cache', function ($pew) {
             $cache_location = isSet($pew['cache_location']) ? $pew['cache_location'] : 'cache';
 
             $cache = new \pew\libs\FileCache();
             $cache->folder($pew['root_folder'] . '/cache');
 
             return $cache;
-        };
+        });
 
-        $this['log'] = function ($pew) {
+        $this->register('log', function ($pew) {
             return new \pew\libs\FileLogger('logs', $this['log_level']);
-        };
+        });
 
-        $this['request'] = function ($pew) {
-            $router = $this->singleton('router');
-            $env = $this['env'];
+        $this->register('request', function ($pew) {
+            $router = $pew['router'];
+            $env = $pew['env'];
 
             $router->route($env->segments, $env->method);
 
             return new \pew\libs\Request($router, $env);
-        };
+        });
 
-        $this['routes'] = function ($pew) {
+        $this->register('routes', function ($pew) {
             if (file_exists($this['app_folder'] . '/config/routes.php')) {
                 return include $this['app_folder'] . '/config/routes.php';
             }
 
-            return [];
-        };
+            return $pew['default_routes'];
+        });
 
-        $this['router'] = function ($pew) {
-            $routes = $this['routes'];
+        $this->register('router', function ($pew) {
+            $routes = $pew['routes'];
             $resources = [];
 
             if (array_key_exists('resources', $routes)) {
@@ -130,14 +135,14 @@ class Pew extends Registry
             $router->default_action($this['default_action']);
 
             return $router;
-        };
+        });
 
-        $this['session'] = function($pew) {
+        $this->register('session', function($pew) {
             // @todo Use a specific $group 
             return new \pew\libs\Session;
-        };
+        });
 
-        $this['view'] = function ($pew) {
+        $this->register('view', function ($pew) {
             $views_folder = trim($this['views_folder'], '/\\');
             $pew_views_folder = $this['system_folder'];
             $app_views_folder = $this['app_folder'];
@@ -146,7 +151,7 @@ class Pew extends Registry
             $v->folder($app_views_folder . DIRECTORY_SEPARATOR . $views_folder);
 
             return $v;
-        };
+        });
     }
 
     /**
@@ -156,7 +161,7 @@ class Pew extends Registry
      */
     public function app()
     {
-        return $this-singleton('app');
+        return $this['app'];
     }
 
     /**
@@ -185,9 +190,9 @@ class Pew extends Registry
             $pew_class_name = __NAMESPACE__ . '\\controllers\\' . $class_name;
 
             if (class_exists($app_class_name)) {
-                return new $app_class_name($this->singleton('view'));
+                return new $app_class_name($this['view']);
             } elseif (class_exists($pew_class_name)) {
-                return new $pew_class_name($this->singleton('view'));
+                return new $pew_class_name($this['view']);
             }
         }
 
@@ -212,7 +217,7 @@ class Pew extends Registry
         if (!class_exists($class_name)) {
             $class_name = __NAMESPACE__ . '\\Model';
         }
-
+        
         $model = new $class_name($this['db'], $table_name);
         
         return $model;
@@ -255,7 +260,7 @@ class Pew extends Registry
      */
     public function database($config = null)
     {
-        return $this->singleton('db');
+        return $this['db'];
     }
 
     /**
@@ -265,7 +270,7 @@ class Pew extends Registry
      */
     public function log()
     {
-        return $this->singleton('log');
+        return $this['log'];
     }
 
     /**
@@ -275,7 +280,7 @@ class Pew extends Registry
      */
     public function session()
     {
-        return $this->singleton('session');
+        return $this['session'];
     }
 
     /**
@@ -291,31 +296,7 @@ class Pew extends Registry
      */
     public function view($key = '')
     {
-        return $this->singleton('view');
-    }
-
-    /**
-     * Store or retrieve a singleton-like instance of an item.
-     * 
-     * @param string $key A key stored in the registry
-     * @param mixed $value The value for the key
-     * @return mixed The instance of the item
-     */
-    public function singleton($key, $value = null)
-    {
-        if (isSet($value)) {
-            $this[$key] = $value;
-        } else {
-            if (!isSet($this->singletons[$key])) {
-                if (!isSet($this[$key])) {
-                    throw new \Exception(__CLASS__ . " does not know what to do with the key ${key}");
-                }
-
-                $this->singletons[$key] = $this[$key];
-            }
-
-            return $this->singletons[$key];
-        }
+        return $this['view'];
     }
 
     /**

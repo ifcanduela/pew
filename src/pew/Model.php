@@ -64,15 +64,6 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     protected $record = [];
 
     /**
-     * Related items.
-     *
-     * Holds an index for each related table resultset.
-     *
-     * @var array
-     */
-    protected $related = [];
-
-    /**
      * Related child models.
      *
      * Holds an index for each related child model (has-many relationship).
@@ -193,7 +184,7 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     public function __construct($db = null, $table = null)
     {
         # get the Database class instance
-        $this->db = ($db instanceof Database) ? $db : Pew::instance()->singleton('db');
+        $this->db = ($db instanceof Database) ? $db : Pew::database();
 
         $this->init($table);
     }
@@ -376,11 +367,7 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      */
     public function blank()
     {
-        $class = '\\' . get_class($this);
-        $blank = new $class($this->db, $this->table);
-        $blank->attributes($this->table_data['column_names']);
-
-        return $blank;
+        return $this->table_data['column_names'];
     }
 
     /**
@@ -394,8 +381,7 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     public function attributes(array $attributes = null)
     {
         if (!is_null($attributes)) {
-            $base_fields = $this->table_data['column_names'];
-            $this->record = array_intersect_key($attributes, $base_fields) + $base_fields;
+            $this->record = array_merge($this->record, $attributes);
         }
 
         return $this->record;
@@ -983,10 +969,6 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             return $this->record[$offset];
         }
 
-        if (isSet($this->related[$offset])) {
-            return $this->related[$offset];
-        }
-
         if (isSet($this->related_children[$offset])) {
             $fk = $this->record[$this->primary_key];
 
@@ -1000,8 +982,8 @@ class Model implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
                 # update the model clauses
                 $related_model->clauses($clauses);
                 # fetch the related records
-                $this->related[$offset] = $related_model->find_all();
-                return $this->related[$offset];
+                $this->record[$offset] = $related_model->find_all();
+                return $this->record[$offset];
             } else {
                 return false;
             }
