@@ -5,7 +5,7 @@ namespace pew\libs;
 /**
  * A collection of useful string manipulation functions.
  *
- * @package pew/libs
+ * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Str

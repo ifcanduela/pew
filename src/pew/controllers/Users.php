@@ -8,7 +8,7 @@ namespace pew\controllers;
  *
  * This assumes a users table with username and password fields.
  * 
- * @package pew/default/controllers
+ * @package pew\default\controllers
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Users extends \pew\Controller

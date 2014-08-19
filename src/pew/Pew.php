@@ -81,7 +81,7 @@ class Pew extends Registry
                 throw new \RuntimeException("Database is disabled.");
             }
 
-            return new \pew\libs\Database($config);
+            return new \pew\db\Database($config);
         });
 
         $this->register('file_cache', function ($pew) {
@@ -107,8 +107,8 @@ class Pew extends Registry
         });
 
         $this->register('routes', function ($pew) {
-            if (file_exists($this['app_folder'] . '/config/routes.php')) {
-                return include $this['app_folder'] . '/config/routes.php';
+            if (file_exists($pew['app_folder'] . '/config/routes.php')) {
+                return include $pew['app_folder'] . '/config/routes.php';
             }
 
             return $pew['default_routes'];
@@ -294,7 +294,7 @@ class Pew extends Registry
      *
      * @return \pew\View A view object
      */
-    public function view($key = '')
+    public function view()
     {
         return $this['view'];
     }

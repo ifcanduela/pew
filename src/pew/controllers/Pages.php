@@ -7,7 +7,7 @@ use \pew\Pew as Pew;
 /**
  * The Pages controller can serve static views, useful for help or about pages.
  * 
- * @package pew/controllers
+ * @package pew\controllers
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Pages extends \pew\Controller

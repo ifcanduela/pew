@@ -10,8 +10,8 @@ use \pew\libs\Str;
  * This is a class for error management, to be used by the framework. It can be
  * extended by the user.
  *
+ * @package pew\controllers
  * @author ifcanduela <ifcanduela@gmail.com>
- * @package pew/controllers
  */
 class Error extends \pew\Controller
 {

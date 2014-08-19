@@ -9,7 +9,7 @@ class FileLoggerInvalidLevelException extends \RuntimeException {}
  * 
  * Logs messages to a file, including timestamps and levels.
  * 
- * @package pew/libs
+ * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
 */
 class FileLogger

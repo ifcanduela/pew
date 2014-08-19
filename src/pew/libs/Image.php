@@ -11,7 +11,7 @@ class ImageSizeLimitExceededException extends ImageException {}
 /**
  * A class to facilitate the creation of thumbnails.
  *
- * @package pew/libs
+ * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Image

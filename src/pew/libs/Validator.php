@@ -7,7 +7,7 @@ namespace pew\libs;
  *
  * Basic field validation functionality for the Model class.
  * 
- * @package pew/libs
+ * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Validator

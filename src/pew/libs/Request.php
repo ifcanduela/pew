@@ -5,7 +5,7 @@ namespace pew\libs;
 /**
  * A shell class that centralizes information about the current request.
  *
- * @package pew/libs
+ * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Request

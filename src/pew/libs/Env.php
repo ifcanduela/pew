@@ -5,7 +5,7 @@ namespace pew\libs;
 /**
  * The Env class gathers information about the execution environment.
  *
- * @package pew/libs
+ * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Env

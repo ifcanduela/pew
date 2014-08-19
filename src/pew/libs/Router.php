@@ -8,7 +8,7 @@ namespace pew\libs;
  * This class takes a string of segments and tries to fit it into any of a list
  * of pre-configured route patterns.
  *
- * @package pew/libs
+ * @package pew\libs
  * @author ifernandez <ifcanduela@gmail.com>
  */
 class Router

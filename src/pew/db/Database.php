@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\libs;
+namespace pew\db;
 
 use PDO;
 use PDOStatement;
@@ -17,7 +17,7 @@ use PDOException;
  * The methods contained within this class are aimed to simplify basic database
  * operations, such as simple selects, inserts and updates.
  * 
- * @package pew\libs
+ * @package pew\db
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Database
@@ -889,7 +889,7 @@ class Database
      * @param boolean $return_stm Return the PDOStatement object
      * @return mixed Number of affected rows or selected records
      */
-    public function query($sql, array $params = [], $return_stm = false)
+    public function query($sql, array $params = [], $return_stm = false, $fetch_mode = PDO::FETCH_ASSOC)
     {
         $stm = $this->pdo->prepare($sql);
         $stm->execute($params);
@@ -897,7 +897,7 @@ class Database
         if ($return_stm) {
             return $stm;
         } elseif (substr(trim($sql), 0, 6) === 'SELECT') {
-            return $stm->fetchAll();
+            return $stm->fetchAll($fetch_mode);
         } else {
             return $stm->rowCount();
         }

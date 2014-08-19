@@ -92,7 +92,7 @@ class App
         
         $skip_action = false;
         $view_data = [];
-
+        
         # check controller instantiation
         if (!is_object($controller)) {
             if ($view->exists()) {
