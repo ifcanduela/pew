@@ -168,7 +168,7 @@ class Registry implements \ArrayAccess
      */
     public function offsetExists($offset)
     {
-        return $this->check_path($offset);
+        return $this->check_path($offset, 'data') || $this->check_path($offset, 'factories');
     }
 
     /**
