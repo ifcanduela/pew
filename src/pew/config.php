@@ -139,8 +139,8 @@ $cfg['default_layout'] = 'default.layout';
  * @var array Configured routes.
  */
 $cfg['default_routes'] = [
-    ['/:controller/:action', "/:controller/:action",                                   'get post'],
-    ['/:controller',         "/:controller/{$cfg['default_action']}",                  'get post'],
+    ['/:controller/:action', "/!controller/!action",                                   'get post'],
+    ['/:controller',         "/!controller/{$cfg['default_action']}",                  'get post'],
     ['/',                    "/{$cfg['default_controller']}/{$cfg['default_action']}", 'get post'],
 ];
 
