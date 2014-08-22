@@ -6,7 +6,7 @@ use \pew\Pew;
 use \pew\libs\Env;
 use \pew\libs\Router;
 use \pew\libs\Request;
-
+use \pew\ControllerActionMissingException;
 /**
  * The App class is a simple interface between the front controller and the
  * rest of the controllers.
@@ -99,25 +99,37 @@ class App
                 $view->title($request->action());
                 $skip_action = true;
             } else {
-                # display an error page if the controller could not be instanced
-                $controller = new controllers\Error();
-                $controller->set_error(controllers\Error::CONTROLLER_MISSING);
+                if ($this->pew->debug) {
+                    throw new \Exception('Action ' . $request->action() . ' for controller ' . $request->controller() . ' not found');
+                } else {
+                    $error = new controllers\Error;
+                    $view_data = $error->show_404('Page not found', 'The page <code>' . here() . ' does not exist</code>');
+                }
             }
-        }
-        
-        # call the before_action method if it's defined
-        if (method_exists($controller, 'before_action')) {
-            $controller->before_action();
-        }
+        } else {
+            # call the before_action method if it's defined
+            if (method_exists($controller, 'before_action')) {
+                $controller->before_action();
+            }
 
-        # call the action method and let the controller decide what to do
-        if (!$skip_action) {
-            $view_data = $controller->__call($request->action(), $request->args());
-        }
+            # call the action method and let the controller decide what to do
+            try {
+                if (!$skip_action) {
+                    $view_data = $controller->__call($request->action(), $request->args());
+                }
+            } catch (ControllerActionMissingException $e) {
+                if ($this->pew->debug) {
+                    throw $e;
+                } else {
+                    $error = new controllers\Error;
+                    $view_data = $error->show_404('Page not found', 'The page <code>' . here() . ' does not exist</code>');
+                }
+            }
 
-        # call the after_action method if it's defined
-        if (method_exists($controller, 'after_action')) {
-            $controller->after_action();
+            # call the after_action method if it's defined
+            if (method_exists($controller, 'after_action')) {
+                $controller->after_action();
+            }
         }
 
         # render the view, if not prevented

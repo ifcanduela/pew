@@ -238,9 +238,14 @@ ERROR_TEXT;
      *
      * @return void
      */
-    public function show_404()
+    public function show_404($error_title = '404 not found', $error_text = 'The page you requested could not be found')
     {
         $this->view->layout('error.layout');
         $this->view->template('error/404');
+
+        return [
+            'error_title' => $error_title,
+            'error_text' => $error_text,
+        ];
     }
 }
