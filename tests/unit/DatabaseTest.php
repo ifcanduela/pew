@@ -1,6 +1,6 @@
 <?php
 
-use \pew\libs\Database;
+use \pew\db\Database;
 
 class DatabaseTest extends PHPUnit_Framework_TestCase
 {

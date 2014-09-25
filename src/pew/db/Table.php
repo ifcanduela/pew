@@ -11,7 +11,7 @@ use pew\db\relationship\HasMany;
 use pew\db\relationship\HasOne;
 use pew\libs\Str;
 
-class TableNotSpecifiedException extends \Exception {}
+class TableNotSpecifiedException extends \LogicException {}
 class TableNotFoundException extends \RuntimeException {}
 
 /**

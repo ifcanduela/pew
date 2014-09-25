@@ -4,70 +4,65 @@ use \pew\libs\Registry;
 
 class RegistryTest extends PHPUnit_Framework_TestCase
 {
-    public function testInstatiation()
+    public function testRegistry()
     {
-        $r = new Registry;
-        $instance_1 = Registry::instance();
-        $instance_2 = Registry::instance();
-        $instance_3 = new Registry;
+        $void = new Registry;
+        $data = new Registry([
+                'value1' => 1,
+                'value2' => 2,
+            ]);
+        $fact = new Registry([
+                'value3' => 3,
+                'fact' => function ($c) { return $c['value3']; },
+            ]);
 
-        $this->assertEquals($instance_1, $instance_2);
-        $this->assertEquals($instance_1, Registry::instance());
-        $this->assertFalse($instance_1 === $r);
-        $this->assertFalse($instance_2 === $r);
-        $this->assertFalse($instance_3 === $instance_2);
-        $this->assertFalse($instance_3 === $r);
-        $this->assertFalse($instance_3 === (new Registry));
+        $this->assertInstanceOf('\pew\libs\Registry', $void);
+        $this->assertInstanceOf('\pew\libs\Registry', $data);
+        $this->assertInstanceOf('\pew\libs\Registry', $fact);
+
+        $this->assertEquals(1, $data->value1);
+        $this->assertEquals(2, $data['value2']);
+        $this->assertEquals(3, $fact->fact);
     }
 
     public function testImport()
     {
         $r = new Registry;
-        $this->assertEquals(0, $r->count());
-
+        
         $r->import([
                 'foo' => 12345,
                 'bar' => 'Amsterdam',
-                'baz' => new stdClass
+                'baz' => [1, 2, 3],
+                'qux' => function () { return 'QUUX'; },
             ]);
 
-        $this->assertEquals(3, $r->count());
+        $this->assertEquals(12345, $r->foo);
+        $this->assertEquals('Amsterdam', $r['bar']);
+        $this->assertEquals(3, $r['baz'][2]);
+        $this->assertEquals('QUUX', $r['qux']);
     }
 
-    public function testExportAndKeys()
+    public function testExport()
     {
         $r = new Registry;
         
         $r->foo = 12345;
         $r->offsetSet('bar', 'Amsterdam');
         $r['baz'] = new stdClass;
+        $r->register('qux', function () { return 'QUUX'; });
 
-        $keys = $r->keys();
         $export = $r->export();
 
-        $this->assertEquals(array_keys($export), $keys);
-
-        $this->assertTrue(in_array('foo', $keys));
         $this->assertTrue(array_key_exists('foo', $export));
         $this->assertEquals(12345, $export['foo']);
 
-        $this->assertTrue(in_array('bar', $keys));
         $this->assertTrue(array_key_exists('bar', $export));
         $this->assertEquals('Amsterdam', $export['bar']);
 
-        $this->assertTrue(in_array('baz', $keys));
         $this->assertTrue(array_key_exists('baz', $export));
         $this->assertEquals('stdClass', get_class($export['baz']));
-    }
 
-    public function testCountableInterface()
-    {
-        $r = new Registry;
-        $this->assertEquals(0, count($r));
-        $r->foo = 'bar';
-        $this->assertEquals(1, count($r));
-        unset($r->foo);
-        $this->assertEquals(0, count($r));
+        $this->assertFalse(array_key_exists('qux', $export));
     }
 
     public function testArrayInterface()
@@ -117,18 +112,15 @@ class RegistryTest extends PHPUnit_Framework_TestCase
         $this->assertFalse(isSet($r->foo));
         
         unset($r->bar);
-        $this->assertFalse(isSet($r['bar']));
+        $this->assertFalse(isSet($r->bar));
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage The key nothing_here is not defined
-     */
     public function testBadIndexAccess()
     {
         $r = new Registry;
 
-        $r->nothing_here;
+        $this->assertNull($r->nothing_here);
+        $this->assertEquals(12345, $r->offsetGet('nothing_here', 12345));
     }
 
     public function testFactory()
@@ -140,28 +132,40 @@ class RegistryTest extends PHPUnit_Framework_TestCase
             return new \ZipArchive;
         };
 
-        $r->registryWithZip = function ($r) {
-            $f = new Registry;
-            $f->zipArchive = $r->zip;
-            return $f;
-        };
+        $r->register('registryWithZip', function ($r) {
+                $f = new Registry;
+                $f->zipArchive = $r->zip;
+                return $f;
+            });
 
         $this->assertTrue(isSet($r->zip));
+        $this->assertTrue(is_callable($r->zip));
+
+        $this->assertTrue($r->registered('registryWithZip'));
         $this->assertTrue(isSet($r->registryWithZip));
         $this->assertTrue(isSet($r->registryWithZip->zipArchive));
         $this->assertEquals($r->zip, $r->registryWithZip->zipArchive);
+        $r->unregister('registryWithZip');
+
+        try {
+            $zwa = $r->build('zipWithArchive');
+        } catch (\RuntimeException $e) {
+            $this->assertEquals("Unregistered factory: zipWithArchive", $e->getMessage());
+        }
     }
 
     public function testFactoryWithSingleton()
     {
-        $r = Registry::instance();
-        $this->assertFalse(isSet($r['zip']));
+        $r = new Registry();
 
-        $r->callback = function ($r) {
-            return get_class($r) == 'Registry';
-        };
+        $r->register('callback', function ($r) {
+                return new StdClass;
+            });
 
-        $this->assertTrue(isSet($r->callback));
+        $this->assertTrue($r->registered('callback'));
         $this->assertTrue(true, $r->callback);
+        $this->assertTrue(true, $r['callback']);
+        $this->assertEquals($r->callback, $r['callback']);
+        $this->assertFalse($r->callback === $r->build('callback'));
     }
 }

@@ -7,6 +7,7 @@ use \pew\libs\Env;
 use \pew\libs\Router;
 use \pew\libs\Request;
 use \pew\ControllerActionMissingException;
+
 /**
  * The App class is a simple interface between the front controller and the
  * rest of the controllers.

@@ -34,6 +34,16 @@ class Registry implements \ArrayAccess
     protected $data = [];
 
     /**
+     * Creates a new ergistry with an optional set of starting values.
+     * 
+     * @param array $values
+     */
+    public function __construct(array $values = [])
+    {
+        $this->import($values);
+    }
+
+    /**
      * Imports keys and values from an associative array into the current registry.
      * 
      * @param array $values
@@ -41,7 +51,11 @@ class Registry implements \ArrayAccess
     public function import(array $values)
     {
         foreach ($values as $k => $v) {
-            $this->data[$k] = $v;
+            if (is_callable($v)) {
+                $this->register($k, $v);
+            } else {
+                $this->data[$k] = $v;
+            }
         }
     }
 
@@ -138,15 +152,19 @@ class Registry implements \ArrayAccess
         $offsets = explode('.', $path);
         $data =& $this->$collection;
 
-        while ($k = array_shift($offsets)) {
+        while (!empty($offsets)) {
+            $k = array_shift($offsets);
+
             if (!array_key_exists($k, $data)) {
                 return;
             }
 
-            $data =& $data[$k];
+            if (!empty($offsets)) {
+                $data =& $data[$k];
+            }
         }
 
-        unset($data);
+        unset($data[$k]);
     }
 
     /**
@@ -290,6 +308,6 @@ class Registry implements \ArrayAccess
             return $factory($this);
         }
 
-        throw new \RuntimeException("Unregistered factory: {$path}");
+        throw new \RuntimeException("Unregistered factory: {$key}");
     }
 }

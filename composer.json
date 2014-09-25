@@ -12,7 +12,7 @@
     },
     "autoload": {
         "files": [
-            "src/pew/bootstrap.php"
+            "src/pew/config/bootstrap.php"
         ],
         "psr-0": {
             "pew": "src"
