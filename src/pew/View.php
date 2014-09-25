@@ -2,6 +2,7 @@
 
 namespace pew;
 
+use \SplStack;
 use \pew\libs\Registry;
 use \pew\libs\FileCache;
 
@@ -28,9 +29,9 @@ class View extends \pew\libs\Registry
     /**
      * Base templates directory.
      * 
-     * @var string
+     * @var SplStack
      */
-    protected $folder_stack = [];
+    protected $folder_stack;
 
     /**
      * Template name.
@@ -59,6 +60,20 @@ class View extends \pew\libs\Registry
      * @var string
      */
     protected $output = '';
+
+    /**
+     * Rendered partial blocks.
+     * 
+     * @var array
+     */
+    protected $blocks = [];
+
+    /**
+     * Stack of block names.
+     * 
+     * @var SplStack
+     */
+    protected $block_stack;
     
     /**
      * Creates a View object based on a folder.
@@ -67,6 +82,9 @@ class View extends \pew\libs\Registry
      */
     public function __construct($templates_folder = null)
     {
+        $this->block_stack = new SplStack;
+        $this->folder_stack = new SplStack;
+        
         if (is_null($templates_folder)) {
             $templates_folder = getcwd();
         }
@@ -133,7 +151,7 @@ class View extends \pew\libs\Registry
      */
     protected function add_folder($folder)
     {
-        array_unshift($this->folder_stack, rtrim($folder, '\\/'));
+        $this->folder_stack->push(rtrim($folder, '\\/'));
     }
 
     /**
@@ -144,7 +162,7 @@ class View extends \pew\libs\Registry
      */
     protected function resolve($template_file)
     {
-        foreach ($this->folder_stack as $index => $folder) {
+        foreach ($this->folder_stack as $folder) {
             if (file_exists($folder . '/' . $template_file)) {
                 return $folder . '/' . $template_file;
             }
@@ -164,10 +182,10 @@ class View extends \pew\libs\Registry
     public function folder($folder = null)
     {
         if (!is_null($folder)) {
-            $this->add_folder($folder);
+            $this->folder_stack->push($folder);
         }
 
-        return $this->folder_stack[0];
+        return $this->folder_stack->top();
     }
 
     /**
@@ -322,5 +340,47 @@ class View extends \pew\libs\Registry
         $cache->save($key, $output);
 
         echo $output;
+    }
+
+    /**
+     * Inserts a previously-rendered block.
+     * 
+     * @param string $name
+     * @return string
+     */
+    public function block($name)
+    {
+        if (array_key_exists($name, $this->blocks)) {
+            return join('', $this->blocks[$name]);
+        }
+
+        return '';
+    }
+
+    /**
+     * Starts a block.
+     * 
+     * @param string $name
+     */
+    public function begin_block($name)
+    {
+        $this->block_stack->push($name);
+        ob_start();
+    }
+
+    /**
+     * Closes the current block.
+     */
+    public function end_block()
+    {
+        $output = ob_get_clean();
+
+        $block_name = $this->block_stack->pop();
+
+        if (!array_key_exists($block_name, $this->blocks)) {
+            $this->blocks[$block_name] = [];
+        }
+
+        $this->blocks[$block_name][] = $output;
     }
 }
