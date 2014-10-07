@@ -19,65 +19,11 @@ class ControllerActionMissingException extends ControllerException {}
 class Controller
 {
     /**
-     * The Pew instance.
-     * 
-     * @var \pew\Pew
-     */
-    protected $pew;
-
-    /**
-     * Additional function libraries made available to the controller.
-     *
-     * $libs is an indexed array that holds the Class names of the 
-     * libraries and an associative array that holds the library instances
-     * 
-     * @var array
-     */
-    public $libs = array();
-    
-    /**
-     * The view file to use to render the action result.
-     * 
-     * Views will be found in app/views/{$controller}/{$view}.php
-     *
-     * @var View
-     */
-    public $view = null;
-
-    /**
-     * Layout to use to render the controller's views.
-     *
-     * @var string
-     */
-    public $layout;
-    
-    /**
-     * Database access object instance.
-     *
-     * @var Model
-     */
-    public $model = null;
-    
-    /**
-     * The request information. 
-     * 
-     * @var Request
-     */
-    public $request = null;
-
-    /**
      * String prefixed to action names in this controller.
      * 
      * @var string
      */
     protected $action_prefix = '';
-    
-    /**
-     * Session instance.
-     *
-     * @var Session
-     */
-    public $session = null;
     
     /**
      * Gets the URL slug corresponding to the controller name.
