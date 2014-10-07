@@ -28,10 +28,12 @@ class Pew extends Registry
      *
      * @throws Exception
      */
-    protected function __construct(array $config = [])
+    public function __construct(array $config = [])
     {
         $this->import($config);
         $this->init();
+
+        $this['pew'] = $this;
     }
 
     public static function instance()
@@ -48,14 +50,21 @@ class Pew extends Registry
      */
     protected function init()
     {
-        if (file_exists(__DIR__ . '/config/config.php')) {
-            $pew_config = require_once __DIR__ . '/config/config.php';
-            $this->import($pew_config);
-        }
+        $files = [
+            __DIR__ . '/config/config.php',
+            __DIR__ . '/config/services.php',
+        ];
 
-        if (file_exists(__DIR__ . '/services.php')) {
-            $services = require_once __DIR__ . '/config/services.php';
-            $this->import($services);
+        foreach ($files as $file) {
+            if (file_exists($file)) {
+                $config = include $file;
+
+                if (!is_array($config)) {
+                    throw new \RuntimeException("File {$file} must return an array.");
+                }
+
+                $this->import($config);
+            }
         }
     }
 
@@ -81,9 +90,9 @@ class Pew extends Registry
     {
         # check if the class name is omitted
         if (!isSet($controller_name)) {
-            if (isSet($this['CurrentRequestController'])) {
+            if (isSet($this['controller'])) {
                 # if exists, return the current controller
-                return $this['CurrentRequestController'];
+                return $this['controller'];
             } else {
                 # if not, throw an exception
                 throw new \InvalidArgumentException("No current controller could be retrieved");
@@ -95,13 +104,50 @@ class Pew extends Registry
             $pew_class_name = __NAMESPACE__ . '\\controllers\\' . $class_name;
 
             if (class_exists($app_class_name)) {
-                return new $app_class_name($this['view']);
+                $controller = $this->resolve($app_class_name);
             } elseif (class_exists($pew_class_name)) {
-                return new $pew_class_name($this['view']);
+                $controller = $this->resolve($pew_class_name);
             }
+
+            $this['controller'] = $controller;
+
+            return $controller;
         }
 
         return false;
+    }
+
+    /**
+     * Resolves a class constructor using stored values.
+     *
+     *  For the moment only the constructor argument name is taken into
+     *  account to resolve argument.
+     * 
+     * @param string $fqcn Fully-qualified class name
+     * @return object
+     */
+    protected function resolve($fqcn)
+    {
+        $class = new \ReflectionClass($fqcn);
+        $constructor = $class->getConstructor();
+
+        if (is_null($constructor)) {
+            return $class->newInstance();
+        }
+
+        $arguments = $constructor->getParameters();
+
+        if (!$arguments) {
+            return $class->newInstance();
+        }
+
+        $args_array = [];
+
+        foreach ($arguments as $arg) {
+            $args_array[] = $this[$arg->name];
+        }
+
+        return $class->newInstanceArgs($args_array);
     }
 
     /**
@@ -213,8 +259,10 @@ class Pew extends Registry
      */
     public static function __callStatic($name, array $arguments)
     {
-        if (method_exists(self::$instance, $name)) {
-            return self::$instance->$name($arguments);
+        $instance = self::instance();
+
+        if (method_exists($instance, $name)) {
+            return $instance->$name($arguments);
         }
 
         throw new \RuntimeException("No method $name in class " . __CLASS__);

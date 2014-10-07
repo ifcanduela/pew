@@ -116,7 +116,7 @@ class App
             # call the action method and let the controller decide what to do
             try {
                 if (!$skip_action) {
-                    $view_data = $controller->__call($request->action(), $request->args());
+                    $view_data = $controller($request);
                 }
             } catch (ControllerActionMissingException $e) {
                 if ($this->pew->debug) {
@@ -134,7 +134,7 @@ class App
         }
 
         # render the view, if not prevented
-        if ($view->render) {
+        if ($view_data !== false) {
             switch ($this->get_response_type($request)) {
                 case 'json':
                     $page = json_encode($view_data);

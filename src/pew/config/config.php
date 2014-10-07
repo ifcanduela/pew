@@ -42,7 +42,7 @@ $cfg['root_folder'] = getcwd();
 /**
  * @var string Full path to the framework folder (filesystem).
  */
-$cfg['system_folder'] = dirname(__FILE__);
+$cfg['system_folder'] = dirname(dirname(__FILE__));
 
 /**
  * @var string Full path to the application folder (filesystem).
@@ -147,16 +147,16 @@ $cfg['default_routes'] = [
 /**
  * Base URL of the application (the location of index.php).
  */
-define('APP_URL', $cfg['app_url']);
+defined('APP_URL') or define('APP_URL', $cfg['app_url']);
 
 /**
  * Path to the Pew-Pew-Pew files.
  */
-define('PEW_PATH', $cfg['system_folder']);
+defined('PEW_PATH') or define('PEW_PATH', $cfg['system_folder']);
 
 /**
  * Full path to the base folder (filesystem).
  */
-define('BASE_PATH', $cfg['root_folder']);
+defined('BASE_PATH') or define('BASE_PATH', $cfg['root_folder']);
 
 return $cfg;

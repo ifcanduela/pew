@@ -32,12 +32,7 @@ class Env
     const POST = 'POST';
     const GET = 'GET';
 
-    public function __construct()
-    {
-        $this->init();
-    }
-
-    protected function init()
+    public function __construct($get = null, $post = null, $files = null, $cookie = null, $server = null)
     {
         $this->cwd = getcwd();
         

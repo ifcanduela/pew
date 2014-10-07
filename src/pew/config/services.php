@@ -75,7 +75,7 @@ return [
         }
 
         # instantiate the router object
-        $router = new libs\Router($routes);
+        $router = new \pew\libs\Router($routes);
 
         # configure resource routes
         foreach ($resources as $controller) {
@@ -97,7 +97,7 @@ return [
         $views_folder = trim($this['views_folder'], '/\\');
         $pew_views_folder = $this['system_folder'];
         $app_views_folder = $this['app_folder'];
-
+        
         $v = new \pew\View($pew_views_folder . DIRECTORY_SEPARATOR . $views_folder);
         $v->folder($app_views_folder . DIRECTORY_SEPARATOR . $views_folder);
 
