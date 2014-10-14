@@ -32,7 +32,7 @@ class Controller
      */
     public function slug()
     {
-        return Str::underscores(basename(get_class($this)), true)->slug();
+        return (new ReflectionClass($this))->getShortName();
     }
     
     /**
@@ -44,7 +44,7 @@ class Controller
     public function __get($property)
     {
         if ($property === 'model') {
-            $this->model = $this->pew->model($this->slug());
+            $this->model = \pew\Pew::instance()->model($this->slug());
             return $this->model;
         } elseif (isSet($this->pew[$property])) {
             return $this->pew[$property];
