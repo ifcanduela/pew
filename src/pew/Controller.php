@@ -32,7 +32,7 @@ class Controller
      */
     public function slug()
     {
-        return (new ReflectionClass($this))->getShortName();
+        return (new \ReflectionClass($this))->getShortName();
     }
     
     /**
