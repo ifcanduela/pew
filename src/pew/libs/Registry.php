@@ -51,7 +51,7 @@ class Registry implements \ArrayAccess
     public function import(array $values)
     {
         foreach ($values as $k => $v) {
-            if (is_callable($v)) {
+            if ($v instanceof \Closure) {
                 $this->register($k, $v);
             } else {
                 $this->data[$k] = $v;

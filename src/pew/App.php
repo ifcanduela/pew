@@ -2,11 +2,12 @@
 
 namespace pew;
 
-use \pew\Pew;
-use \pew\libs\Env;
-use \pew\libs\Router;
-use \pew\libs\Request;
-use \pew\ControllerActionMissingException;
+use pew\Pew;
+use pew\libs\Env;
+use pew\libs\Router;
+use pew\libs\Request;
+use pew\controller\exception\ControllerMissingException;
+use pew\controller\exception\ActionMissingException;
 
 /**
  * The App class is a simple interface between the front controller and the
@@ -23,8 +24,10 @@ class App
     {
         $this->pew = Pew::instance();
 
+        $app_folder = $this->pew['root_folder'] . '/' . $app_folder;
+
         # merge user config with Pew config
-        $this->setup("/{$app_folder}/config/{$config}.php");
+        $this->setup("{$app_folder}/config/{$config}.php");
         
         # add application namespace and path
         $app_folder_name = trim(basename($app_folder));
@@ -44,10 +47,8 @@ class App
      * @param string $filename The file name, relative to the base path
      * @return array
      */
-    protected function setup($filename)
+    protected function setup($config_filename)
     {
-        $config_filename = getcwd() . '/' . trim($filename, '/\\');
-        
         if (file_exists($config_filename)) {
             # load {$app}/config/{$config}.php
             $app_config = require $config_filename;
@@ -55,7 +56,7 @@ class App
             if (!is_array($app_config)) {
                 throw new \RuntimeException("Configuration file {$config_filename} does not return an array");
             }
-
+            
             $this->pew->import($app_config);
         }
     }
@@ -82,59 +83,67 @@ class App
     {
         # fetch the request object
         $request = $this->pew['request'];
-        
-        # instantiate and configure the view
-        $view = $this->pew['view'];
-        $view->template($request->controller() . '/' . $request->action());
-        $view->layout($this->pew['default_layout']);
-        
-        # instantiate the controller
-        $controller = $this->pew->controller($request->controller());
-        
-        $skip_action = false;
-        $view_data = [];
-        
-        # check controller instantiation
-        if (!is_object($controller)) {
-            if ($view->exists()) {
-                $view->title($request->action());
-                $skip_action = true;
-            } else {
-                if ($this->pew->debug) {
-                    throw new \Exception('Action ' . $request->action() . ' for controller ' . $request->controller() . ' not found');
-                } else {
-                    $error = new controllers\Error;
-                    $view_data = $error->show_404('Page not found', 'The page <code>' . here() . ' does not exist</code>');
-                }
-            }
-        } else {
-            # call the before_action method if it's defined
-            if (method_exists($controller, 'before_action')) {
-                $controller->before_action();
-            }
 
-            # call the action method and let the controller decide what to do
-            try {
+        try {
+
+        
+            # instantiate and configure the view
+            $view = $this->pew['view'];
+            $view->template($request->controller() . '/' . $request->action());
+            $view->layout($this->pew['default_layout']);
+            
+            # instantiate the controller
+            $controller = $this->pew->controller($request->controller());
+            
+            $skip_action = false;
+            $view_data = [];
+            
+            # check controller instantiation
+            if (!is_object($controller)) {
+                if ($view->exists()) {
+                    $view->title($request->action());
+                    $skip_action = true;
+                } else {
+                    throw new ControllerMissingException("Controller " . $request->controller() . " does not exist.");
+                }
+            } else {
+                $controller->before_action($request);
+
+                # call the action method and let the controller decide what to do
                 if (!$skip_action) {
                     $view_data = $controller($request);
                 }
-            } catch (ControllerActionMissingException $e) {
-                if ($this->pew->debug) {
-                    throw $e;
-                } else {
-                    $error = new controllers\Error;
-                    $view_data = $error->show_404('Page not found', 'The page <code>' . here() . ' does not exist</code>');
-                }
+
+                $view_data = $controller->after_action($view_data);
             }
 
-            # call the after_action method if it's defined
-            if (method_exists($controller, 'after_action')) {
-                $controller->after_action();
+            $response = $this->render($request, $view, $view_data);
+        } catch (\Exception $exception) {
+            $view->layout('error.layout');
+            
+            if ($this->pew['debug']) {
+                header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+
+
+                $view->template('error/error');
+                $view->title('Application Error (' . get_class($exception) . ')');
+            } else {
+                header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found', true, 404);
+                $view->template('error/404');
+                $view->title('Page not found');
             }
+
+            $response = $this->render($request, $view, ['exception' => $exception]);
         }
 
-        # render the view, if not prevented
-        if ($view_data !== false) {
+        if ($response) {
+            echo $response;
+        }
+    }
+
+    protected function render($request, $view, $view_data)
+    {
+        if ($view->render && $view_data !== false) {
             switch ($this->get_response_type($request)) {
                 case 'json':
                     $page = json_encode($view_data);
@@ -148,8 +157,10 @@ class App
                     break;
             }
 
-            echo $page;
+            return $page;
         }
+
+        return false;
     }
 
     /**

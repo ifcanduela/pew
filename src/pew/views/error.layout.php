@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Pew Error :: <?php echo $error_title; ?></title>
+    <title>Pew Application Error</title>
     <style type="text/css">
         html {
             background-color: white;
@@ -14,26 +14,32 @@
             background-color: #f6f6f6;
             margin: 0;
             padding: 0;
-            font: normal 16px/165% 'trebuchet ms', helvetica, sans-serif;
+            font: normal 16px/165% arial, helvetica, sans-serif;
         }
-        h1 {
-            background-color: #fff;
-            border-bottom: 1px solid #999;
+        h1.page-title {
+            background-color: #333;
+            border-bottom: 1px solid #333;
             margin: 0;
-            padding: 0.4em;
-            color: #643;
+            padding: 20px;
+            color: #fff;
         }
-        p {
-            margin: 0;
-            padding: 2em;
+        .error-body {
+            padding: 20px;
+        }
+        .error-body p {
+            margin: 24px 0;
+        }
+        .error-body .trace-item {
+            margin: 10px 0;
         }
     </style>
 </head>
 
 <body>
+    <h1 class="page-title"><?= $this->title() ?></h1>
     
-    <h1><?php echo $error_title; ?></h1>
-    <p><?php echo $error_text; ?></p>
-    
+    <div class="error-body">
+        <?= $this->child() ?>
+    </div>
 </body>
 </html>

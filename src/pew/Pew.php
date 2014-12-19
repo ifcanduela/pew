@@ -2,8 +2,9 @@
 
 namespace pew;
 
-use \pew\libs\Registry as Registry;
-use \pew\libs\Str as Str;
+use pew\controller\ControllerMissingException;
+use pew\libs\Registry;
+use pew\libs\Str;
 
 /**
  * An object store.
@@ -101,12 +102,14 @@ class Pew extends Registry
             $class_name = Str::camel_case($controller_name);
 
             $app_class_name = $this['app_namespace'] . '\\controllers\\' . $class_name;
-            $pew_class_name = __NAMESPACE__ . '\\controllers\\' . $class_name;
+            $pew_class_name = '\\' . __NAMESPACE__ . '\\controllers\\' . $class_name;
 
             if (class_exists($app_class_name)) {
                 $controller = $this->resolve($app_class_name);
             } elseif (class_exists($pew_class_name)) {
                 $controller = $this->resolve($pew_class_name);
+            } else {
+                $controller = false;
             }
 
             $this['controller'] = $controller;

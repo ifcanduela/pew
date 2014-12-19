@@ -2,9 +2,9 @@
 
 namespace pew;
 
-use \SplStack;
-use \pew\libs\Registry;
-use \pew\libs\FileCache;
+use SplStack;
+use pew\libs\Registry;
+use pew\libs\FileCache;
 
 class ViewException extends \Exception {}
 class ViewTemplateNotFoundException extends ViewException {}
@@ -12,12 +12,12 @@ class ViewLayoutNotFoundException extends ViewException {}
 class ViewElementFileNotFoundException extends ViewTemplateNotFoundException {}
 
 /**
- * This class encapsulates the view rendering functionality.
+ * This class encapsulates the template rendering functionality.
  * 
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class View extends \pew\libs\Registry
+class View extends Registry
 {
     /**
      * Render the view or not.
@@ -311,7 +311,7 @@ class View extends \pew\libs\Registry
      */
     public function load($key, $duration, $open_buffer = true)
     {
-        $cache = Pew::instance()->singleton('file_cache');
+        $cache = Pew::instance()->file_cache;
 
         if ($cache->cached($key, $duration)) {
             $fragment = $cache->load($key);
@@ -334,7 +334,7 @@ class View extends \pew\libs\Registry
     public function save($key)
     {
         # save the output into a cache key
-        $cache = Pew::instance()->singleton('file_cache');
+        $cache = Pew::instance()->file_cache;
 
         $output = ob_end_clean();
         $cache->save($key, $output);

@@ -37,7 +37,7 @@ $cfg['app_url'] = $cfg['host'] . $cfg['path'];
 /**
  * @var string Full path to the base folder (filesystem).
  */
-$cfg['root_folder'] = getcwd();
+$cfg['root_folder'] = dirname(getcwd());
 
 /**
  * @var string Full path to the framework folder (filesystem).
@@ -47,17 +47,17 @@ $cfg['system_folder'] = dirname(dirname(__FILE__));
 /**
  * @var string Full path to the application folder (filesystem).
  */
-$cfg['app_folder'] = getcwd() . DIRECTORY_SEPARATOR . 'app';
+$cfg['app_folder'] = $cfg['root_folder'] . DIRECTORY_SEPARATOR . 'app';
 
 /**
  * @var string Full path to the public assets folder (filesystem).
  */
-$cfg['www_folder'] = getcwd() . DIRECTORY_SEPARATOR . 'www';
+$cfg['www_folder'] = getcwd();
 
 /**
  * @var string Full path to the public assets folder (url).
  */
-$cfg['www_url'] = $cfg['app_url'] . 'www/';
+$cfg['www_url'] = $cfg['app_url'];
 
 /**
  * @var default namespace for application classes
@@ -81,7 +81,7 @@ $cfg['request_is_ajax'] = isSet($_SERVER['HTTP_X_REQUESTED_WITH'])
 /**
  * @var boolean Use the automatically-detected AJAX flag.
  */
-$cfg['autodetect_ajax'] = false;
+$cfg['autodetect_ajax'] = true;
 
 /**
  * @var string Option to use a prefix for action method names in controllers.
@@ -106,7 +106,6 @@ $cfg['log_level'] = 0;
 $cfg['models_folder'] = 'models';
 $cfg['controllers_folder'] = 'controllers';
 $cfg['views_folder'] = 'views';
-$cfg['elements_folder'] = 'views' . DIRECTORY_SEPARATOR . 'elements';
 $cfg['layouts_folder'] = 'views';
 $cfg['libraries_folder'] = 'libs';
 

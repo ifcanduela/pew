@@ -48,6 +48,22 @@ return [
         return new \pew\libs\FileLogger('logs', $this['log_level']);
     },
 
+    'model' => function ($pew) {
+        // use the TableFactory to instantiate a TableGateway
+        // corresponding to the current controller slug
+    },
+
+    'model_factory' => function ($pew) {
+        // instantiate the TableFactory and register the pew/models 
+        // and app/models namespaces
+        $f = new \pew\db\TableFactory($pew['db']);
+
+        $f->register_namespace($pew['app_namespace'] . '\models', $pew['model_suffix']);
+        $f->register_namespace('pew\models', 'Model');
+
+        return $f;
+    },
+
     'request' => function ($pew) {
         $router = $pew['router'];
         $env = $pew['env'];

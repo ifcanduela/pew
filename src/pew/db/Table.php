@@ -217,9 +217,11 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         } elseif (!$this->table) {
             # else, if $table is not set in the Model class file,
             # guess the table name
-            $fqcn = new Str(get_class($this));
-            $class_base_name = $fqcn->substring($fqcn->last_of('\\'));
-            $this->table = str_replace('_model', '', $class_base_name->underscores());
+            // $fqcn = new Str(get_class($this));
+            // $class_base_name = $fqcn->substring($fqcn->last_of('\\'));
+            // $this->table = str_replace('_model', '', $class_base_name->underscores());
+
+            $this->table = $this->table_name();
         }
 
         if (false === $this->db->table_exists($this->table)) {
@@ -255,6 +257,18 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         foreach ($this->has_and_belongs_to_many as $alias => $info) {
             $this->attach(new HasAndBelongsToMany($alias, $info));
         }
+    }
+
+    public function table_name()
+    {
+        if (!is_null($this->table)) {
+            return $this->table;
+        }
+
+        $shortname = (new \ReflectionClass($this))->getShortName();
+        $model_name = rtrim($shortname, 'Model');
+
+        return strtolower($model_name);
     }
 
     public function primary_key()

@@ -847,7 +847,7 @@ function url($path = '')
  */
 function here()
 {
-    return pew()->request->uri();
+    return pew('request')->uri();
 }
 
 /**
