@@ -292,10 +292,15 @@ class View extends Registry
     protected function _render()
     {
         extract(func_get_arg(1));
-
         ob_start();
+
+        try {
             require func_get_arg(0);
-        return ob_get_clean();
+            return ob_get_clean();
+        } catch (\Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
     }
 
     /**
