@@ -20,58 +20,47 @@ class ViewElementFileNotFoundException extends ViewTemplateNotFoundException {}
 class View extends Registry
 {
     /**
-     * Render the view or not.
-     * 
-     * @var boolean
+     * @var boolean Render the view or not
      */
     public $render = true;
     
     /**
-     * Base templates directory.
-     * 
-     * @var SplStack
+     * @var SplStack Base templates directory
      */
     protected $folder_stack;
 
     /**
-     * Template name.
-     * 
-     * @var string
+     * @var string Template name
      */
     protected $template = 'index';
     
     /**
-     * Layout name.
-     * 
-     * @var string
+     * @var string Layout name
      */
-    protected $layout= '';
+    protected $layout = '';
 
     /**
-     * Templates file extension.
-     * 
-     * @var string
+     * @var string View title
+     */
+    protected $title;
+
+    /**
+     * @var string Templates file extension
      */
     protected $extension = '.php';
 
     /**
-     * Result of rendering the view.
-     * 
-     * @var string
+     * @var string Result of rendering the view
      */
     protected $output = '';
 
     /**
-     * Rendered partial blocks.
-     * 
-     * @var array
+     * @var array Rendered partial blocks
      */
     protected $blocks = [];
 
     /**
-     * Stack of block names.
-     * 
-     * @var SplStack
+     * @var SplStack Stack of block names
      */
     protected $block_stack;
     
@@ -242,10 +231,10 @@ class View extends Registry
     public function title($title = null)
     {
         if (!is_null($title)) {
-            $this['title'] = $title;
+            $this->title = $title;
         }
 
-        return $this['title'];
+        return $this->title;
     }
 
     /**
