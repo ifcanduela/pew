@@ -106,7 +106,7 @@ return [
 
     'session' => function($pew) {
         // @todo Use a specific $group 
-        return new \pew\libs\Session;
+        return new \pew\libs\Session($pew['session_group']);
     },
 
     'view' => function ($pew) {

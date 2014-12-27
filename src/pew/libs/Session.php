@@ -57,7 +57,7 @@ class Session
      *
      * @param string $group
      */
-    public function __construct(&$data = null, $group = null)
+    public function __construct( $group = null, &$data = null)
     {
         $this->open();
 

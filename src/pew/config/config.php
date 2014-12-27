@@ -84,6 +84,11 @@ $cfg['request_is_ajax'] = isSet($_SERVER['HTTP_X_REQUESTED_WITH'])
 $cfg['autodetect_ajax'] = true;
 
 /**
+ * @var string Name of the session group key
+ */
+$cfg['session_group'] = basename($cfg['root_folder']);
+
+/**
  * @var string Option to use a prefix for action method names in controllers.
  */
 $cfg['action_prefix'] = '';
