@@ -680,8 +680,8 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
             $result = $this->after_save($result);
         }
 
-        $model = new self($this->db, $this->table);
-        $model->attributes($result);
+        $this->record = array_merge($this->record, $result);
+        $model = $this->create($this->record);
 
         return $model;
     }
