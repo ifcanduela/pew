@@ -91,6 +91,7 @@ class App
             $view = $this->pew['view'];
             $view->template($request->controller() . '/' . $request->action());
             $view->layout($this->pew['default_layout']);
+            $view->title(ucfirst($request->action()) . ' - ' . ucfirst($request->controller()) . $this->pew['app_title']);
             
             # instantiate the controller
             $controller = $this->pew->controller($request->controller());
@@ -101,7 +102,6 @@ class App
             # check controller instantiation
             if (!is_object($controller)) {
                 if ($view->exists()) {
-                    $view->title($request->action());
                     $skip_action = true;
                 } else {
                     throw new ControllerMissingException("Controller " . $request->controller() . " does not exist.");
