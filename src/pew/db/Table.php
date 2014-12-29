@@ -420,13 +420,18 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      * 
      * @return Table A new record
      */
-    public function blank()
+    public function create(array $attributes = [])
     {
         $class = '\\' . get_class($this);
         $blank = new $class($this->db, $this->table);
-        $blank->attributes($this->table_data['column_names']);
+        $blank->attributes(array_merge($this->table_data['column_names'], $attributes));
 
         return $blank;
+    }
+
+    public function blank(array $attributes = [])
+    {
+        return $this->create($attributes);
     }
 
     /**
