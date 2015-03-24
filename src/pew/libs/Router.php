@@ -4,7 +4,7 @@ namespace pew\libs;
 
 /**
  * Router class.
- * 
+ *
  * This class takes a string of segments and tries to fit it into any of a list
  * of pre-configured route patterns.
  *
@@ -47,7 +47,7 @@ class Router
 
     /**
      * Adds a route to the routing arrays.
-     * 
+     *
      * @param array $route Array with methods, origin and destination
      */
     public function add(array $route)
@@ -82,7 +82,7 @@ class Router
      * PUT    /resource/id   -> /resource/:edit/id
      * POST   /resource      -> /resource/:add
      * DELETE /resource/id   -> /resource/:delete/id
-     * 
+     *
      * @param string $resource_name A controller resource name
      */
     public function resource($resource_name)
@@ -164,27 +164,27 @@ class Router
 
     /**
      * Get the controller.
-     * 
+     *
      * @return string The controller name
      */
     public function controller()
     {
-        return isSet($this->segments[self::CONTROLLER_SEGMENT]) 
-             ? $this->segments[self::CONTROLLER_SEGMENT] 
+        return isSet($this->segments[self::CONTROLLER_SEGMENT])
+             ? $this->segments[self::CONTROLLER_SEGMENT]
              : $this->default_controller;
     }
 
     /**
      * Get the action.
-     * 
+     *
      * @return string The action name
      */
     public function action()
     {
-        $action = isSet($this->segments[self::ACTION_SEGMENT]) 
-             ? $this->segments[self::ACTION_SEGMENT] 
+        $action = isSet($this->segments[self::ACTION_SEGMENT])
+             ? $this->segments[self::ACTION_SEGMENT]
              : $this->default_action;
-        
+
         if (isSet($action{0}) && !ctype_alpha($action{0})) {
             $action = substr($action, 1);
         }
@@ -203,7 +203,7 @@ class Router
     public function parameters($n = null)
     {
         $parameters = array_slice($this->segments, 2);
-        
+
         if (is_numeric($n)) {
             return isSet($parameters[$n]) ? $parameters[$n] : null;
         } else {
@@ -213,7 +213,7 @@ class Router
 
     /**
      * Returns a response type based on the action prefix.
-     * 
+     *
      * @return string One of the configured response types.
      */
     public function response_type()
@@ -236,7 +236,7 @@ class Router
 
     /**
      * Get the current URI.
-     * 
+     *
      * @return string The URI
      */
     public function uri()
@@ -251,7 +251,7 @@ class Router
      */
     public function destination()
     {
-        $uri = $this->controller() 
+        $uri = $this->controller()
              . '/' . $this->action()
              . '/' . join('/', $this->parameters());
 
@@ -260,7 +260,7 @@ class Router
 
     /**
      * Extracts controller, action and parameters from a URI.
-     * 
+     *
      * @param string $uri Uri from the browser
      * @param string $request_method HTTP request verb
      * @return Router The Router object
@@ -292,7 +292,7 @@ class Router
 
     /**
      * Check if a URI matches a route.
-     * 
+     *
      * @param array $route A route to match
      * @param string $segments URI to match
      * @return array|bool Matches or false
@@ -358,7 +358,7 @@ class Router
 
     /**
      * Builds a path with controller/action/parameters elements
-     * 
+     *
      * @param string $segments URI segments
      * @param array $route Transformation route
      * @param array $matches Transformation values
@@ -379,7 +379,7 @@ class Router
             $destination_segments = explode('/', $segments);
 
             foreach ($destination_segments as $key => $value) {
-                
+
                 switch ($value{0}) {
                     case $this->token_prefix:
                         $name = substr($value, 1);
