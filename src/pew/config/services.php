@@ -45,7 +45,7 @@ return [
     },
 
     'log' => function ($pew) {
-        return new \pew\libs\FileLogger('logs', $this['log_level']);
+        return new \pew\libs\FileLogger($pew['log_dir'], $this['log_level']);
     },
 
     'model' => function ($pew) {

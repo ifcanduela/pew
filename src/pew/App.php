@@ -3,6 +3,7 @@
 namespace pew;
 
 use pew\Pew;
+use pew\View;
 use pew\libs\Env;
 use pew\libs\Router;
 use pew\libs\Request;
@@ -26,8 +27,9 @@ class App
 
         $app_folder = $this->pew['root_folder'] . '/' . $app_folder;
 
-        # merge user config with Pew config
-        $this->setup("{$app_folder}/config/{$config}.php");
+        # import app config and services
+        $this->import_config("{$app_folder}/config/{$config}.php");
+        $this->import_services("{$app_folder}/config/services.php");
         
         # add application namespace and path
         $app_folder_name = trim(basename($app_folder));
@@ -44,13 +46,12 @@ class App
     /**
      * Import the application configuration.
      * 
-     * @param string $filename The file name, relative to the base path
-     * @return array
+     * @param string $config_filename The file name, relative to the base path
+     * @return null
      */
-    protected function setup($config_filename)
+    protected function import_config($config_filename)
     {
         if (file_exists($config_filename)) {
-            # load {$app}/config/{$config}.php
             $app_config = require $config_filename;
 
             if (!is_array($app_config)) {
@@ -62,7 +63,30 @@ class App
     }
 
     /**
+     * Import the application services definitions.
+     * 
+     * @param string $services_filename The file name, relative to the base path
+     * @return null
+     */
+    public function import_services($services_filename)
+    {
+        if (file_exists($services_filename)) {
+            $services = require $services_filename;
+
+            if (!is_array($services)) {
+                throw new \RuntimeException("Services file {$services_filename} does not return an array");
+            }
+
+            foreach ($services as $key => $factory) {
+                $this->pew->register($key, $factory);
+            }
+        }
+    }
+
+    /**
      * Load the user bootstrap file.
+     *
+     * @return null
      */
     protected function bootstrap()
     {
@@ -85,8 +109,6 @@ class App
         $request = $this->pew['request'];
 
         try {
-
-        
             # instantiate and configure the view
             $view = $this->pew['view'];
             $view->template($request->controller() . '/' . $request->action());
@@ -117,7 +139,7 @@ class App
                 $view_data = $controller->after_action($view_data);
             }
 
-            $response = $this->render($request, $view, $view_data);
+            $response = $this->respond($request, $view, $view_data);
         } catch (\Exception $exception) {
             $view->layout('error.layout');
             
@@ -133,7 +155,7 @@ class App
                 $view->title('Page not found');
             }
 
-            $response = $this->render($request, $view, ['exception' => $exception]);
+            $response = $this->respond($request, $view, ['exception' => $exception]);
         }
 
         if ($response) {
@@ -141,7 +163,7 @@ class App
         }
     }
 
-    protected function render($request, $view, $view_data)
+    public function respond(Request $request, View $view, $view_data)
     {
         if ($view->render && $view_data !== false) {
             switch ($this->get_response_type($request)) {

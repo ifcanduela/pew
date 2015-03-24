@@ -104,6 +104,11 @@ $cfg['debug'] = false;
 $cfg['log_level'] = 0;
 
 /**
+ * @var string Save location for log files
+ */
+$cfg['log_dir'] = '../logs';
+
+/**
  * @var string Default folder names for files.
  *
  * This is used for both the Pew folder and the App folder
