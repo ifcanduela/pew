@@ -13,7 +13,7 @@ use pew\controller\exception\ActionMissingException;
 
 /**
  * The basic controller class, with some common methods and fields.
- * 
+ *
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
@@ -21,14 +21,14 @@ class Controller
 {
     /**
      * String prefixed to action names in this controller.
-     * 
+     *
      * @var string
      */
     protected $action_prefix = '';
-    
+
     /**
      * Gets the URL slug corresponding to the controller name.
-     * 
+     *
      * @return string
      */
     public function slug()
@@ -38,7 +38,7 @@ class Controller
 
         return $slug->slug();
     }
-    
+
     /**
      * Initialize the model and library objects when first accessed.
      *
@@ -60,15 +60,15 @@ class Controller
             $this->pew[$property] = $obj;
             return $obj;
         }
-        
+
         throw new RuntimeException("Property Controller::\$$property does not exist");
     }
 
     /**
      * Calls the  appropriate method of the controller.
-     * 
-     * This function can be overwritten to modify the behavior or the 
-     * purpose of the parameters, for an example see the example Pages 
+     *
+     * This function can be overwritten to modify the behavior or the
+     * purpose of the parameters, for an example see the example Pages
      * controller.
      *
      * @param Request $request The current HTTP request
@@ -76,7 +76,7 @@ class Controller
      */
     public function __invoke(Request $request)
     {
-        $action = $request->action();
+        $action = str_replace('-', '_', $request->action());
         $args = $request->args();
 
         if (!method_exists($this, $this->action_prefix . $action)) {
@@ -98,7 +98,7 @@ class Controller
 
     /**
      * Prepares the controller before calling the action.
-     * 
+     *
      * @param Request $request
      * @return null
      */
@@ -109,12 +109,11 @@ class Controller
 
     /**
      * Modifies view data returned from the action.
-     * 
+     *
      * @param array $view_data
      * @return array
      */
     public function after_action(array $view_data) {
         return $view_data;
     }
-
 }
