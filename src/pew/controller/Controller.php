@@ -47,17 +47,21 @@ class Controller
      */
     public function __get($property)
     {
+        $pew = Pew::instance();
+
         if ($property === 'model') {
-            $this->model = Pew::instance()->model($this->slug());
+            $this->model = $pew->model($this->slug());
             return $this->model;
-        } elseif (isSet($this->pew[$property])) {
-            return $this->pew[$property];
+        }
+
+        if (isSet($pew[$property])) {
+            return $pew[$property];
         }
 
         $class_name = Str::camel_case($property);
 
-        if ($obj = $this->pew->library($class_name)) {
-            $this->pew[$property] = $obj;
+        if ($obj = $pew->library($class_name)) {
+            $pew[$property] = $obj;
             return $obj;
         }
 
