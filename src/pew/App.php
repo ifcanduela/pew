@@ -107,6 +107,7 @@ class App
     {
         # fetch the request object
         $request = $this->pew['request'];
+        $response = false;
 
         try {
             # instantiate and configure the view
@@ -128,24 +129,24 @@ class App
                 } else {
                     throw new ControllerMissingException("Controller " . $request->controller() . " does not exist.");
                 }
-            } else {
-                $controller->before_action($request);
+            }
+            $controller->before_action($request);
 
-                # call the action method and let the controller decide what to do
-                if (!$skip_action) {
-                    $view_data = $controller($request);
-                }
-
-                $view_data = $controller->after_action($view_data);
+            # call the action method and let the controller decide what to do
+            if (!$skip_action) {
+                $view_data = $controller($request);
             }
 
-            $response = $this->respond($request, $view, $view_data);
+            if (false !== $view_data) {
+                $view_data = $controller->after_action($view_data);
+                $response = $this->respond($request, $view, $view_data);
+            }
         } catch (\Exception $exception) {
+            throw $exception;
             $view->layout('error.layout');
             
             if ($this->pew['debug']) {
                 header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-
 
                 $view->template('error/error');
                 $view->title('Application Error (' . get_class($exception) . ')');

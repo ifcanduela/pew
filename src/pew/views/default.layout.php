@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <base href="<?= url() ?>">
-    <title><?= $title ?> | <?= pew('app_title') ?></title>
+    <title><?= $this->title() ?> | <?= pew('app_title') ?></title>
     <link rel="stylesheet" href="www/css/default.css">
 </head>
 
@@ -15,7 +15,7 @@
     </header>
 
     <div id="main">
-        <?= $output ?>
+        <?= $this->child() ?>
     </div>
 
     <footer>
