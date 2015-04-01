@@ -259,6 +259,11 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         }
     }
 
+    /**
+     * Auto-resolve the table name for the current model.
+     * 
+     * @return string
+     */
     public function table_name()
     {
         if (!is_null($this->table)) {
@@ -266,9 +271,9 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         }
 
         $shortname = (new \ReflectionClass($this))->getShortName();
-        $model_name = rtrim($shortname, 'Model');
+        $table_name = preg_replace('Model$', '', $shortname);
 
-        return strtolower($model_name);
+        return strtolower($table_name);
     }
 
     public function primary_key()
