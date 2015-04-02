@@ -54,7 +54,7 @@ class TableFactory
 					throw new InvalidTableClassException("Table class {$class_name} must implement TableInterface");
 				}
 
-				$obj = new $class_name($this->db, $table_name);
+				$obj = new $class_name($table_name, $this->db);
 
 			 	return $obj;
 			}
@@ -64,7 +64,7 @@ class TableFactory
 			throw new TableClassNotFoundException("Class for table {$table_name} could not be found");
 		}
 
-		return new Table($this->db, $table_name);
+		return new Table($table_name, $this->db);
 	}
 
 	/**

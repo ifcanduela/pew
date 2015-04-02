@@ -4,6 +4,8 @@ namespace pew\db;
 
 use pew\Pew;
 use pew\db\Database;
+use pew\db\Record;
+use pew\db\RecordCollection;
 use pew\db\relationship\RelationshipInterface;
 use pew\db\relationship\BelongsTo;
 use pew\db\relationship\HasAndBelongsToMany;
@@ -189,25 +191,25 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     /**
      * The constructor builds the model!.
      *
-     * @param Database $db Database instance to use
      * @param string $table Name of the table
-     * @return array An indexed array with all fetched rows, in associative arrays
+     * @param Database $db Database instance to use
      */
-    public function __construct($table = null, $db = null)
+    public function __construct($table = null, Database $db = null)
     {
-        # get the Database class instance
-        $this->db = ($db instanceof Database) ? $db : Pew::instance()->db;
-
-        $this->init($table);
+        $this->init($table, $db);
     }
 
     /**
      * Initialize a model binding it to a database table.
      * 
-     * @param $table Name of the table
+     * @param string $table Name of the table
+     * @param Database $db Database instance to use
      */
-    public function init($table)
+    public function init($table, Database $db = null)
     {
+        # get the Database class instance
+        $this->db = is_null($db) ? Pew::instance()->db : $db;
+
         if (!is_null($table)) {
             $this->table = $table;
         } elseif (Str::ends_with(get_class($this), '\\Model')) {
@@ -275,6 +277,11 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     public function primary_key()
     {
         return $this->primary_key;
+    }
+
+    public function column_names()
+    {
+        return $this->table_data['column_names'];
     }
 
     /**
@@ -654,7 +661,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         
         if (isset($record[$this->primary_key])) {
             # set modification timestamp
-            if ($this->offsetExists('modified')) {
+            if ($this->has_column('modified')) {
                 $record['modified'] = time();
             }
 
@@ -663,12 +670,12 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
             $result = $this->db->where([$this->primary_key => $record[$this->primary_key]])->single($this->table);
         } else {
             # set creation timestamp
-            if ($this->offsetExists('created')) {
+            if ($this->has_column('created')) {
                 $record['created'] = time();
             }
 
             # set modification timestamp
-            if ($this->offsetExists('modified')) {
+            if ($this->has_column('modified')) {
                 $record['modified'] = time();
             }
 
@@ -976,10 +983,10 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     /**
      * Check if the field exists in the model.
      * 
-     * @param string $field
+     * @param string $column_name
      * @return boolean
      */
-    public function has_field($field)
+    public function has_column($column_name)
     {
         return array_key_exists($field, $this->record);
     }
@@ -991,7 +998,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      */
     public function offsetExists($offset)
     {
-        $has_column = $this->has_field($offset);
+        $has_column = $this->has_column($offset);
         $has_related = $this->has_related($offset);
         
         return $has_column || $has_related;
