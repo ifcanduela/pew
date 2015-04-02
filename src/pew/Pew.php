@@ -172,7 +172,7 @@ class Pew extends Registry
             $class_name = __NAMESPACE__ . '\\Model';
         }
         
-        $model = new $class_name($this['db'], $table_name);
+        $model = new $class_name($table_name, $this['db']);
         
         return $model;
     }

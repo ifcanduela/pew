@@ -193,10 +193,10 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      * @param string $table Name of the table
      * @return array An indexed array with all fetched rows, in associative arrays
      */
-    public function __construct($db = null, $table = null)
+    public function __construct($table = null, $db = null)
     {
         # get the Database class instance
-        $this->db = ($db instanceof Database) ? $db : Pew::database();
+        $this->db = ($db instanceof Database) ? $db : Pew::instance()->db;
 
         $this->init($table);
     }
@@ -217,10 +217,6 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         } elseif (!$this->table) {
             # else, if $table is not set in the Model class file,
             # guess the table name
-            // $fqcn = new Str(get_class($this));
-            // $class_base_name = $fqcn->substring($fqcn->last_of('\\'));
-            // $this->table = str_replace('_model', '', $class_base_name->underscores());
-
             $this->table = $this->table_name();
         }
 
@@ -271,7 +267,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         }
 
         $shortname = (new \ReflectionClass($this))->getShortName();
-        $table_name = preg_replace('Model$', '', $shortname);
+        $table_name = preg_replace('/Model$/', '', $shortname);
 
         return strtolower($table_name);
     }
@@ -428,7 +424,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     public function create(array $attributes = [])
     {
         $class = '\\' . get_class($this);
-        $blank = new $class($this->db, $this->table);
+        $blank = new $class($this->table, $this->db);
         $blank->attributes(array_merge($this->table_data['column_names'], $attributes));
 
         return $blank;
