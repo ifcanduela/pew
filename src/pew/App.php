@@ -5,10 +5,10 @@ namespace pew;
 use pew\Pew;
 use pew\View;
 use pew\libs\Env;
-use pew\libs\Router;
-use pew\libs\Request;
-use pew\controller\exception\ControllerMissingException;
-use pew\controller\exception\ActionMissingException;
+use pew\route\Router;
+use pew\request\Request;
+use pew\request\exception\ControllerMissingException;
+use pew\request\exception\ActionMissingException;
 
 /**
  * The App class is a simple interface between the front controller and the

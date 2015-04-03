@@ -2,7 +2,7 @@
 
 namespace pew\controllers;
 
-use \pew\libs\Request;
+use \pew\request\Request;
 
 /**
  * The Pages controller can serve static views, useful for help or about pages.
@@ -12,13 +12,6 @@ use \pew\libs\Request;
  */
 class Pages extends \pew\Controller
 {
-    public $view;
-
-    public function __construct($view)
-    {
-        $this->view = $view;
-    }
-
     /**
      * The action method of the Pages controller overwrites the same method of
      * the Controller class, to use the action parameter as a view parameter.

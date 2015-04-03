@@ -988,7 +988,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      */
     public function has_column($column_name)
     {
-        return array_key_exists($field, $this->record);
+        return array_key_exists($column_name, $this->record);
     }
 
     /**

@@ -1,15 +1,15 @@
 <?php
 
-namespace pew\controller;
+namespace pew\request;
 
 use pew\Pew;
 use pew\libs\Str;
-use pew\libs\Request;
+use pew\request\Request;
 
 use ReflectionClass;
 use RuntimeException;
 
-use pew\controller\exception\ActionMissingException;
+use pew\request\exception\ActionMissingException;
 
 /**
  * The basic controller class, with some common methods and fields.

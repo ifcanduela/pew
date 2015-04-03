@@ -61,7 +61,7 @@ class RecordCollection implements \ArrayAccess, \Countable, \Iterator, \JsonSeri
      */
     public function jsonSerialize()
     {
-        return array_map('json_encode', $this->records);
+        return $this->records;
     }
 
     /**
@@ -81,7 +81,7 @@ class RecordCollection implements \ArrayAccess, \Countable, \Iterator, \JsonSeri
     */
     public function current()
     {
-        return $this->recods[$this->current];
+        return $this->records[$this->current];
     }
 
     /**

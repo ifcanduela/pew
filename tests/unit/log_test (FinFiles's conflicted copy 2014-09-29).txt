@@ -1,8 +1,0 @@
-DEBUG      | 2014/09/26 10:12:58 | This is a debug message
-INFO       | 2014/09/26 10:12:58 | This is an info message
-NOTICE     | 2014/09/26 10:12:58 | This is a notice
-WARNING    | 2014/09/26 10:12:58 | This is a warning
-ERROR      | 2014/09/26 10:12:58 | This is an error
-CRITICAL   | 2014/09/26 10:12:58 | This is a critical error
-ALERT      | 2014/09/26 10:12:58 | This is an alert-level error
-EMERGENCY  | 2014/09/26 10:12:58 | This is an emergency

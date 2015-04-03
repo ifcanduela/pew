@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\controller\exception;
+namespace pew\request\exception;
 
 class ControllerMissingException extends \Exception
 {

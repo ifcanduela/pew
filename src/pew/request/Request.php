@@ -1,6 +1,9 @@
 <?php
 
-namespace pew\libs;
+namespace pew\request;
+
+use pew\libs\Env;
+use pew\route\Router;
 
 /**
  * A shell class that centralizes information about the current request.

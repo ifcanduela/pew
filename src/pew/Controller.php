@@ -8,7 +8,7 @@ namespace pew;
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Controller extends \pew\controller\Controller
+class Controller extends \pew\request\Controller
 {
 
 }

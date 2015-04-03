@@ -70,7 +70,7 @@ return [
 
         $router->route($env->segments, $env->method);
 
-        return new \pew\libs\Request($router, $env);
+        return new \pew\request\Request($router, $env);
     },
 
     'routes' => function ($pew) {
@@ -91,7 +91,7 @@ return [
         }
 
         # instantiate the router object
-        $router = new \pew\libs\Router($routes);
+        $router = new \pew\route\Router($routes);
 
         # configure resource routes
         foreach ($resources as $controller) {
