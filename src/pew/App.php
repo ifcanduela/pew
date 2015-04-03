@@ -114,7 +114,7 @@ class App
             $view = $this->pew['view'];
             $view->template($request->controller() . '/' . $request->action());
             $view->layout($this->pew['default_layout']);
-            $view->title(ucfirst($request->action()) . ' - ' . ucfirst($request->controller()) . $this->pew['app_title']);
+            $view->title(ucfirst($request->action()) . ' - ' . ucfirst($request->controller()) . ' - ' . $this->pew['app_title']);
             
             # instantiate the controller
             $controller = $this->pew->controller($request->controller());
@@ -130,7 +130,10 @@ class App
                     throw new ControllerMissingException("Controller " . $request->controller() . " does not exist.");
                 }
             }
-            $controller->before_action($request);
+
+            if (method_exists($controller, 'before_action')) {
+                $controller->before_action($request);
+            }
 
             # call the action method and let the controller decide what to do
             if (!$skip_action) {
@@ -138,7 +141,10 @@ class App
             }
 
             if (false !== $view_data) {
-                $view_data = $controller->after_action($view_data);
+                if (method_exists($controller, 'after_ection')) {
+                    $view_data = $controller->after_action($view_data);
+                }
+
                 $response = $this->respond($request, $view, $view_data);
             }
         } catch (\Exception $exception) {
