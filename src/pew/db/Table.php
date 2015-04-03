@@ -1061,7 +1061,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      */
     public function offsetUnset($offset)
     {
-        unset($this->record[$id]);
+        unset($this->record[$offset]);
     }
 
     /**
