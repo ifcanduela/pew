@@ -16,7 +16,8 @@ use at all.
     $ composer install
     $ php -S localhost:8000 -t www
 
-In case you're using PHP 5.4, the only PHP 5.5 funcionality in use
-is the `password_hash` and `password_verify` functions, and those 
-are optional and backported: you can use Composer to require the
-`password_compat` package.
+In case you're using PHP 5.4, the only PHP 5.5 functionality in use
+are the `password_hash` and `password_verify` functions, and those 
+are optional and were backported: you can use Composer to require the
+[`password_compat`](https://packagist.org/packages/ircmaxell/password-compat)
+package.
