@@ -25,7 +25,7 @@ class Users extends \pew\Controller
             # check if the user exists
             if ($user = $this->model->find_by_username($post['username'])) {
                 # check if passwords match
-                if ($user['password'] === crypt($post['password'], $user['password'])) {
+                if (password_verify($post['password'], $user['password'])) {
                     unset($user['password']);
                     $this->session->user = $user->attributes();
 
@@ -58,7 +58,7 @@ class Users extends \pew\Controller
                 if (strlen($post['password']) >= 6) {
                     if ($post['password'] === $post['password_confirm']) {
                         # encrypt the password
-                        $post['password'] = crypt($post['password']);
+                        $post['password'] = password_hash($post['password'], PASSWORD_DEFAULT);
                         # update the dates
                         $post['created'] = $post['modified'] = time();
 
