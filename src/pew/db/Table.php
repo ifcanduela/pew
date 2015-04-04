@@ -205,7 +205,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      * @param string $table Name of the table
      * @param Database $db Database instance to use
      */
-    public function init($table, Database $db = null)
+    public function init($table = null, Database $db = null)
     {
         # get the Database class instance
         $this->db = is_null($db) ? Pew::instance()->db : $db;
@@ -271,7 +271,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         $shortname = (new \ReflectionClass($this))->getShortName();
         $table_name = preg_replace('/Model$/', '', $shortname);
 
-        return strtolower($table_name);
+        return Str::underscores($table_name, true);
     }
 
     public function primary_key()
