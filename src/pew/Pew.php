@@ -105,9 +105,11 @@ class Pew extends Registry
             $pew_class_name = '\\' . __NAMESPACE__ . '\\controllers\\' . $class_name;
 
             if (class_exists($app_class_name)) {
-                $controller = $this->resolve($app_class_name);
+                $reflector = new \ReflectionClass($app_class_name);
+                $controller = $this->resolve_constructor($reflector);
             } elseif (class_exists($pew_class_name)) {
-                $controller = $this->resolve($pew_class_name);
+                $reflector = new \ReflectionClass($app_class_name);
+                $controller = $this->resolve_constructor($reflector);
             } else {
                 $controller = false;
             }
@@ -126,12 +128,11 @@ class Pew extends Registry
      *  For the moment only the constructor argument name is taken into
      *  account to resolve argument.
      * 
-     * @param string $fqcn Fully-qualified class name
+     * @param ReflectionClass $class
      * @return object
      */
-    protected function resolve($fqcn)
+    protected function resolve_constructor(\ReflectionClass $class)
     {
-        $class = new \ReflectionClass($fqcn);
         $constructor = $class->getConstructor();
 
         if (is_null($constructor)) {
@@ -151,6 +152,31 @@ class Pew extends Registry
         }
 
         return $class->newInstanceArgs($args_array);
+    }
+
+    /**
+     * Resolves a function or method call using stored values.
+     *
+     *  For the moment only the constructor argument name is taken into
+     *  account to resolve argument.
+     * 
+     * @param ReflectionFunctionAbstract $callback
+     * @return array
+     */
+    public function resolve_call(\ReflectionFunctionAbstract $callback)
+    {
+        $parameters = $callback->getParameters();
+        $arguments = [];
+
+        foreach ($parameters as $p) {
+            if (isSet($this->{$p->name})) {
+                $arguments[$p->name] = $this->{$p->name};
+            } elseif (isSet($_REQUEST[$p->name])) {
+                $arguments[$p->name] = $_REQUEST[$p->name];
+            }
+        }
+
+        return $arguments;
     }
 
     /**
