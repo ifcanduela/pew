@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\reponse\exception;
+namespace pew\response\exception;
 
 class ViewLayoutNotFoundException extends ViewException
 {

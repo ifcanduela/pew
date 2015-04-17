@@ -6,9 +6,9 @@ use SplStack;
 use pew\libs\Registry;
 use pew\libs\FileCache;
 
-use pew\response\ViewTemplateNotFoundException;
-use pew\response\ViewLayoutNotFoundException;
-use pew\response\ViewElementFileNotFoundException;
+use pew\response\exception\ViewTemplateNotFoundException;
+use pew\response\exception\ViewLayoutNotFoundException;
+use pew\response\exception\ViewElementFileNotFoundException;
 
 /**
  * This class encapsulates the template rendering functionality.

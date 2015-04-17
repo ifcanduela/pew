@@ -2,7 +2,7 @@
 
 namespace pew\response\exception;
 
-class ViewTemplatenotFoundException extends ViewException
+class ViewTemplateNotFoundException extends ViewException
 {
 
 }
