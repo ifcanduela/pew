@@ -93,13 +93,16 @@ return [
         # instantiate the router object
         $router = new \pew\route\Router($routes);
 
+        # basic configuration
+        $router->default_controller($this['default_controller']);
+        $router->default_action($this['default_action']);
+        $router->token_prefix($pew['router_token_prefix']);
+        $router->sequence_prefix($pew['router_sequence_prefix']);
+
         # configure resource routes
         foreach ($resources as $controller) {
             $router->resource($controller);
         }
-
-        $router->default_controller($this['default_controller']);
-        $router->default_action($this['default_action']);
 
         return $router;
     },

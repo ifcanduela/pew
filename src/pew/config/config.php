@@ -154,6 +154,16 @@ $cfg['default_routes'] = [
 ];
 
 /**
+ * @var string Route capturing group indicator for named arguments.
+ */
+$cfg['router_token_prefix'] = '!';
+
+/**
+ * @var array Route capturing group indicator for remainder arguments.
+ */
+$cfg['router_sequence_prefix'] = '*';
+
+/**
  * Base URL of the application (the location of index.php).
  */
 defined('APP_URL') or define('APP_URL', $cfg['app_url']);
