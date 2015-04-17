@@ -11,10 +11,9 @@ use pew\db\relationship\BelongsTo;
 use pew\db\relationship\HasAndBelongsToMany;
 use pew\db\relationship\HasMany;
 use pew\db\relationship\HasOne;
+use pew\db\exception\TableNotSpecifiedException;
+use pew\db\exception\TableNotFoundException;
 use pew\libs\Str;
-
-class TableNotSpecifiedException extends \LogicException {}
-class TableNotFoundException extends \RuntimeException {}
 
 /**
  * Table gateway class.
@@ -209,20 +208,9 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     {
         # get the Database class instance
         $this->db = is_null($db) ? Pew::instance()->db : $db;
+        $this->table = $table ?: $this->table_name();
 
-        if (!is_null($table)) {
-            $this->table = $table;
-        } elseif (Str::ends_with(get_class($this), '\\Model')) {
-            # if this is an instance of the Model class, get the
-            # table from the $table parameter
-            throw new TableNotSpecifiedException('Model class must be attached to a database table.');
-        } elseif (!$this->table) {
-            # else, if $table is not set in the Model class file,
-            # guess the table name
-            $this->table = $this->table_name();
-        }
-
-        if (false === $this->db->table_exists($this->table)) {
+        if (!$this->db->table_exists($this->table)) {
             throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
         }
 
@@ -240,20 +228,17 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
             $this->primary_key = $this->table_data['primary_key'];
         }
 
-        foreach ($this->belongs_to as $alias => $info) {
-            $this->attach(new BelongsTo($alias, $info));
-        }
+        $relationship_types = [
+            'belongs_to' => 'add_parent',
+            'has_many' => 'add_child',
+            'has_one' => 'add_twin',
+            'has_and_belongs_to_many' => 'add_sibling',
+        ];
 
-        foreach ($this->has_many as $alias => $info) {
-            $this->attach(new HasMany($alias, $info));
-        }
-        
-        foreach ($this->has_one as $alias => $info) {
-            $this->attach(new HasOne($alias, $info));
-        }
-
-        foreach ($this->has_and_belongs_to_many as $alias => $info) {
-            $this->attach(new HasAndBelongsToMany($alias, $info));
+        foreach ($relationship_types as $type => $method) {
+            foreach ($this->$type as $alias => $info) {
+                $this->$method($alias, $info);
+            }
         }
     }
 
@@ -271,17 +256,37 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         $shortname = (new \ReflectionClass($this))->getShortName();
         $table_name = preg_replace('/Model$/', '', $shortname);
 
+        if (!$table_name) {
+            throw new TableNotSpecifiedException("Model class must be attached to a database table.");
+        }
+
         return Str::underscores($table_name, true);
     }
 
+    /**
+     * Get the name of the primary key column.
+     * 
+     * @return string
+     */
     public function primary_key()
     {
         return $this->primary_key;
     }
 
-    public function column_names()
+    /**
+     * Get the list of column names.
+     *
+     * If $as_keys is false, the column names will be returned as values in an 
+     * array, otherwise they will be key names in an associative array.
+     *
+     * @param boolean $as_keys Return the column names as keys in an associative array.
+     * @return array
+     */
+    public function column_names($as_keys = true)
     {
-        return $this->table_data['column_names'];
+        return $as_keys 
+            ? $this->table_data['column_names'] 
+            : array_keys($this->table_data['column_names']);
     }
 
     /**
@@ -432,7 +437,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     {
         $class = '\\' . get_class($this);
         $blank = new $class($this->table, $this->db);
-        $blank->attributes(array_merge($this->table_data['column_names'], $attributes));
+        $blank->attributes(array_merge($this->column_names(), $attributes));
 
         return $blank;
     }
@@ -454,7 +459,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     public function attributes(array $attributes = null)
     {
         if (!is_null($attributes)) {
-            $base_fields = $this->table_data['column_names'];
+            $base_fields = $this->column_names();
             $this->record = array_intersect_key($attributes, $base_fields) + $base_fields;
         }
         
@@ -538,11 +543,11 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         $this->reset();
 
         if ($result) {
-            $this->record = array_merge($this->table_data['column_names'], (array) $result);
+            $this->record = array_merge($this->column_names(), (array) $result);
         } else {
             # if there was no result, return false
             $this->table_data['data'] = [];
-            $result = $this->table_data['column_names'];
+            $this->record = $this->column_names();
             return false;
         }
 
@@ -605,8 +610,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     /**
      * Count the rows that fit the criteria.
      *
-     * @param array $where An associative array with field name/field value
-     *                   pairs for the WHERE clause.
+     * @param array $where An associative array with field name/field value pairs for the WHERE clause.
      * @return int
      */
     public function count($where = null)
