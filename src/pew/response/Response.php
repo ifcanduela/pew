@@ -12,7 +12,7 @@ use pew\response\exception\ViewElementFileNotFoundException;
 
 /**
  * This class encapsulates the template rendering functionality.
- * 
+ *
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
@@ -22,7 +22,7 @@ class Response extends Registry
      * @var boolean Render the view or not
      */
     public $render = true;
-    
+
     /**
      * @var SplStack Base templates directory
      */
@@ -32,7 +32,7 @@ class Response extends Registry
      * @var string Template name
      */
     protected $template = 'index';
-    
+
     /**
      * @var string Layout name
      */
@@ -62,7 +62,7 @@ class Response extends Registry
      * @var SplStack Stack of block names
      */
     protected $block_stack;
-    
+
     /**
      * Creates a View object based on a folder.
      *
@@ -72,7 +72,7 @@ class Response extends Registry
     {
         $this->block_stack = new SplStack;
         $this->folder_stack = new SplStack;
-        
+
         if (is_null($templates_folder)) {
             $templates_folder = getcwd();
         }
@@ -91,7 +91,7 @@ class Response extends Registry
         if (!$template) {
             $template = $this->template;
         }
-        
+
         # Get the view file
         $template_file = $this->resolve($template . $this->extension());
 
@@ -104,7 +104,7 @@ class Response extends Registry
 
         if ($this->layout && $this->layout !== 'none') {
             $layout_file = $this->resolve($this->layout . $this->extension());
-            
+
             if ($layout_file === false) {
                 throw new ViewLayoutNotFoundException("Layout {$this->layout} not found");
             }
@@ -114,10 +114,10 @@ class Response extends Registry
 
         return $output;
     }
-    
+
     /**
      * Check if a template file exists.
-     * 
+     *
      * @param string $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
      */
@@ -128,13 +128,13 @@ class Response extends Registry
         }
 
         $exists = $this->resolve($template . $this->extension());
-        
+
         return $exists !== false;
     }
 
     /**
      * Add a template folder to the current stack.
-     * 
+     *
      * @param string $folder Folder location
      */
     protected function add_folder($folder)
@@ -144,9 +144,9 @@ class Response extends Registry
 
     /**
      * Find a template in the folder stack.
-     * 
+     *
      * @param string $template_file Template file name and extension
-     * @return tring|bool The location of the template, or false
+     * @return string|bool The location of the template, or false
      */
     protected function resolve($template_file)
     {
@@ -155,7 +155,7 @@ class Response extends Registry
                 return $folder . '/' . $template_file;
             }
         }
-        
+
         return false;
     }
 
@@ -163,7 +163,7 @@ class Response extends Registry
      * Set and get the templates folder.
      *
      * Always includes a trailing slash (OS-dependent)
-     * 
+     *
      * @param string $folder Folder where templates should be located
      * @return string Folder where templates should be located
      */
@@ -178,7 +178,7 @@ class Response extends Registry
 
     /**
      * Set and get the template to render.
-     * 
+     *
      * @param string $template Name of the template
      * @return string Name of the template
      */
@@ -193,7 +193,7 @@ class Response extends Registry
 
     /**
      * Set and get the view file extension.
-     * 
+     *
      * @param string $extension View file extension
      * @return string View file extension
      */
@@ -208,7 +208,7 @@ class Response extends Registry
 
     /**
      * Set and get the layout to use.
-     * 
+     *
      * @param string $layout Name of the layout
      * @return string Name of the layout
      */
@@ -223,7 +223,7 @@ class Response extends Registry
 
     /**
      * Set and get the view title.
-     * 
+     *
      * @param string $title The title of the view
      * @return string The title of the view
      */
@@ -238,7 +238,7 @@ class Response extends Registry
 
     /**
      * Get the output of the previous render call.
-     * 
+     *
      * @return string View output
      */
     public function child()
@@ -250,7 +250,7 @@ class Response extends Registry
      * Load and render another view into the current view.
      *
      * Elements only inherit view data set with __set(), accesible via $this->{key}.
-     * 
+     *
      * @param string $element The snippet to be loaded, relative to the templates folder
      * @param array $element_data Additional variables for use in the element
      * @return void
@@ -262,15 +262,15 @@ class Response extends Registry
         if ($element_file === false) {
             throw new ViewElementFileNotFoundException("The element file $element could not be found.");
         }
-        
+
         # Render the element.
         return $this->_render($element_file, $element_data);
     }
-    
+
     /**
      * Import and process a template file.
      *
-     * This method encapsulates the replacement of template variables, avoiding the 
+     * This method encapsulates the replacement of template variables, avoiding the
      * creation of extra variables in its scope.
      *
      * @param string $filename Template file name
@@ -295,9 +295,9 @@ class Response extends Registry
      * Attempt to insert a cached fragment into the view.
      *
      * This method automatically inserts the cached fragment if it's found and
-     * then returns TRUE. If the return value is FALSE, the cached fragment was 
+     * then returns TRUE. If the return value is FALSE, the cached fragment was
      * not found.
-     * 
+     *
      * @param string $key Name key of the cached fragment to load
      * @param string $open_buffer Set to false to prevent the opening of a buffer
      * @return bool True if the cached fragment could be inserted, false otherwise.
@@ -321,7 +321,7 @@ class Response extends Registry
 
     /**
      * Save a fragment to the cache.
-     * 
+     *
      * @param string $key Name key for the cached fragment
      */
     public function save($key)
@@ -337,7 +337,7 @@ class Response extends Registry
 
     /**
      * Inserts a previously-rendered block.
-     * 
+     *
      * @param string $name
      * @return string
      */
@@ -352,19 +352,19 @@ class Response extends Registry
 
     /**
      * Starts a block.
-     * 
-     * @param string $name
+     *
+     * @param string $block_name
      */
-    public function begin_block($name)
+    public function begin($block_name)
     {
-        $this->block_stack->push($name);
+        $this->block_stack->push($block_name);
         ob_start();
     }
 
     /**
      * Closes the current block.
      */
-    public function end_block()
+    public function end()
     {
         $output = ob_get_clean();
 

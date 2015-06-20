@@ -1,15 +1,14 @@
 <?php
 
-namespace pew\route;
+namespace pew\router;
 
 /**
- * Router class.
+ * Route class.
  *
- * This class takes a string of segments and tries to fit it into any of a list
- * of pre-configured route patterns.
+ * Represents an application route.
  *
- * @package pew\libs
- * @author ifernandez <ifcanduela@gmail.com>
+ * @package pew\router
+ * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Router
 {

@@ -16,10 +16,10 @@ class Env
     public $scheme;
     public $host;
     public $port;
-    public $path;
+    public $location;
     public $script;
     
-    public $segments;
+    public $path;
 
     public $get;
     public $post;
@@ -44,7 +44,7 @@ class Env
             $this->host = $_SERVER['SERVER_NAME'];
             $this->port = $_SERVER['SERVER_PORT'];
             
-            $this->path = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
+            $this->location = str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
         } else {
             $this->local = true;
             
@@ -53,7 +53,7 @@ class Env
             $this->host = null;
             $this->port = null;
 
-            $this->path = dirname($_SERVER['SCRIPT_NAME']);
+            $this->location = dirname($_SERVER['SCRIPT_NAME']);
         }
 
         $this->script = basename($_SERVER['SCRIPT_NAME']);
@@ -62,14 +62,14 @@ class Env
             $this->headers = getAllHeaders();
         }
 
-        $segments = $this->get_segments_from_path_info();
+        $path = $this->get_path_from_path_info();
 
-        if (false === $segments) {
+        if (false === $path) {
             $request_script_name = $this->get_script_name();
-            $segments = $this->extract_segments_from_script_name($request_script_name);
+            $path = $this->extract_segments_from_script_name($request_script_name);
         }
 
-        $this->segments = $segments;
+        $this->path = $path;
         
         $this->get = $_GET;
         $this->post = $_POST;
@@ -83,7 +83,7 @@ class Env
      * 
      * @return string A segment string like /segment1/segment2/segment3, or false
      */
-    protected function get_segments_from_path_info()
+    protected function get_path_from_path_info()
     {
         if (isSet($_SERVER['PATH_INFO'])) {
             return $_SERVER['PATH_INFO'];

@@ -108,7 +108,7 @@ class Pew extends Registry
                 $reflector = new \ReflectionClass($app_class_name);
                 $controller = $this->resolve_constructor($reflector);
             } elseif (class_exists($pew_class_name)) {
-                $reflector = new \ReflectionClass($app_class_name);
+                $reflector = new \ReflectionClass($pew_class_name);
                 $controller = $this->resolve_constructor($reflector);
             } else {
                 $controller = false;
@@ -168,12 +168,20 @@ class Pew extends Registry
         $parameters = $callback->getParameters();
         $arguments = [];
 
+        $route_args = $this->router->route()->args();
+
         foreach ($parameters as $p) {
-            if (isSet($this->{$p->name})) {
-                $arguments[$p->name] = $this->{$p->name};
-            } elseif (isSet($_REQUEST[$p->name])) {
-                $arguments[$p->name] = $_REQUEST[$p->name];
+            if ($this->request->has_key($p->name)) {
+                $arguments[] = $this->request->get_key($p->name);
+            } elseif (array_key_exists($p->name, $route_args)) {
+                $arguments[] = $route_args[$p->name];
+            } elseif (isSet($this->{$p->name})) {
+                $arguments[] = $this->{$p->name};
             }
+        }
+
+        foreach ($this->router->route()->splat() as $arg) {
+            $arguments[] = $arg;
         }
 
         return $arguments;

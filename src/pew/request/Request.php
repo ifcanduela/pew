@@ -3,7 +3,7 @@
 namespace pew\request;
 
 use pew\libs\Env;
-use pew\route\Router;
+use pew\router\Route;
 
 /**
  * A shell class that centralizes information about the current request.
@@ -13,22 +13,27 @@ use pew\route\Router;
  */
 class Request
 {
-    /** @type Router */
+    /** @var Route */
     protected $route;
 
-    /** @type Env */
+    /** @var Env */
     protected $env;
 
     /**
      * Create a new Request object.
      * 
-     * @param Router $route
      * @param Env $env
+     * @param Router $route
      */
-    public function __construct(Router $route, Env $env = null)
+    public function __construct(Env $env = null, Route $route = null)
     {
         $this->route = $route;
         $this->env = $env ?: new Env;
+    }
+
+    public function has_route()
+    {
+        return $this->route !== null;
     }
 
     /**
@@ -224,7 +229,7 @@ class Request
      */
     public function uri()
     {
-        return $this->route->uri();
+        return $this->request->segments;
     }
 
     /**
@@ -234,7 +239,7 @@ class Request
      */
     public function destination()
     {
-        return $this->route->destination();
+        return $this->route->to();
     }
 
     /**
@@ -244,7 +249,7 @@ class Request
      */
     public function controller()
     {
-        return $this->route->controller();
+        return $this->has_route() ? $this->route->controller() : false;
     }
 
     /**
@@ -254,7 +259,7 @@ class Request
      */
     public function action()
     {
-        return $this->route->action();
+        return $this->has_route() ? $this->route->action() : false;
     }
 
     /**
@@ -264,7 +269,7 @@ class Request
      */
     public function args()
     {
-        return $this->route->parameters();
+        return $this->route->args();
     }
 
     /**
@@ -275,7 +280,38 @@ class Request
      */
     public function arg($index = 0)
     {
-        return $this->route->parameters((int) $index);
+        return $this->route->args((int) $index);
+    }
+
+    /**
+     * Check if a key has been submitted.
+     * 
+     * @return boolean
+     */
+    public function has_key($key)
+    {
+        return array_key_exists($key, $_REQUEST);
+    }
+
+    /**
+     * Get a value from the query string or the request body by key.
+     * 
+     * @param string $key
+     * @return string
+     */
+    public function get_key($key)
+    {
+        return $_REQUEST[$key];
+    }
+
+    /**
+     * Check if the destination is a closure or a controller/action pair.
+     * 
+     * @return boolean
+     */
+    public function is_callable()
+    {
+        return $this->route && $this->route->is_callable();
     }
 
     /**
@@ -291,6 +327,7 @@ class Request
      */
     public function response_type()
     {
+        return 'html';
         return $this->route->response_type();
     }
 
@@ -303,7 +340,7 @@ class Request
      */
     public function is_html()
     {
-        return $this->route->response_type() === Router::HTML;
+        return $this->router->response_type() === Router::HTML;
     }
 
     /**
@@ -317,7 +354,7 @@ class Request
      */
     public function is_json()
     {
-        return $this->route->response_type() === Router::JSON;
+        return $this->router->response_type() === Router::JSON;
     }
 
     /**
@@ -331,6 +368,6 @@ class Request
      */
     public function is_xml()
     {
-        return $this->route->response_type() === Router::XML;
+        return $this->router->response_type() === Router::XML;
     }
 }

@@ -67,10 +67,9 @@ return [
     'request' => function ($pew) {
         $router = $pew['router'];
         $env = $pew['env'];
-
-        $router->route($env->segments, $env->method);
-
-        return new \pew\request\Request($router, $env);
+        $route = $router->resolve($env->path, $env->method);
+        
+        return new \pew\request\Request($env, $route);
     },
 
     'routes' => function ($pew) {
@@ -91,18 +90,18 @@ return [
         }
 
         # instantiate the router object
-        $router = new \pew\route\Router($routes);
+        $router = new \pew\router\Router($routes);
 
         # basic configuration
-        $router->default_controller($this['default_controller']);
-        $router->default_action($this['default_action']);
-        $router->token_prefix($pew['router_token_prefix']);
-        $router->sequence_prefix($pew['router_sequence_prefix']);
+        // $router->default_controller($this['default_controller']);
+        // $router->default_action($this['default_action']);
+        // $router->token_prefix($pew['router_token_prefix']);
+        // $router->sequence_prefix($pew['router_sequence_prefix']);
 
         # configure resource routes
-        foreach ($resources as $controller) {
-            $router->resource($controller);
-        }
+        // foreach ($resources as $controller) {
+        //     $router->resource($controller);
+        // }
 
         return $router;
     },

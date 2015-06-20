@@ -105,50 +105,34 @@ class App
      */
     public function run()
     {
-        # fetch the request object
+        $skip_action = false;
+        $view_data = [];
+
         $request = $this->pew['request'];
         $response = false;
 
         try {
-            # instantiate and configure the view
-            $view = $this->pew['view'];
-            $view->template($request->controller() . '/' . $request->action());
-            $view->layout($this->pew['default_layout']);
-            $view->title(ucfirst($request->action()) . ' - ' . ucfirst($request->controller()) . ' - ' . $this->pew['app_title']);
-            
-            # instantiate the controller
-            $controller = $this->pew->controller($request->controller());
-            
-            $skip_action = false;
-            $view_data = [];
-            
-            # check controller instantiation
-            if (!is_object($controller)) {
-                if ($view->exists()) {
-                    $skip_action = true;
-                } else {
-                    throw new ControllerMissingException("Controller " . $request->controller() . " does not exist.");
-                }
+            if (!$request->has_route()) {
+                throw new \pew\router\exception\RouteNotFoundException('No route found for '. $request->path());
             }
 
-            if (method_exists($controller, 'before_action')) {
-                $controller->before_action($request);
+            if (is_callable($request->is_callable())) {
+                $view_data = $this->handle_callable($request->destination());
+            } else {
+                # instantiate and configure the view
+                $view = $this->pew['view'];
+                $view->template($request->controller() . '/' . $request->action());
+                $view->layout($this->pew['default_layout']);
+                $view->title(ucfirst($request->action()) . ' - ' . ucfirst($request->controller()) . ' - ' . $this->pew['app_title']);
+                
+                $view_data = $this->handle_controller($request->controller(), $request->action());
             }
-
-            # call the action method and let the controller decide what to do
-            if (!$skip_action) {
-                $view_data = $controller($request);
-            }
-
+            
             if (false !== $view_data) {
-                if (method_exists($controller, 'after_ection')) {
-                    $view_data = $controller->after_action($view_data);
-                }
-
                 $response = $this->respond($request, $view, $view_data);
             }
         } catch (\Exception $exception) {
-            throw $exception;
+            $view = $this->pew->view;
             $view->layout('error.layout');
             
             if ($this->pew['debug']) {
@@ -168,6 +152,51 @@ class App
         if ($response) {
             echo $response;
         }
+    }
+
+    protected function handle_callable($callable)
+    {
+        $parameters = $this->pew->resolve_call(new \ReflectioNFunction($callable));
+
+        return call_user_func_array($callable, $parameters);
+    }
+
+    public function handle_controller($controller_slug, $action_slug)
+    {
+        $view_data = [];
+        $skip_action = false;
+        $controller = $this->pew->controller($controller_slug);
+
+        # check controller instantiation
+        if (!$controller) {
+            if ($this->pew->view->exists()) {
+                $skip_action = true;
+            } else {
+                throw new ControllerMissingException("Controller " . $controller_slug . " does not exist.");
+            }
+        }
+
+        if (method_exists($controller, 'before_action')) {
+            $controller->before_action($this->pew->request);
+        }
+
+        # call the action method and let the controller decide what to do
+        if (!$skip_action) {
+            try {
+                $parameters = $this->pew->resolve_call(new \ReflectionMethod(get_class($controller), $action_slug));
+                $view_data = call_user_func_array([$controller, $action_slug], $parameters);
+            } catch (\ReflectionException $e) {
+                $view_data = $controller($this->pew->request);
+            }
+        }
+
+        if ($view_data !== false) {
+            if (method_exists($controller, 'after_action')) {
+                $view_data = $controller->after_action($view_data);
+            }
+        }
+
+        return $view_data;
     }
 
     public function respond(Request $request, View $view, $view_data)
