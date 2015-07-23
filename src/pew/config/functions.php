@@ -1,8 +1,8 @@
-<?php 
+<?php
 
 /**
  * Assorted functions, helpers and shortcuts.
- * 
+ *
  * @package pew
  */
 
@@ -31,7 +31,7 @@ function pew($key = null)
  * Logs something to a file.
  *
  * The location of the file must be available to write.
- * 
+ *
  * @param mixed $what What you want to write to the log
  * @return int Number of bytes written to file, or false on failure
  */
@@ -43,7 +43,7 @@ function flog($what, $filename = null)
 
     $data = print_r($what, true);
     $entry = date('Y-m-d H:i:s') . ' | ' . $data . PHP_EOL;
-    
+
     return file_put_contents($filename, $entry, FILE_APPEND);
 }
 
@@ -64,13 +64,13 @@ function class_base_name($class_name)
 /**
  * A basic configuration storage.
  *
- * The cfg() function can be called with a single parameter to retrieve its 
+ * The cfg() function can be called with a single parameter to retrieve its
  * value from the storage, or with two parameters to save the value in the
  * storage.
- * 
+ *
  * If the $key parameter is boolean true, the return value is the full content
  * of the storage.
- * 
+ *
  * @param int|string $key Key to set
  * @param mixed $value Value to set
  * @return mixed
@@ -79,12 +79,12 @@ function cfg($key, $value = null, $default = null)
 {
     # static storage
     static $_config_values = [];
-    
+
     # return all values in special case
     if ($key === true) {
         return $_config_values;
     }
-    
+
     # return null if key is invalid
     if (!is_string($key) && !is_int($key)) {
         return null;
@@ -111,7 +111,7 @@ function cfg($key, $value = null, $default = null)
 /**
  * Builds a path out of several segments.
  *
- * The first argument can be a single-character separator.              
+ * The first argument can be a single-character separator.
  *
  * @param string Path segments to join
  * @return string The full path
@@ -135,9 +135,9 @@ function make_path()
 /**
  * Generates a floating-point pseudo-random number.
  *
- * If only one parameter is provided, it's used as upper boundary. If no parameters are 
+ * If only one parameter is provided, it's used as upper boundary. If no parameters are
  * provided, 0.0 and 1.0 are used as boundaries.
- * 
+ *
  * @param number $from Lower boundary
  * @param number $to Upper boundary
  * @return float A floating point number between 0.0 and 1.0
@@ -154,7 +154,7 @@ function frand($from = null, $to = null)
             $from = 0;
             $to = 1;
         }
-    } 
+    }
 
     $result = rand($from * $multiplier, $to * $multiplier) / $multiplier;
 
@@ -166,9 +166,9 @@ function frand($from = null, $to = null)
  *
  * The pr() function calls print_r with the $data parameter, wrapping the call
  * inside &lt;pre> tags and preprending the optional $title parameter to help
- * identify the output. It will not produce HTML if the script is running from 
+ * identify the output. It will not produce HTML if the script is running from
  * the console.
- * 
+ *
  * @param mixed $data The data to be printed
  * @param string $title Optional title of the printed data
  * @param boolean $print Whether to print or return the output
@@ -178,7 +178,7 @@ function pr($data, $title = null, $print = true)
 {
     # acquire formatted $data
     $echo = print_r($data, true);
-    
+
     if (defined('STDIN')) {
         # don't add markup for console output
         if ($title) {
@@ -192,7 +192,7 @@ function pr($data, $title = null, $print = true)
         # wrap the text in <pre> tags
         $echo = "<pre>$echo</pre>";
     }
-    
+
     if ($print) {
         echo $echo;
     } else {
@@ -202,7 +202,7 @@ function pr($data, $title = null, $print = true)
 
 /**
  * Triggers an E_USER_ERROR message and shows a simple trace.
- * 
+ *
  * @param string $message A descriptive error message
  * @param int $level Error level, E_USER_ERROR by default
  * @return void
@@ -231,20 +231,20 @@ function get_execution_time($partial = false)
 {
     static $microtime_start = null;
     static $microtime_last = null;
-    
+
     $microtime = microtime(true);
-    
+
     if ($microtime_start === null)
     {
         $microtime_start = $microtime_last = $microtime;
         return 0.0;
     }
-    
+
     $microtime_partial = $microtime - $microtime_last;
     $microtime_last    = $microtime;
-    
+
     if (!$partial) {
-        return $microtime - $microtime_start; 
+        return $microtime - $microtime_start;
     } else {
         return $microtime_partial;
     }
@@ -312,7 +312,7 @@ function get_execution_time($partial = false)
  *     ]
  *   ]
  * ]
- * 
+ *
  * @param array $files_array The list of uploaded files
  * @return array
  */
@@ -353,7 +353,7 @@ function sanitize($string)
 
 /**
  * Escapes form data in a recursive way.
- * 
+ *
  * @param array $post The data from the $_POST array
  * @return array The properly-escaped data
  * @see http://php.net/manual/en/function.stripslashes.php
@@ -369,7 +369,7 @@ function clean_array_data($post)
 
 /**
  * Cleans a string using basic PHP functions.
- * 
+ *
  * @param string $evil_string A string to clean up
  * @return string The resulting string
  * @see http://php.net/manual/en/function.strip_tags.php
@@ -386,7 +386,7 @@ function pew_clean_string($evil_string)
 
     return $clean_string;
 }
- 
+
 /**
  * Returns a value from an array (discarding the array itself).
  *
@@ -398,7 +398,7 @@ function pew_clean_string($evil_string)
  * That would not work. You just do this:
  *
  *   $my_desired_value = array_index(func_that_returns_array(), $index);
- * 
+ *
  * @param array $array The array data
  * @param mixed $index The integer or string index to retrieve
  * @param bool $strict Whether or not to throw an InvalidArgumenException
@@ -414,18 +414,18 @@ function deref(array $array, $index, $strict = false)
             return null;
         }
     }
-    
+
     return $array[$index];
 }
 
 /**
  * Builds a key/value array using a value from an array as index.
  *
- * The result is an array with keys corresponding to values from the 
+ * The result is an array with keys corresponding to values from the
  * source array's elements. If the $value_index parameter is null the whole
  * element is assigned to the key, but if a key is provided only the value
  * of that key is assigned to the $key_index.
- * 
+ *
  * @param array $array An array with array/object elements
  * @param int|string $key_name Element key to use as key
  * @param int|string $value_name Element key to use as value
@@ -443,7 +443,7 @@ function array_reindex(array $array, $key_name, $value_name = null)
 
         if (is_array($value) && array_key_exists($key_name, $value)) {
             $key_name_value = $value[$key_name];
-            
+
             if (is_null($value_name)) {
                 # if $value_name is null the while element is used
                 $value_name_value = $value;
@@ -469,7 +469,7 @@ function array_reindex(array $array, $key_name, $value_name = null)
  * array form) and uses the atoms to progressively scan the the keys in
  * successive dimensions of the array, discarding the indexes that do not
  * conform to the atom provided for the dimension.
- * 
+ *
  * Atom strings are of the form '#:$:literal:0'.
  *
  * The available atom types are:
@@ -494,7 +494,7 @@ function array_reap($data, $filter)
         # any other possibility is an error
         return null;
     }
-    
+
     # if there are no remaining filters, $data complies with the rules
     if (count($filters) == 0) {
         return $data;
@@ -504,23 +504,23 @@ function array_reap($data, $filter)
     if (is_object($data)) {
         $data = get_object_vars($data);
     }
-    
+
     # by this point, $data must be an array
     if (!is_array($data)) {
         return null;
     }
-    
+
     # get the current filter
     $f = array_shift($filters);
-    
+
     # scan the data array
     foreach ($data as $key => $value) {
         # assume recursive calls won't be necessary
         $reap = false;
-        
+
         switch ($f) {
             case '#':
-            case '#i': 
+            case '#i':
                 # match any number
                 $reap = is_numeric($key);
                 break;
@@ -534,7 +534,7 @@ function array_reap($data, $filter)
                 $reap = ("$key" === "$f");
                 break;
         }
-        
+
         if ($reap) {
             $function_name = __FUNCTION__;
             # if the value matched, call recursively to reap()
@@ -548,7 +548,7 @@ function array_reap($data, $filter)
             unset($data[$key]);
         }
     }
-    
+
     return $data;
 }
 
@@ -566,7 +566,7 @@ function array_flatten($data)
 {
     # store results here
     $flat = [];
-    
+
     # loop through the $data array
     foreach ($data as $key => $value) {
         if (is_array($value)) {
@@ -578,13 +578,13 @@ function array_flatten($data)
             $flat[] = $value;
         }
     }
-    
+
     return $flat;
 }
 
 /**
  * Convert an array into an XML structure.
- * 
+ *
  * @see http://stackoverflow.com/a/5965940/1007072
  */
 function array_to_xml(array $data, &$xml, $root_name = 'root')
@@ -592,7 +592,7 @@ function array_to_xml(array $data, &$xml, $root_name = 'root')
     if (is_string($xml)) {
         $xml = new SimpleXMLElement('<' . $root_name . '></' . $root_name . '>');
     }
-    
+
     foreach ($data as $k => $v) {
         if (is_array($v)) {
             if (is_numeric($k)) {
@@ -610,7 +610,7 @@ function array_to_xml(array $data, &$xml, $root_name = 'root')
 
 /**
  * A quick way of converting file names to class names.
- * 
+ *
  * @param string $file_name The file name, without extension
  * @return string The properly-cased class name
  */
@@ -618,13 +618,13 @@ function file_name_to_class_name($file_name)
 {
     #obtain the words in the file name
     $words = explode('_', $file_name);
-    
+
     # use an anonymous function to upper-case-first every word in the array
     array_walk($words, function(&$word) {
         # convert the word to upper-case
         $word = ucfirst($word);
     });
-    
+
     # return the words
     return join('', $words);
 }
@@ -633,7 +633,7 @@ function file_name_to_class_name($file_name)
  * A quick way of converting file names to class names.
  *
  * Alias of file_name_to_class_name
- * 
+ *
  * @param string $file_name The file name, without extension
  * @return string The properly-cased class name
  */
@@ -644,7 +644,7 @@ function f2c($file_name)
 
 /**
  * A quick way of converting class names to file names.
- * 
+ *
  * @param string $class_name The came-case class name
  * @return string The lower-case and underscore-separated file name
  */
@@ -658,7 +658,7 @@ function class_name_to_file_name($class_name)
  * A quick way of converting class names to file names.
  *
  * Alias of class_name_to_file_name
- * 
+ *
  * @param string $class_name The came-case class name
  * @return string The lower-case and underscore-separated file name
  */
@@ -696,25 +696,25 @@ function check_dirs($path)
 {
     # Normalize the directory separators
     $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-    
+
     if (file_exists($path))
         return true;
-    
+
     # Obtain an array with from the folder string and filter empty elements
     $dirs = explode(DIRECTORY_SEPARATOR, $path);
     $dirs = array_filter($dirs);
-    
+
     # If there are no folders, leave it be
     if (count($dirs) == 0) {
         return false;
     }
-    
+
     $cp = '';
-    
+
     while (count($dirs) > 0) {
         # Aggregate the folders to form the current path
         $cp .= array_shift($dirs) . DIRECTORY_SEPARATOR;
-        
+
         if (!is_dir($cp)) {
             # If the folder does not exist, attempt to create it
             if (!mkdir($cp)) {
@@ -723,7 +723,7 @@ function check_dirs($path)
             }
         }
     }
-    
+
     return true;
 }
 
@@ -744,42 +744,42 @@ function slugify($str)
 
     # strip the string from URL-unfriendly characters
     $str = preg_replace('/[^\w\d +*._\-]/', '', $str);
-    
+
     # transform spaces into dashes and convert to lowercase
     $str = strtolower(str_replace([' ', '+', '*', '.'], '-', trim($str)));
-    
+
     # reduce consecutive dashes to a single dash
     $str = preg_replace('/-+/', '-', $str);
-    
+
     return $str;
 }
 
 function transliterate($str)
 {
     $substitutions = [
-        'á' => 'a', 'Á' => 'A', 'à' => 'a', 'À' => 'A', 'ă' => 'a', 'Ă' => 'A', 'â' => 'a', 'Â' => 'A', 'å' => 'a', 'Å' => 'A', 'ã' => 'a', 'Ã' => 'A', 'ą' => 'a', 'Ą' => 'A', 'ā' => 'a', 'Ā' => 'A', 'ä' => 'ae', 'Ä' => 'AE', 'æ' => 'ae', 'Æ' => 'AE', 
-        'ḃ' => 'b', 'Ḃ' => 'B', 
-        'ć' => 'c', 'Ć' => 'C', 'ĉ' => 'c', 'Ĉ' => 'C', 'č' => 'c', 'Č' => 'C', 'ċ' => 'c', 'Ċ' => 'C', 'ç' => 'c', 'Ç' => 'C', 
-        'ď' => 'd', 'Ď' => 'D', 'ḋ' => 'd', 'Ḋ' => 'D', 'đ' => 'd', 'Đ' => 'D', 'ð' => 'dh', 'Ð' => 'Dh', 
-        'é' => 'e', 'É' => 'E', 'è' => 'e', 'È' => 'E', 'ĕ' => 'e', 'Ĕ' => 'E', 'ê' => 'e', 'Ê' => 'E', 'ě' => 'e', 'Ě' => 'E', 'ë' => 'e', 'Ë' => 'E', 'ė' => 'e', 'Ė' => 'E', 'ę' => 'e', 'Ę' => 'E', 'ē' => 'e', 'Ē' => 'E', 
-        'ḟ' => 'f', 'Ḟ' => 'F', 'ƒ' => 'f', 'Ƒ' => 'F', 
-        'ğ' => 'g', 'Ğ' => 'G', 'ĝ' => 'g', 'Ĝ' => 'G', 'ġ' => 'g', 'Ġ' => 'G', 'ģ' => 'g', 'Ģ' => 'G', 
-        'ĥ' => 'h', 'Ĥ' => 'H', 'ħ' => 'h', 'Ħ' => 'H', 
-        'í' => 'i', 'Í' => 'I', 'ì' => 'i', 'Ì' => 'I', 'î' => 'i', 'Î' => 'I', 'ï' => 'i', 'Ï' => 'I', 'ĩ' => 'i', 'Ĩ' => 'I', 'į' => 'i', 'Į' => 'I', 'ī' => 'i', 'Ī' => 'I', 
-        'ĵ' => 'j', 'Ĵ' => 'J', 
-        'ķ' => 'k', 'Ķ' => 'K', 
-        'ĺ' => 'l', 'Ĺ' => 'L', 'ľ' => 'l', 'Ľ' => 'L', 'ļ' => 'l', 'Ļ' => 'L', 'ł' => 'l', 'Ł' => 'L', 
-        'ṁ' => 'm', 'Ṁ' => 'M', 
-        'ń' => 'n', 'Ń' => 'N', 'ň' => 'n', 'Ň' => 'N', 'ñ' => 'n', 'Ñ' => 'N', 'ņ' => 'n', 'Ņ' => 'N', 
-        'ó' => 'o', 'Ó' => 'O', 'ò' => 'o', 'Ò' => 'O', 'ô' => 'o', 'Ô' => 'O', 'ő' => 'o', 'Ő' => 'O', 'õ' => 'o', 'Õ' => 'O', 'ø' => 'oe', 'Ø' => 'OE', 'ō' => 'o', 'Ō' => 'O', 'ơ' => 'o', 'Ơ' => 'O', 'ö' => 'oe', 'Ö' => 'OE', 
-        'ṗ' => 'p', 'Ṗ' => 'P', 
-        'ŕ' => 'r', 'Ŕ' => 'R', 'ř' => 'r', 'Ř' => 'R', 'ŗ' => 'r', 'Ŗ' => 'R', 
-        'ś' => 's', 'Ś' => 'S', 'ŝ' => 's', 'Ŝ' => 'S', 'š' => 's', 'Š' => 'S', 'ṡ' => 's', 'Ṡ' => 'S', 'ş' => 's', 'Ş' => 'S', 'ș' => 's', 'Ș' => 'S', 'ß' => 'SS', 
-        'ť' => 't', 'Ť' => 'T', 'ṫ' => 't', 'Ṫ' => 'T', 'ţ' => 't', 'Ţ' => 'T', 'ț' => 't', 'Ț' => 'T', 'ŧ' => 't', 'Ŧ' => 'T', 
-        'ú' => 'u', 'Ú' => 'U', 'ù' => 'u', 'Ù' => 'U', 'ŭ' => 'u', 'Ŭ' => 'U', 'û' => 'u', 'Û' => 'U', 'ů' => 'u', 'Ů' => 'U', 'ű' => 'u', 'Ű' => 'U', 'ũ' => 'u', 'Ũ' => 'U', 'ų' => 'u', 'Ų' => 'U', 'ū' => 'u', 'Ū' => 'U', 'ư' => 'u', 'Ư' => 'U', 'ü' => 'ue', 'Ü' => 'UE', 
-        'ẃ' => 'w', 'Ẃ' => 'W', 'ẁ' => 'w', 'Ẁ' => 'W', 'ŵ' => 'w', 'Ŵ' => 'W', 'ẅ' => 'w', 'Ẅ' => 'W', 
-        'ý' => 'y', 'Ý' => 'Y', 'ỳ' => 'y', 'Ỳ' => 'Y', 'ŷ' => 'y', 'Ŷ' => 'Y', 'ÿ' => 'y', 'Ÿ' => 'Y', 
-        'ź' => 'z', 'Ź' => 'Z', 'ž' => 'z', 'Ž' => 'Z', 'ż' => 'z', 'Ż' => 'Z', 
+        'á' => 'a', 'Á' => 'A', 'à' => 'a', 'À' => 'A', 'ă' => 'a', 'Ă' => 'A', 'â' => 'a', 'Â' => 'A', 'å' => 'a', 'Å' => 'A', 'ã' => 'a', 'Ã' => 'A', 'ą' => 'a', 'Ą' => 'A', 'ā' => 'a', 'Ā' => 'A', 'ä' => 'ae', 'Ä' => 'AE', 'æ' => 'ae', 'Æ' => 'AE',
+        'ḃ' => 'b', 'Ḃ' => 'B',
+        'ć' => 'c', 'Ć' => 'C', 'ĉ' => 'c', 'Ĉ' => 'C', 'č' => 'c', 'Č' => 'C', 'ċ' => 'c', 'Ċ' => 'C', 'ç' => 'c', 'Ç' => 'C',
+        'ď' => 'd', 'Ď' => 'D', 'ḋ' => 'd', 'Ḋ' => 'D', 'đ' => 'd', 'Đ' => 'D', 'ð' => 'dh', 'Ð' => 'Dh',
+        'é' => 'e', 'É' => 'E', 'è' => 'e', 'È' => 'E', 'ĕ' => 'e', 'Ĕ' => 'E', 'ê' => 'e', 'Ê' => 'E', 'ě' => 'e', 'Ě' => 'E', 'ë' => 'e', 'Ë' => 'E', 'ė' => 'e', 'Ė' => 'E', 'ę' => 'e', 'Ę' => 'E', 'ē' => 'e', 'Ē' => 'E',
+        'ḟ' => 'f', 'Ḟ' => 'F', 'ƒ' => 'f', 'Ƒ' => 'F',
+        'ğ' => 'g', 'Ğ' => 'G', 'ĝ' => 'g', 'Ĝ' => 'G', 'ġ' => 'g', 'Ġ' => 'G', 'ģ' => 'g', 'Ģ' => 'G',
+        'ĥ' => 'h', 'Ĥ' => 'H', 'ħ' => 'h', 'Ħ' => 'H',
+        'í' => 'i', 'Í' => 'I', 'ì' => 'i', 'Ì' => 'I', 'î' => 'i', 'Î' => 'I', 'ï' => 'i', 'Ï' => 'I', 'ĩ' => 'i', 'Ĩ' => 'I', 'į' => 'i', 'Į' => 'I', 'ī' => 'i', 'Ī' => 'I',
+        'ĵ' => 'j', 'Ĵ' => 'J',
+        'ķ' => 'k', 'Ķ' => 'K',
+        'ĺ' => 'l', 'Ĺ' => 'L', 'ľ' => 'l', 'Ľ' => 'L', 'ļ' => 'l', 'Ļ' => 'L', 'ł' => 'l', 'Ł' => 'L',
+        'ṁ' => 'm', 'Ṁ' => 'M',
+        'ń' => 'n', 'Ń' => 'N', 'ň' => 'n', 'Ň' => 'N', 'ñ' => 'n', 'Ñ' => 'N', 'ņ' => 'n', 'Ņ' => 'N',
+        'ó' => 'o', 'Ó' => 'O', 'ò' => 'o', 'Ò' => 'O', 'ô' => 'o', 'Ô' => 'O', 'ő' => 'o', 'Ő' => 'O', 'õ' => 'o', 'Õ' => 'O', 'ø' => 'oe', 'Ø' => 'OE', 'ō' => 'o', 'Ō' => 'O', 'ơ' => 'o', 'Ơ' => 'O', 'ö' => 'oe', 'Ö' => 'OE',
+        'ṗ' => 'p', 'Ṗ' => 'P',
+        'ŕ' => 'r', 'Ŕ' => 'R', 'ř' => 'r', 'Ř' => 'R', 'ŗ' => 'r', 'Ŗ' => 'R',
+        'ś' => 's', 'Ś' => 'S', 'ŝ' => 's', 'Ŝ' => 'S', 'š' => 's', 'Š' => 'S', 'ṡ' => 's', 'Ṡ' => 'S', 'ş' => 's', 'Ş' => 'S', 'ș' => 's', 'Ș' => 'S', 'ß' => 'SS',
+        'ť' => 't', 'Ť' => 'T', 'ṫ' => 't', 'Ṫ' => 'T', 'ţ' => 't', 'Ţ' => 'T', 'ț' => 't', 'Ț' => 'T', 'ŧ' => 't', 'Ŧ' => 'T',
+        'ú' => 'u', 'Ú' => 'U', 'ù' => 'u', 'Ù' => 'U', 'ŭ' => 'u', 'Ŭ' => 'U', 'û' => 'u', 'Û' => 'U', 'ů' => 'u', 'Ů' => 'U', 'ű' => 'u', 'Ű' => 'U', 'ũ' => 'u', 'Ũ' => 'U', 'ų' => 'u', 'Ų' => 'U', 'ū' => 'u', 'Ū' => 'U', 'ư' => 'u', 'Ư' => 'U', 'ü' => 'ue', 'Ü' => 'UE',
+        'ẃ' => 'w', 'Ẃ' => 'W', 'ẁ' => 'w', 'Ẁ' => 'W', 'ŵ' => 'w', 'Ŵ' => 'W', 'ẅ' => 'w', 'Ẅ' => 'W',
+        'ý' => 'y', 'Ý' => 'Y', 'ỳ' => 'y', 'Ỳ' => 'Y', 'ŷ' => 'y', 'Ŷ' => 'Y', 'ÿ' => 'y', 'Ÿ' => 'Y',
+        'ź' => 'z', 'Ź' => 'Z', 'ž' => 'z', 'Ž' => 'Z', 'ż' => 'z', 'Ż' => 'Z',
         'þ' => 'th', 'Þ' => 'Th', 'µ' => 'u', 'а' => 'a', 'А' => 'a', 'б' => 'b', 'Б' => 'b', 'в' => 'v', 'В' => 'v', 'г' => 'g', 'Г' => 'g', 'д' => 'd', 'Д' => 'd', 'е' => 'e', 'Е' => 'e', 'ё' => 'e', 'Ё' => 'e', 'ж' => 'zh', 'Ж' => 'zh', 'з' => 'z', 'З' => 'z', 'и' => 'i', 'И' => 'i', 'й' => 'j', 'Й' => 'j', 'к' => 'k', 'К' => 'k', 'л' => 'l', 'Л' => 'l', 'м' => 'm', 'М' => 'm', 'н' => 'n', 'Н' => 'n', 'о' => 'o', 'О' => 'o', 'п' => 'p', 'П' => 'p', 'р' => 'r', 'Р' => 'r', 'с' => 's', 'С' => 's', 'т' => 't', 'Т' => 't', 'у' => 'u', 'У' => 'u', 'ф' => 'f', 'Ф' => 'f', 'х' => 'h', 'Х' => 'h', 'ц' => 'c', 'Ц' => 'c', 'ч' => 'ch', 'Ч' => 'ch', 'ш' => 'sh', 'Ш' => 'sh', 'щ' => 'sch', 'Щ' => 'sch', 'ъ' => '', 'Ъ' => '', 'ы' => 'y', 'Ы' => 'y', 'ь' => '', 'Ь' => '', 'э' => 'e', 'Э' => 'e', 'ю' => 'ju', 'Ю' => 'ju', 'я' => 'ja', 'Я' => 'ja'
     ];
 
@@ -791,9 +791,9 @@ function transliterate($str)
 /**
  * Utility function to convert dashes and spaces to underscores.
  *
- * Behaves in the same way as str_replace. By default, replaces ' ' (space) 
+ * Behaves in the same way as str_replace. By default, replaces ' ' (space)
  * and '-' (minus sign) with '_' (underscore).
- * 
+ *
  * @param string $str The string to transform
  * @param array|string $chars Array of substrings to remove
  * @param array|string $chars Array of substrings to insert
@@ -806,12 +806,12 @@ function to_underscores($str, $chars = [' ', '-'], $replacements = '_')
 
 /**
  * A quick way to get the filesystem root directory or any file below it.
- * 
+ *
  * If the framework files reside in C:\htdocs\pewexample, this call
  *     echo root('app\libs\my_lib.php');
  * will print
  *     C:\htdocs\pewexample\app\libs\my_lib.php
- * 
+ *
  * @param string $path A path to include in the output
  * @return string The resulting path
  */
@@ -819,7 +819,7 @@ function root($path = '')
 {
     $path = ltrim(str_replace('/', DIRECTORY_SEPARATOR, $path), ' \\/');
     $root_path = pew('root_folder') . ($path ? '/' . $path : '');
-    
+
     return $root_path;
 }
 
@@ -830,7 +830,7 @@ function root($path = '')
  *     echo url('www/css/styles.css');
  * will print
  *     http://www.example.com/pewexample/www/css/styles.css.
- * 
+ *
  * @param string $url A string to print after the server and path
  * @return string The resulting url
  */
@@ -847,18 +847,18 @@ function url($path = '')
  */
 function here()
 {
-    return pew('request')->uri();
+    return pew('request')->path();
 }
 
 /**
  * Gets an absolute URL, having the location of the assets folder as base URL.
  *
- * If the site is hosted at http://www.example.com/pewexample and the 
+ * If the site is hosted at http://www.example.com/pewexample and the
  * "www_url" app config setting is url('www'), the call
  *     echo www('css/styles.css');
  * will print
  *     http://www.example.com/pewexample/www/css/styles.css.
- * 
+ *
  * @param string $url A string to print after the server, path and www location.
  * @return string The resulting url
  */
@@ -872,10 +872,10 @@ function www($path = '')
 
 /**
  * Gets the currently logged-in user data, if any.
- * 
+ *
  * Commonly used in this way: echo user()->username;
  *
- * @return stdClass|boolean An object with the user info if there's a user 
+ * @return stdClass|boolean An object with the user info if there's a user
  *                          logged in, boolean false otherwise.
  */
 function user()
@@ -887,7 +887,7 @@ function user()
  * Helper for session values.
  *
  * Accepts a period-delimited string of sub-indices.
- * 
+ *
  * @param string $path Keys to access
  * @param mixed $default Value to return in case the keys don't exist
  * @return mixed Value of the key
@@ -905,7 +905,7 @@ function session($path = null, $default = null)
 
     while (!empty($indexes)) {
         $index = array_shift($indexes);
-        
+
         if (!isSet($value[$index])) {
             return $default;
         }
@@ -918,7 +918,7 @@ function session($path = null, $default = null)
 
 /**
  * Helper for flash data.
- * 
+ *
  * @param string $key Flash data key to read
  * @param mixed $default Value to return in case the keys don't exist
  * @return mixed Value of the key
@@ -949,7 +949,7 @@ function flash($key = null, $default = null)
 
 /**
  * Checks is a value is defined exists and returns ir or a default.
- * 
+ *
  * @param mixed $ref A value reference to check
  * @param mixed $default A fallback value to return
  * @return mixed
