@@ -44,6 +44,11 @@ class Route
     protected $matches = [];
 
     /**
+     * @var array
+     */
+    protected $constraints = [];
+
+    /**
      * Build a route.
      * 
      * @param string $from
@@ -65,6 +70,13 @@ class Route
     public function with($param, $value)
     {
         $this->with[$param] = $value;
+
+        return $this;
+    }
+
+    public function constrain($param, $regex)
+    {
+        $this->constraints[$param] = $regex;
 
         return $this;
     }
@@ -240,10 +252,16 @@ class Route
             $strict_end =  '(?<__splat__>.*)';
         }
 
-        $replacements = preg_replace_callback('`(/?)\{([^}]+)\}`', function ($matches) use ($with) {
+        $constraints = $this->constraints;
+
+        $replacements = preg_replace_callback('`(/?)\{([^}]+)\}`', function ($matches) use ($with, $constraints) {
             $forward_slash = $matches[1];
             $name = $matches[2];
             $regex = '[^/]+';
+
+            if (array_key_exists($name, $constraints)) {
+                $regex = $constraints[$name];
+            }
             
             if (false !== strpos($name, ':')) {
                 list($name, $regex) = explode(':', $matches[2], 2);
@@ -257,7 +275,7 @@ class Route
 
             return $capture;
         }, $from);
-        
+
         return '`^' . $replacements . $strict_end . '`';
     }
 

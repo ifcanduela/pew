@@ -58,7 +58,6 @@ class RouteTest extends PHPUnit_Framework_TestCase
         $r = Route::create('/*', 'alpha/beta');
 
         $this->assertTrue($r->match('/gamma/delta/epsilon'));
-
         $this->assertEquals(['gamma', 'delta', 'epsilon'], $r->splat());
     }
 
@@ -69,5 +68,37 @@ class RouteTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($r->match('/alpha'));
         $to = $r->to();
         $this->assertEquals(1234, $to());
+    }
+
+    public function testConstraints()
+    {
+        // a route that matches a numeric argument only
+        $r = new Route('/{gamma}', 'alpha/beta');
+        $r->constrain('gamma', '[0-9]+');
+        
+        $this->assertFalse($r->match('/delta'));
+
+        $this->assertTrue($r->match('/1234'));
+
+        // a route that matches a partial string
+        $r = new Route('/{gamma}', 'alpha/beta');
+        $r->constrain('gamma', '.+elt.+');
+        
+        $this->assertFalse($r->match('/dellta'));
+
+        $this->assertTrue($r->match('/delta'));
+
+        // a route with multiple constraints
+        $r = new Route('/{gamma}/import/{epsilon}', 'alpha/beta');
+        $r
+            ->constrain('gamma', '[0-9]+')
+            ->constrain('epsilon', 'mu|nu');
+        
+        $this->assertFalse($r->match('/alpha/import/mu'));
+        $this->assertFalse($r->match('/alpha/12/nu'));
+        $this->assertFalse($r->match('/12/beta/nu'));
+
+        $this->assertTrue($r->match('/12/import/nu'));
+        $this->assertTrue($r->match('/0/import/mu'));
     }
 }

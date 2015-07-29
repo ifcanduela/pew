@@ -13,17 +13,27 @@ use pew\router\Route;
  */
 class Request
 {
+    const HTML = 'html';
+    const XML = 'xml';
+    const JSON = 'json';
+
     /** @var Route */
     protected $route;
 
     /** @var Env */
     protected $env;
 
+    /** @var string */
+    protected $response_type;
+
+    /** @var string */
+    protected $path;
+
     /**
      * Create a new Request object.
      * 
      * @param Env $env
-     * @param Router $route
+     * @param Route $route
      */
     public function __construct(Env $env = null, Route $route = null)
     {
@@ -95,7 +105,11 @@ class Request
      */
     public function path()
     {
-        return $this->env->path;
+        if (!$this->path) {
+            $this->path = preg_replace('/(\.html|\.json|\.xml)$/', '', $this->env->path);
+        }
+
+        return $this->path;
     }
 
     /**
@@ -224,12 +238,14 @@ class Request
 
     /**
      * Get the site-relative URI.
+     *
+     * This method includes the possible format extension (.json, .html, .xml).
      * 
      * @return string
      */
     public function uri()
     {
-        return $this->request->segments;
+        return $this->env->path;
     }
 
     /**
@@ -278,9 +294,15 @@ class Request
      * @param integer $index Zero-indexed argument
      * @return string Argument value
      */
-    public function arg($index = 0)
+    public function arg($index)
     {
-        return $this->route->args((int) $index);
+        $args = $this->route->args();
+        
+        if (array_key_exists($index, $args)) {
+            return $args[$index];
+        }
+
+        return null;
     }
 
     /**
@@ -327,8 +349,24 @@ class Request
      */
     public function response_type()
     {
-        return 'html';
-        return $this->route->response_type();
+        if ($this->response_type) {
+            return $this->response_type;
+        }
+
+        if (isSet($_POST['_format']) && in_array($_POST['_format'], ['hmtl', 'json', 'xml'])) {
+            $this->response_type = $_POST['_format'];
+            return $this->response_type;
+        }
+
+        $this->response_type = static::HTML;
+
+        if (preg_match('/\.json$/', $this->env->path)) {
+            $this->response_type = static::JSON;
+        } elseif (preg_match('/\.xml$/', $this->env->path)) {
+            $this->response_type = static::XML;
+        }
+
+        return $this->response_type;
     }
 
     /**
@@ -340,7 +378,7 @@ class Request
      */
     public function is_html()
     {
-        return $this->router->response_type() === Router::HTML;
+        return $this->response_type() === static::HTML;
     }
 
     /**
@@ -354,7 +392,7 @@ class Request
      */
     public function is_json()
     {
-        return $this->router->response_type() === Router::JSON;
+        return $this->response_type() === static::JSON;
     }
 
     /**
@@ -368,6 +406,6 @@ class Request
      */
     public function is_xml()
     {
-        return $this->router->response_type() === Router::XML;
+        return $this->response_type() === static::XML;
     }
 }

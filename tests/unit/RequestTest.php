@@ -1,8 +1,8 @@
 <?php
 
 use \pew\libs\Env;
-use \pew\libs\Router;
-use \pew\libs\Request;
+use \pew\router\Route;
+use \pew\request\Request;
 
 class RequestTest extends PHPUnit_Framework_TestCase
 {
@@ -43,7 +43,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     public function testConstruct()
     {
         $env = new Env;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
 
         $this->assertEquals($env->local, $request->is_localhost());
         $this->assertEquals($env->headers, $request->headers());
@@ -59,7 +59,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $env = new Env;
         $env->method = 'GET';
         $env->get = $this->_GET;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
         
         $this->assertTrue($request->is_get());
         $this->assertEquals(Env::GET, $request->method());
@@ -75,7 +75,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $env = new Env;
         $env->method = 'POST';
         $env->post = $this->_POST;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
 
         $this->assertTrue($request->is_post());
         $this->assertEquals(Env::POST, $request->method());
@@ -91,7 +91,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
         $env = $this->getMock('\pew\libs\Env', array('data'));
         $env->method = 'PUT';
         $env->input = $this->_POST;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
 
         $this->assertEquals('PUT', $request->method());
         $this->assertEquals($this->_POST, $request->input());
@@ -105,7 +105,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $env = new Env;
         $env->cookie = $this->_COOKIE;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
 
 
         $this->assertEquals($this->_COOKIE, $request->cookie());
@@ -119,7 +119,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     {
         $env = new Env;
         $env->files = $this->_FILES;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
 
         $this->assertEquals($this->_FILES, $request->files());
         $this->assertEquals($this->_FILES['file1'], $request->files('file1'));
@@ -131,7 +131,7 @@ class RequestTest extends PHPUnit_Framework_TestCase
     public function testUndefinedAccess()
     {
         $env = new Env;
-        $request = new Request(new Router, $env);
+        $request = new Request($env, new Route('/', 'controller/action'));
 
         $this->assertNull($request->data('PUT', 'field'));
         $this->assertTrue($request->data('DELETE', 'field', true));
@@ -139,80 +139,109 @@ class RequestTest extends PHPUnit_Framework_TestCase
 
     public function testRouteController()
     {
-        $router = new Router($this->routes);
-        
-        $request = new Request($router->route('/project/22'), new Env);
+        $request = new Request(new Env, new Route('project/22', 'projects/details'));
         $this->assertEquals('projects', $request->controller());
         
-        $request = new Request($router->route('/login'), new Env);
+        $request = new Request(new Env, new Route('login', 'users/login'));
         $this->assertEquals('users', $request->controller());
         
-        $request = new Request($router->route('/'), new Env);
+        $request = new Request(new Env, new Route('/', 'projects/index'));
         $this->assertEquals('projects', $request->controller());
     }
     
     public function testRouteAction()
     {
-        $router = new Router($this->routes);
-        
-        $request = new Request($router->route('/project/22'), new Env);
+        $request = new Request(new Env, new Route('/project/22', 'project/details'));
         $this->assertEquals('details', $request->action());
         
-        $request = new Request($router->route('/login'), new Env);
+        $request = new Request(new Env, new Route('login', 'users/login'));
         $this->assertEquals('login', $request->action());
         
-        $request = new Request($router->route('/'), new Env);
+        $request = new Request(new Env, new Route('/', 'projects/index'));
         $this->assertEquals('index', $request->action());
     }
 
     public function testRouteArguments()
     {
-        $router = new Router($this->routes);
-        $request = new Request($router->route('/project/22'), new Env);
+        $route = new Route('/project/{id}', 'projects/details');
+        $route->match('project/22');
 
-        $this->assertEquals(['22'], $request->args());
-        $this->assertEquals('22', $request->arg(0));
+        $request = new Request(new Env, $route);
+
+        $this->assertEquals(['id' => '22'], $request->args());
+        $this->assertEquals('22', $request->arg('id'));
         $this->assertNull($request->arg(1));
         $this->assertNull($request->arg(2));
     }
     
     public function testRouteUriAndDestination()
     {
-        $router = new Router($this->routes);
-        
-        $request = new Request($router->route('/project/22'), new Env);
+        $_SERVER['PATH_INFO'] = '/project/22';
+        $route1 = new Route('project/22', 'projects/details');
+        $route1->match('project/22');
+
+        $request = new Request(new Env, $route1);
         $this->assertEquals('/project/22', $request->uri());
-        $this->assertEquals('/projects/details/22', $request->destination());
+        $this->assertEquals('projects/details', $request->destination());
         
-        $request = new Request($router->route('/login'), new Env);
+        $_SERVER['PATH_INFO'] = '/login';
+        $route2 = new Route('login', 'users/login');
+        $route2->match('login');
+
+        $request = new Request(new Env, $route2);
         $this->assertEquals('/login', $request->uri());
-        $this->assertEquals('/users/login', $request->destination());
+        $this->assertEquals('users/login', $request->destination());
         
-        $request = new Request($router->route('/'), new Env);
+        $_SERVER['PATH_INFO'] = '/';
+        $route3 = new Route('/', 'projects/index');
+        $route3->match('/');
+
+        $request = new Request(new Env, $route3);
         $this->assertEquals('/', $request->uri());
-        $this->assertEquals('/projects/index', $request->destination());
+        $this->assertEquals('projects/index', $request->destination());
     }
     
     public function testRouteResponseType()
     {
-        $router = new Router($this->routes);
-        
-        $request = new Request($router->route('/project/22'), new Env);
-        $this->assertEquals(Router::JSON, $request->response_type());
-        $this->assertTrue($request->is_json());
-        $this->assertFalse($request->is_html());
-        $this->assertFalse($request->is_xml());
-        
-        $request = new Request($router->route('/login'), new Env);
-        $this->assertEquals(Router::HTML, $request->response_type());
+        $_SERVER['PATH_INFO'] = '/project/22';
+        $request = new Request(new Env, new Route('/login', 'controller/action'));
+        $this->assertEquals(Request::HTML, $request->response_type());
+        $this->assertEquals('/project/22', $request->path());
         $this->assertTrue($request->is_html());
         $this->assertFalse($request->is_json());
         $this->assertFalse($request->is_xml());
 
-        $request = new Request($router->route('/profile'), new Env);
-        $this->assertEquals(Router::XML, $request->response_type());
-        $this->assertTrue($request->is_xml());
-        $this->assertFalse($request->is_json());
+        $_SERVER['PATH_INFO'] = '/project/23.json';
+        $request = new Request(new Env, new Route('/project/23', 'controller/action'));
+        $this->assertEquals(Request::JSON, $request->response_type());
+        $this->assertEquals('/project/23', $request->path());
         $this->assertFalse($request->is_html());
+        $this->assertTrue($request->is_json());
+        $this->assertFalse($request->is_xml());
+        
+        $_SERVER['PATH_INFO'] = '/project/24.html';
+        $request = new Request(new Env, new Route('/login', 'controller/action'));
+        $this->assertEquals(Request::HTML, $request->response_type());
+        $this->assertEquals('/project/24', $request->path());
+        $this->assertTrue($request->is_html());
+        $this->assertFalse($request->is_json());
+        $this->assertFalse($request->is_xml());
+
+        $_SERVER['PATH_INFO'] = '/project/25.xml';
+        $request = new Request(new Env, new Route('/profile', 'controller/action'));
+        $this->assertEquals(Request::XML, $request->response_type());
+        $this->assertEquals('/project/25', $request->path());
+        $this->assertFalse($request->is_html());
+        $this->assertFalse($request->is_json());
+        $this->assertTrue($request->is_xml());
+
+        $_SERVER['PATH_INFO'] = '/project/25.xml';
+        $_POST['_format'] = 'json';
+        $request = new Request(new Env, new Route('/profile', 'controller/action'));
+        $this->assertEquals(Request::JSON, $request->response_type());
+        $this->assertEquals('/project/25', $request->path());
+        $this->assertFalse($request->is_html());
+        $this->assertTrue($request->is_json());
+        $this->assertFalse($request->is_xml());
     }
 }
