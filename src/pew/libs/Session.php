@@ -2,345 +2,65 @@
 
 namespace pew\libs;
 
-/**
- * Session management class.
- * 
- * @package pew\libs
- * @author ifcanduela <ifcanduela@gmail.com>
- */
-class Session
+use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
+use ArrayAccess;
+
+class Session extends SymfonySession implements ArrayAccess
 {
-    /**
-     * Array index for the flash messages.
-     * 
-     * @var string
-     */
-    const FLASH_DATA = '__flash__';
-
-    /**
-     * Array index for the generated CSRF token.
-     *
-     * @var string
-     */
-    const CSRF_TOKEN = '__CSRF_TOKEN__';
-
-    /**
-     * Session sub-index for the current instance.
-     *
-     * @var string
-     */
-    protected $group = '';
-
-    /**
-     * Data managed by the session object.
-     * 
-     * @var array
-     */
-    protected $data = [];
-    
-    /**
-     * Static session flash data.
-     *
-     * @var string
-     */
-    protected static $flash_data = array();
-
-    /**
-     * Session identifier.
-     * 
-     * @var string
-     */
-    private $session_id;
-
-    /**
-     * Setups a session management class instance
-     *
-     * @param string $group
-     */
-    public function __construct( $group = null, &$data = null)
+    public function addFlash($key, $value)
     {
-        $this->open();
-
-        if (is_array($data)) {
-            $this->data =& $data;
-        } elseif (isSet($_SESSION)) {
-            $this->data =& $_SESSION;
-        }
-
-        if (!$group) {
-            $group = basename(getcwd());
-        }
-
-        $this->group($group);
-
-        $this->init();
+        return $this->getFlashBag()->add($key, $value);
     }
 
-    /**
-     * Starts the session.
-     * 
-     * @return bool True if the session is started, false otherwise
-     */
-    protected function open()
+    public function getFlash($key = null, $default = null)
     {
-        if (session_status() === PHP_SESSION_DISABLED) {
-            throw new \RuntimeException("Native session handling is disabled");
-        }
-        
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        return session_status();
-    }
-
-    protected function init()
-    {
-        $this->session_id = session_id();
-
-        if (!array_key_exists($this->group(), $this->data)) {
-            $this->data[$this->group()] = array();
-            $this->data[$this->group()][self::FLASH_DATA] = array();
-        }
-
-        $this->setup_flash_data();
-
-        return !empty($this->session_id);
-    }
-
-    /**
-     * Checks if the session is started.
-     * 
-     * @return boolean True if a session is started, false otherwise
-     */
-    public function is_open()
-    {
-        return session_status() === PHP_SESSION_ACTIVE;
-    }
-
-    /**
-     * Closes the current session if there is one.
-     * 
-     * @return bool True if the session was open beforehand, false otherwise
-     */
-    public function close()
-    {
-        if (!empty($this->session_id)) {
-            session_destroy();
-            $this->session_id = false;
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Configures the group name in the session array.
-     * 
-     * @param string $group Session group
-     * @return string Session group
-     */
-    protected function group($group = null)
-    {
-        if (!is_null($group)) {
-            if (is_numeric($group{0})) {
-                $group = '_' . $group;
-            }
-
-            $this->group = $group;
-        }
-
-        return $this->group;
-    }
-
-    /**
-     * Copy, then delete the flash data from the session.
-     * 
-     * @return int Amount of flash items
-     */
-    protected function setup_flash_data()
-    {
-        if (!empty($this->data[$this->group()][self::FLASH_DATA])) {
-            self::$flash_data = $this->data[$this->group()][self::FLASH_DATA];
-            $this->data[$this->group()][self::FLASH_DATA] = array();
-        }
-
-        return count(self::$flash_data);
-    }
-
-    /**
-     * Get the current flash messages.
-     *
-     * @return array Associative array with current messages
-     */
-    public function flash_data()
-    {
-        return self::$flash_data;
-    }
-
-    /**
-     * Check if a key exists in the flash array.
-     * 
-     * If no key is passed, it return true if there is any key set.
-     * 
-     * @param string $key Key to check
-     * @return boolean True if the key exists, false otherwise.
-     */
-    public function has_flash($key = null)
-    {
-        if (is_null($key)) {
-            return 0 !== count(self::$flash_data);
-        }
-
-        return array_key_exists($key, self::$flash_data);
-    }
-
-    /**
-     * Sets a flash key for the next request.
-     * 
-     * @param string $key Flash key to set
-     * @param mixed $message Data to set the key to
-     */
-    public function set_flash($key, $message)
-    {
-        $this->data[$this->group()][self::FLASH_DATA][$key] = $message;
-    }
-
-    /**
-     * Retrieve a key from the flash array.
-     * 
-     * @param string $key Key to retrieve
-     * @return mixed Data corresponding to the key, null if it does not exist
-     */
-    public function get_flash($key)
-    {
-        if ($this->has_flash($key)) {
-            return self::$flash_data[$key];
-        }
-
-        return null;
-    }
-
-    /**
-     * Get or set a flash value.
-     * 
-     * @param string $key Flash key
-     * @param mixed $value Flash value
-     * @return mixed Flash value
-     */
-    public function flash($key, $value = null)
-    {
-        if (!is_null($value)) {
-            $this->set_flash($key, $value);
-        } elseif ($this->has_flash($key)) {
-            return $this->get_flash($key);
-        }
-
-        return null;
-    }
-
-    /**
-     * Set a key in the session array.
-     * 
-     * @param string|int $key Key to set
-     * @param mixed $value Value to set
-     */
-    public function set($key, $value)
-    {
-        $this->data[$this->group()][$key] = $value;
-    }
-
-    /**
-     * Retrieves a value from the session array.
-     * 
-     * @param string|int $key Key to retrieve
-     * @param mixed $default Default value to return
-     * @return mixed Value of the key, default if it does not exist
-     */
-    public function get($key = null, $default = null)
-    {
-        if (is_null($key)) {
-            $return = $this->data[$this->group()];
-            unset($return[self::FLASH_DATA]);
-            return $return;
-        } else if ($this->exists($key)) {
-            return $this->data[$this->group()][$key];
+        if (null === $key) {
+            return $this->getFlashBag()->all();
+        } elseif ($this->getFlashBag()->has($key)) {
+            return $this->getFlashBag()->get($key);
         }
 
         return $default;
     }
 
-    /**
-     * Check if a key is set in the session array.
-     * 
-     * @param string|int $key Key to check
-     * @return bool True if the key is set, false otherwise
-     */
-    public function exists($key)
+    public function offsetGet($key)
     {
-        return array_key_exists($key, $this->data[$this->group()]);
-    }
+        $sessionData = $this->all();
+        $indexes = explode('.', $key);
+        $first_index = array_shift($indexes);
 
-    /**
-     * Removes a key from the session array.
-     * 
-     * @param string|int $key Key to remove
-     * @return bool True if the key existed, false otherwise
-     */
-    public function delete($key)
-    {
-        $return = $this->exists($key);
+        if (!$this->has($first_index)) {
+            return null;
+        }
         
-        unset($this->data[$this->group()][$key]);
+        $value = $sessionData[$first_index];
 
-        return $return;
-    }
+        while (!empty($indexes)) {
+            $index = array_shift($indexes);
+            
+            if (!isSet($value[$index])) {
+                return $default;
+            }
 
-    /**
-     * Get a random security token.
-     * 
-     * @return string A security token.
-     */
-    public function get_token()
-    {
-        $token = md5(uniqid());
-        $this->set(self::CSRF_TOKEN, $token);
-
-        return $token;
-    }
-
-    /**
-     * Check a token string agains a previously-set token.
-     * 
-     * @param string $token Token to check
-     * @return boolean True if the token is valid, false otherwise
-     */
-    public function check_token($token)
-    {
-        if ($this->exists(self::CSRF_TOKEN)) {
-            return $token === $this->get(self::CSRF_TOKEN);
+            $value = $value[$index];
         }
 
-        return false;
+        return $value;
     }
 
-    public function __set($key, $value)
+
+    public function offsetSet($key, $value)
     {
         return $this->set($key, $value);
     }
 
-    public function __get($key)
+    public function offsetExists($key)
     {
-        return $this->get($key);
+        return $this->has($key);
     }
 
-    public function __unset($key)
+    public function offsetUnset($key)
     {
-        return $this->delete($key);
-    }
-
-    public function __isset($key)
-    {
-        return $this->exists($key);
+        return $this->remove($key);
     }
 }

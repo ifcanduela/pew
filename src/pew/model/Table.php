@@ -1,19 +1,12 @@
 <?php
 
-namespace pew\db;
+namespace pew\model;
 
-use pew\Pew;
-use pew\db\Database;
-use pew\db\Record;
-use pew\db\RecordCollection;
-use pew\db\relationship\RelationshipInterface;
-use pew\db\relationship\BelongsTo;
-use pew\db\relationship\HasAndBelongsToMany;
-use pew\db\relationship\HasMany;
-use pew\db\relationship\HasOne;
-use pew\db\exception\TableNotSpecifiedException;
-use pew\db\exception\TableNotFoundException;
-use pew\libs\Str;
+use pew\libs\DAtabase;
+use pew\model\exception\TableNotSpecifiedException;
+use pew\model\exception\TableNotFoundException;
+
+use Stringy\StaticStringy;
 
 /**
  * Table gateway class.
@@ -21,7 +14,7 @@ use pew\libs\Str;
  * @package pew\db
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSerializable
+class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
 {
     /**
      * Database abstraction instance.
@@ -187,14 +180,17 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         'order_by' => '',
     ];
 
+    protected $recordClass;
+
     /**
      * The constructor builds the model!.
      *
      * @param string $table Name of the table
      * @param Database $db Database instance to use
      */
-    public function __construct($table = null, Database $db = null)
+    public function __construct($table = null, Database $db = null, $recordClass = null)
     {
+        $this->recordClass = $recordClass;
         $this->init($table, $db);
     }
 
@@ -207,7 +203,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     public function init($table = null, Database $db = null)
     {
         # get the Database class instance
-        $this->db = is_null($db) ? Pew::instance()->db : $db;
+        $this->db = is_null($db) ? pew('db') : $db;
         $this->table = $table ?: $this->table_name();
 
         if (!$this->db->table_exists($this->table)) {
@@ -260,7 +256,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
             throw new TableNotSpecifiedException("Model class must be attached to a database table.");
         }
 
-        return Str::underscores($table_name, true);
+        return Str::underscored($table_name, true);
     }
 
     /**
@@ -268,7 +264,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      * 
      * @return string
      */
-    public function primary_key()
+    public function primaryKey()
     {
         return $this->primary_key;
     }
@@ -403,32 +399,6 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
     }
 
     /**
-     * Find by field name.
-     *
-     * This magic method manages find_by_<field name> and
-     * find_all_by_<field_name> method calls.
-     *
-     * @param string $field Method to be called
-     * @param array $arguments Argumments passed to the method
-     * @return The return value of the method called
-     */
-    public function __call($field, $arguments)
-    {
-        $results = preg_match('/(find|find_all)_by_(.*)/', $field, $matches);
-
-        if ($results) {
-            $value = $arguments[0];
-            list(, $method, $field) = $matches;
-
-            return $this->$method([$field => $value]);
-        } elseif ($model = Pew::instance()->model($field)) {
-            return $model;
-        }
-
-        throw new \BadMethodCallException("Invalid method " . get_class($this) . "::$field() called.");
-    }
-
-    /**
      * Get an empty record.
      * 
      * @return Table A new record
@@ -515,97 +485,144 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
         return false;
     }
 
-    /**
-     * Retrieve a single item from the model table using its primary key.
-     *
-     * @param int $id Value to match to the primary key of the model table, or
-     *                an associative array with field name/ field value pairs.
-     * @return Model A model instance
-     */
-    public function find($id)
+    public function one()
     {
-        # if $id is not numeric, use it as a conditions array
-        if (is_array($id)) {
-            $this->where($id);
-        } else {
-            $this->clauses['where'][$this->primary_key] = $id;
-        }
+        $this->limit(1);
+        $className = $this->recordClass;
 
-        #query the database
-        $result = $this->db
-                        ->where($this->where())
-                        ->group_by($this->group_by())
-                        ->having($this->having())
-                        ->limit($this->limit())
-                        ->order_by($this->order_by())
-                        ->single($this->table, $this->clauses['fields']);
-
+        $record = $this->db
+            ->where($this->where())
+            ->group_by($this->groupBy())
+            ->having($this->having())
+            ->order_by($this->orderBy())
+            ->single($this->table, $this->clauses['fields']);
         $this->reset();
 
-        if ($result) {
-            $this->record = array_merge($this->column_names(), (array) $result);
-        } else {
-            # if there was no result, return false
-            $this->table_data['data'] = [];
-            $this->record = $this->column_names();
-            return false;
+        $model = false;
+
+        if ($record) {
+            $model = new $className();
+            $model->attributes($record);
         }
 
-        foreach ($this->eager_load as $related_model) {
-            $this->record[$related_model] = $this->offsetGet($related_model);
-        }
-
-        if (method_exists($this, 'after_find')) {
-            $this->record = current($this->after_find([$result]));
-        }
-
-        return clone $this;
+        return $model;
     }
 
-    /**
-     * Retrieve all items from a table.
-     *
-     * @param array $where An associative array with WHERE conditions.
-     * @return Model[] An array with the resulting records
-     */
-    public function find_all($where = null)
+    public function all(): array
     {
-        # if conditions are provided, overwrite the previous model conditions
-        if (is_array($where)) {
-            $this->where($where);
-        }
+        $className = $this->recordClass;
 
-        # query the database
-        $result = $this->db
-                    ->where($this->where())
-                    ->group_by($this->group_by())
-                    ->having($this->having())
-                    ->limit($this->limit())
-                    ->order_by($this->order_by())
-                    ->select($this->table, $this->clauses['fields']);
-
+        $records = $this->db
+            ->where($this->where())
+            ->group_by($this->groupBy())
+            ->having($this->having())
+            ->limit($this->limit())
+            ->order_by($this->orderBy())
+            ->select($this->table, $this->clauses['fields']);
         $this->reset();
 
-        if ($result) {
-            foreach ($result as $key => $value) {
-                $result[$key] = clone $this;
-                $result[$key]->record = $value;
+        $models = [];
 
-                foreach ($this->eager_load as $related_model) {
-                    $result[$key]->record[$related_model] = $result[$key]->offsetGet($related_model);
-                }
-            }
-        } else {
-            # return an empty array if there was no result
-            $result = [];
+        foreach ($records as $record) {
+            $model = new $className();
+            $model->attributes($record);
+            $models[] = $model;
         }
 
-        if (method_exists($this, 'after_find')) {
-            $result = $this->after_find($result);
-        }
-
-        return $result;
+        return $models;
     }
+
+    // /**
+    //  * Retrieve a single item from the model table using its primary key.
+    //  *
+    //  * @param int $id Value to match to the primary key of the model table, or
+    //  *                an associative array with field name/ field value pairs.
+    //  * @return Model A model instance
+    //  */
+    // public function find($id)
+    // {
+    //     # if $id is not numeric, use it as a conditions array
+    //     if (is_array($id)) {
+    //         $this->where($id);
+    //     } else {
+    //         $this->clauses['where'][$this->primary_key] = $id;
+    //     }
+
+    //     #query the database
+    //     $result = $this->db
+    //                     ->where($this->where())
+    //                     ->group_by($this->group_by())
+    //                     ->having($this->having())
+    //                     ->limit($this->limit())
+    //                     ->order_by($this->order_by())
+    //                     ->single($this->table, $this->clauses['fields']);
+
+    //     $this->reset();
+
+    //     if ($result) {
+    //         $this->record = array_merge($this->column_names(), (array) $result);
+    //     } else {
+    //         # if there was no result, return false
+    //         $this->table_data['data'] = [];
+    //         $this->record = $this->column_names();
+    //         return false;
+    //     }
+
+    //     foreach ($this->eager_load as $related_model) {
+    //         $this->record[$related_model] = $this->offsetGet($related_model);
+    //     }
+
+    //     if (method_exists($this, 'after_find')) {
+    //         $this->record = current($this->after_find([$result]));
+    //     }
+
+    //     return clone $this;
+    // }
+
+    // /**
+    //  * Retrieve all items from a table.
+    //  *
+    //  * @param array $where An associative array with WHERE conditions.
+    //  * @return Model[] An array with the resulting records
+    //  */
+    // public function find_all($where = null)
+    // {
+    //     # if conditions are provided, overwrite the previous model conditions
+    //     if (is_array($where)) {
+    //         $this->where($where);
+    //     }
+
+    //     # query the database
+    //     $result = $this->db
+    //                 ->where($this->where())
+    //                 ->group_by($this->group_by())
+    //                 ->having($this->having())
+    //                 ->limit($this->limit())
+    //                 ->order_by($this->order_by())
+    //                 ->select($this->table, $this->clauses['fields']);
+
+    //     $this->reset();
+
+    //     if ($result) {
+    //         foreach ($result as $key => $value) {
+    //             $result[$key] = clone $this;
+    //             $result[$key]->record = $value;
+
+    //             foreach ($this->eager_load as $related_model) {
+    //                 $result[$key]->record[$related_model] = $result[$key]->offsetGet($related_model);
+    //             }
+    //         }
+    //     } else {
+    //         # return an empty array if there was no result
+    //         $result = [];
+    //     }
+
+    //     if (method_exists($this, 'after_find')) {
+    //         $result = $this->after_find($result);
+    //     }
+
+    //     return $result;
+    // }
 
     /**
      * Count the rows that fit the criteria.
@@ -779,7 +796,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      *
      * @return mixed The primaary key value of the last inserted row
      */
-    public function last_insert_id()
+    public function lastInsertId()
     {
         return $this->db->pdo()->LastInsertId();
     }
@@ -853,7 +870,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      * @param mixed $order_by Order-by SQL clauses[multiple]
      * @return Model a reference to the same object, for method chaining
      */
-    public function order_by($order_by = null)
+    public function orderBy($order_by = null)
     {
         if (!is_null($order_by)) {
             $this->clauses['order_by'] = $order_by;
@@ -875,7 +892,7 @@ class Table implements TableInterface, \ArrayAccess, \IteratorAggregate, \JsonSe
      * @return Model a reference to the same object, for method chaining
      * @todo: Make this work
      */
-    public function group_by($group_by = null)
+    public function groupBy($group_by = null)
     {
         if (!is_null($group_by)) {
             $this->clauses['group_by']= $group_by;

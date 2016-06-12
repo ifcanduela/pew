@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\db;
+namespace pew\libs;
 
 use PDO;
 use PDOStatement;

@@ -8,12 +8,14 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "symfony/http-foundation": "*",
+        "nikic/fast-route": "^1.0",
+        "pimple/pimple": "^3.0",
+        "filp/whoops": "^2.1",
+        "danielstjules/stringy": "^2.3"
     },
     "autoload": {
-        "files": [
-            "src/pew/config/bootstrap.php"
-        ],
         "psr-0": {
             "pew": "src"
         }

@@ -2,72 +2,77 @@
 
 namespace pew\router;
 
+use function FastRoute\simpleDispatcher;
+use FastRoute\RouteCollector;
+use FastRoute\Dispatcher;
+
 /**
- * Router class.
- *
- * This class takes a string of segments and tries to fit it into any of a list
- * of pre-configured route patterns.
- *
- * @package pew\router
- * @author ifcanduela <ifcanduela@gmail.com>
+ * The Router class wraps the nikic\FastRoute library for slightly taylor-made functionality.
  */
 class Router
 {
     /**
-     * @var array
+     * @var Dispatcher
      */
-    protected $routes = [];
-    
-    /**
-     * @var Route
-     */
-    protected $matched_route = false;
+    protected $dispatcher;
 
     /**
-     * Build a router instance.
-     * 
-     * @param array $routes [description]
+     * Initialize a Router.
+     *
+     * Routes require a 'path' key and may have optional 'methods' and 'defaults' keys.
+     *
+     * @param array $routeData Array of routes
      */
-    public function __construct($routes)
+    public function __construct(array $routeData)
     {
-        $this->routes = $routes;
+        $this->dispatcher = simpleDispatcher(function($r) use ($routeData) {
+            foreach ($routeData as $data) {
+                $methods = '*';
+
+                if (isset($data['methods'])) {
+                    $methods = preg_split('/\W+/', strtoupper($data['methods']));
+                }
+
+                $path = '/' . ltrim($data['path'], '/');
+
+                $r->addRoute($methods, $path, $data);
+            }
+        });
     }
 
     /**
-     * Resolve a URL to a route.
-     * 
-     * @param string $uri
-     * @param boolean|string $method
+     * Add a route definition.
+     *
+     * @param string $from Pathinfo pattern
+     * @param mixed $handler Route result
+     * @param string|array methods
+     * @return Router
+     */
+    public function addRoute(string $from, $handler, $methods)
+    {
+
+        return $this;
+    }
+
+    /**
+     * Get a route matching the provided request information.
+     *
+     * @param string $pathInfo
+     * @param string $httpMethod
      * @return Route
      */
-    public function resolve($uri, $method = false)
+    public function route(string $pathInfo, string $httpMethod): Route
     {
-        foreach ($this->routes as $route) {
-            if ($route->match($uri, $method)) {
-                return $this->matched_route = $route;
-            }
+        $matchedRoute = $this->dispatcher->dispatch($httpMethod, $pathInfo);
+
+        if ($matchedRoute[0] === Dispatcher::NOT_FOUND) {
+            throw new \RuntimeException("Route not found");
         }
 
-        return null;
-    }
+		if ($matchedRoute[0] === Dispatcher::METHOD_NOT_ALLOWED) {
+            throw new \RuntimeException("Method not allowed");
+        }
 
-    /**
-     * Add a new route.
-     * 
-     * @param Route $route
-     */
-    public function add(Route $route)
-    {
-        $this->routes[] = $route;
-    }
-
-    /**
-     * Get the latest matched route.
-     * 
-     * @return Route|boolean
-     */
-    public function route()
-    {
-        return $this->matched_route;
+        return new Route($matchedRoute);
     }
 }

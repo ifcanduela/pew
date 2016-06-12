@@ -3,291 +3,90 @@
 namespace pew\router;
 
 /**
- * Object representation of an application route.
- * 
- * @package pew/router
- * @author ifcanduela <ifcanduela@gmail.com>
+ * The Route class is a Value Object representing a matched route.
  */
-class Route
+class Route implements \ArrayAccess
 {
-    /**
-     * @var string
-     */
-    protected $from;
+    /** @var string */
+    protected $path;
+
+    /** @var mixed */
+    protected $handler;
+
+    /** @var array */
+    protected $defaults = [];
+
+    /** @var array */
+    protected $params = [];
 
     /**
-     * @var string|callable
+     * @param array $routeInfo
      */
-    protected $to;
-
-    /**
-     * @var string
-     */
-    protected $destination;
-    
-    /**
-     * @var array
-     */
-    protected $methods = [
-        'GET',
-        'POST',
-    ];
-    
-    /**
-     * @var array
-     */
-    protected $with = [];
-    
-    /**
-     * @var array
-     */
-    protected $matches = [];
-
-    /**
-     * @var array
-     */
-    protected $constraints = [];
-
-    /**
-     * Build a route.
-     * 
-     * @param string $from
-     * @param string|callable $to
-     */
-    public function __construct($from, $to)
+    public function __construct(array $routeInfo)
     {
-        $this->from = $from === '/' ? $from : trim($from, '/');
-        $this->to = $to;
+        $this->handler = $routeInfo[1]['controller'];
+        $this->defaults = $routeInfo[1]['defaults'] ?? [];
+        $this->params = $routeInfo[2];
     }
 
     /**
-     * Add a default value for an optional placeholder.
-     * 
-     * @param string $param
-     * @param mixed $value
-     * @return Route
+     * Get the handler associated to the route.
+     *
+     * @return mixed
      */
-    public function with($param, $value)
+    public function getHandler()
     {
-        $this->with[$param] = $value;
-
-        return $this;
-    }
-
-    public function constrain($param, $regex)
-    {
-        $this->constraints[$param] = $regex;
-
-        return $this;
+        return $this->handler;
     }
 
     /**
-     * Specify the HTTP verbs for the route.
-     * 
-     * @param array|string $methods
-     * @return Route
+     * Get the value of a route parameter.
+     *
+     * @param mixed $key
+     * @param mixed $default
+     * @return mixed
      */
-    public function via($methods)
+    public function getParam($key, $default = null)
     {
-        foreach (func_get_args() as $arg) {
-            if (is_string($arg)) {
-                $arg = preg_split('/\W+/', $methods);
-            }
-
-            $this->methods = array_unique(
-                array_merge(
-                    $this->methods, 
-                    array_map('strtoupper', $methods)
-                )
-            );
-        }
-
-        return $this;
+        return $this->params[$key] ?? $this->defaults[$key] ?? $default;
     }
 
     /**
-     * Resolve the destination of the route.
-     * 
-     * @return string|callable
-     */
-    public function to()
-    {
-        if ($this->destination) {
-            return $this->destination;
-        }
-
-        if (is_callable($this->to)) {
-            return $this->to;
-        }
-
-        $to = $this->to;
-
-        preg_match_all('`\{([^}]+)\}`', $to, $matches, PREG_SET_ORDER);
-
-        if ($matches) {
-            $replacements = array_merge($this->with, $this->matches);
-
-            foreach ($matches as $match) {
-                list($search, $key) = $match;
-
-                if (array_key_exists($key, $replacements)) {
-                    $to = str_replace($search, $this->matches[$key], $to);
-                }
-            }
-        }
-
-        return $this->destination = $to;
-    }
-
-    /**
-     * Get the matched placeholders in the URI.
-     * 
+     * Get all the parameters in the route.
+     *
      * @return array
      */
-    public function args()
+    public function getParams()
     {
-        $args = $this->matches;
-        array_shift($args);
-        $filtered_args = [];
-
-        foreach ($args as $k => $v) {
-            if (!is_numeric($k)) {
-                $filtered_args[$k] = $v;
-            }
-        };
-
-        return array_merge($this->with, $filtered_args);
-    }
-
-    public function splat()
-    {
-        return array_key_exists('__splat__', $this->matches) ? explode('/', trim($this->matches['__splat__'], '/')) : [];
+        return array_merge($this->defaults, $this->params);
     }
 
     /**
-     * Test a URI against the route.
-     * 
-     * @param $uri
-     * @param boolean|string $method
-     * @return boolean
+     * @param mixed $key
+     * @return bool
      */
-    public function match($uri, $method = false)
+    public function checkParam($key): bool
     {
-        $this->destination = null;
-
-        if ($method && !in_array(strtoupper($method), $this->methods, true)) {
-            return false;
-        }
-
-        $uri = $uri === '/' ? $uri : trim($uri, '/');
-        $regex = $this->compile();
-
-        return (bool) preg_match($regex, $uri, $this->matches);
+        return isset($this->params[$key]) || isset($this->defaults[$key]);
     }
 
-    /**
-     * Get the controller part of the destination.
-     * 
-     * @return string
-     */
-    public function controller()
+    public function offsetExists($key)
     {
-        if ($this->is_callable()) {
-            throw new \RuntimeException("Cannot retrieve controller for callable route.");
-        }
-
-        list($controller, $_) = explode('/', $this->to());
-
-        return $controller;
+        return $this->checkParam($key);
     }
 
-    /**
-     * Get the action part of the destination.
-     * 
-     * @return string
-     */
-    public function action()
+    public function offsetGet($key)
     {
-        if ($this->is_callable()) {
-            throw new \RuntimeException("Cannot retrieve action for callable route.");
-        }
-
-        list($_, $action) = explode('/', $this->to());
-
-        return $action;
+        return $this->getParam($key);
     }
 
-    public function get_callable()
+    public function offsetSet($key, $value)
     {
-        if (!$this->is_callable()) {
-            throw new \RuntimeException("Cannot retrieve callable for controller/action route.");
-        }
-
-        return $this->to;
+        throw new \BadMethodCallException("Route is read-only: cannot set value {$key}");
     }
 
-    /**
-     * Check if the destination is a closure or a controller/action pair.
-     * 
-     * @return boolean
-     */
-    public function is_callable()
+    public function offsetUnset($key)
     {
-        return is_callable($this->to);
-    }
-
-    /**
-     * Transform the route into a regular expression.
-     * 
-     * @return string
-     */
-    protected function compile()
-    {
-        $with = $this->with;
-        $from = $this->from;
-        $strict_end = '$';
-
-        if (substr($from, -1) === '*') {
-            $from = preg_replace('~\/?\*$~', '', $from);
-            $strict_end =  '(?<__splat__>.*)';
-        }
-
-        $constraints = $this->constraints;
-
-        $replacements = preg_replace_callback('`(/?)\{([^}]+)\}`', function ($matches) use ($with, $constraints) {
-            $forward_slash = $matches[1];
-            $name = $matches[2];
-            $regex = '[^/]+';
-
-            if (array_key_exists($name, $constraints)) {
-                $regex = $constraints[$name];
-            }
-            
-            if (false !== strpos($name, ':')) {
-                list($name, $regex) = explode(':', $matches[2], 2);
-            }
-
-            $capture = $forward_slash . '(?<' . $name . '>' . $regex . ')';
-
-            if (array_key_exists($matches[2], $with)) {
-                $capture = '(' . $capture . ')?';
-            }
-
-            return $capture;
-        }, $from);
-
-        return '`^' . $replacements . $strict_end . '`';
-    }
-
-    /**
-     * Create a new route object.
-     * 
-     * @param string $from
-     * @param string|callback $to
-     * @return Route
-     */
-    public static function create($from, $to)
-    {
-        return new self($from, $to);
+        throw new \BadMethodCallException("Route is read-only: cannot unset value {$key}");
     }
 }
