@@ -2,24 +2,35 @@
 
 namespace pew\model;
 
-use pew\Pew;
-use pew\model\relationship\RelationshipInterface;
-use pew\model\relationship\BelongsTo;
-use pew\model\relationship\HasAndBelongsToMany;
-use pew\model\relationship\HasMany;
-use pew\model\relationship\HasOne;
 use Stringy\Stringy as Str;
 
 /**
  * Active Record-like class.
  *
- * @package pew\db
+ * @package pew\model
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Record implements \ArrayAccess, \JsonSerializable
 {
+    /**
+     * List of class properties to serialize as JSON.
+     * 
+     * @var array
+     */
     public $serialize = [];
 
+    /**
+     * List of database columns to exclude from JSON serialization.
+     * 
+     * @var array
+     */
+    public $doNotSerialize = [];
+
+    /**
+     * Cached results for model get methods.
+     * 
+     * @var array
+     */
     protected $getterResults = [];
 
     /**
@@ -34,7 +45,7 @@ class Record implements \ArrayAccess, \JsonSerializable
      *
      * @var string
      */
-    protected $primary_key;
+    protected $primaryKey;
 
     /**
      * Current resultset.
@@ -101,7 +112,6 @@ class Record implements \ArrayAccess, \JsonSerializable
 
     public function columns()
     {
-
         static $columns;
 
         if (!$columns) {
@@ -120,20 +130,6 @@ class Record implements \ArrayAccess, \JsonSerializable
         }
 
         return $record;
-    }
-
-    /**
-     * Get an empty record.
-     * 
-     * @return Table A new record
-     */
-    public function create(array $attributes = [])
-    {
-        $class = '\\' . get_class($this);
-        $blank = new $class($this->table, $this->db);
-        $blank->attributes(array_merge($this->table_data['column_names'], $attributes));
-
-        return $blank;
     }
 
     /**
@@ -173,30 +169,7 @@ class Record implements \ArrayAccess, \JsonSerializable
      */
     public function delete()
     {
-        return $this->tableManager->where([$this->primaryKey() => $this->id])->delete();
-    }
-
-    /**
-     * Validate the data against a validator.
-     * 
-     * @param array $record Fields and values to validate
-     * @param array $rules Validation configuration
-     * @return array Validation errors
-     */
-    public function validate(array $rules = null)
-    {
-        if (is_null($rules)) {
-            if (!property_exists($this, 'rules')) {
-                throw new \RuntimeException("No valdation rules configured for model " . get_class($this));
-            } else {
-                $rules = $this->rules;
-            }
-        }
-
-        $validator = Pew::instance()->library('Validator', [$rules]);
-        $validator->validate($this->record);
-
-        return $validator->errors();
+        return $this->tableManager->where([$this->primaryKey => $this->id])->delete();
     }
 
     /**
@@ -251,6 +224,53 @@ class Record implements \ArrayAccess, \JsonSerializable
     {
         unset($this->record[$id]);
     }
+    
+    /**
+     * Allow iteration over the current record fields.
+     * 
+     * @return ArrayIterator
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->record);
+    }
+
+    /**
+     * JSON representation of the model object.
+     * 
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        $record = array_diff_key(
+            $this->attributes(), 
+            array_flip($this->doNotSerialize)
+        );
+
+        foreach ($this->serialize as $key) {
+            $record[$key] = $this->$key;
+        }
+
+        return (object) $record;
+    }
+
+    /**
+     * Returns a Table object to perform queries against.
+     * 
+     * @param mixed $id A primary key value
+     * @return Table
+     */
+    public static function find($id = null)
+    {
+        $record = new static();
+        $table = $record->tableManager;
+        
+        if ($id) {
+            return $table->where([$table->primaryKey => $id])->one();
+        }
+        
+        return $table;
+    }
 
     /**
      * Set a value in the registry.
@@ -261,7 +281,6 @@ class Record implements \ArrayAccess, \JsonSerializable
     public function __set($key, $value)
     {
         $this->record[$key] = $value;
-        // return $this->offsetSet($key, $value);
     }
 
     /**
@@ -312,59 +331,12 @@ class Record implements \ArrayAccess, \JsonSerializable
     }
 
     /**
-     * Allow iteration over the current record fields.
+     * Shortcuts for the find() method.
      * 
-     * @return ArrayIterator
+     * @param string $method
+     * @param array $arguments
+     * @return mixed
      */
-    public function getIterator()
-    {
-        return new \ArrayIterator($this->record);
-    }
-
-    /**
-     * JSON representation of the model object.
-     * 
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        $record = $this->attributes();
-
-        foreach ($this->serialize as $key) {
-            $record[$key] = $this->$key;
-        }
-
-        return (object) $record;
-    }
-
-    /**
-     * Disconnect the PDO instance before serialization.
-     * 
-     * @return array
-     */
-    public function __sleep()
-    {
-        $this->tableManager = null;
-        return array_keys(get_object_vars($this));
-    }
-
-    public function __wakeup()
-    {
-        $this->tableManager = $this->table();
-    }
-
-    public static function find($id = null)
-    {
-        $record = new static();
-        $table = $record->tableManager;
-        
-        if ($id) {
-            return $table->where([$table->primaryKey() => $id])->one();
-        }
-        
-        return $table;
-    }
-
     public static function __callStatic($method, $arguments)
     {
         $methodStr = Str::create($method);
@@ -382,5 +354,25 @@ class Record implements \ArrayAccess, \JsonSerializable
         }
 
         throw new \BadMethodCallException("Method " . static::class . "::{$method}() does not exist");
+    }
+
+    /**
+     * Disconnect the PDO instance before serialization.
+     * 
+     * @return array
+     */
+    public function __sleep()
+    {
+        $this->tableManager = null;
+
+        return array_keys(get_object_vars($this));
+    }
+
+    /**
+     * Restore the database manager after deserialization.
+     */
+    public function __wakeup()
+    {
+        $this->tableManager = $this->table();
     }
 }

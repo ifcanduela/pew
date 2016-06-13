@@ -2,6 +2,10 @@
 
 namespace pew\request;
 
+use pew\request\Request;
+use pew\libs\Session;
+use pew\View;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +19,28 @@ use Symfony\Component\HttpFoundation\Response;
 class Controller
 {
     /**
+     * @var pew\request\Request
+     */
+    public $request;
+    
+    /**
+     * @var pew\libs\Session
+     */
+    public $session;
+
+    /**
+     * @var pew\View
+     */
+    public $view;
+
+    public function __construct(Request $request, Session $session, View $view)
+    {
+        $this->request = $request;
+        $this->session = $session;
+        $this->view = $view;
+    }
+
+    /**
      * Redirect to another app path.
      * 
      * @param string $uri
@@ -27,12 +53,21 @@ class Controller
 
     /**
      * Render a template.
+     *
+     * The $template argument can be skipped
      * 
+     * @param string $template
      * @param array $data
      * @return Response
      */
-    public function render(array $data = []): Response
+    public function render($template, $data = []): Response
     {
+        if (is_string($template)) {
+            $this->view->tempalte($template);
+        } else {
+            $data = $template;
+        }
+
         return new Response($this->view->render($data));
     }
 
