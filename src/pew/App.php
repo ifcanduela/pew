@@ -41,17 +41,7 @@ class App
 
         # import app config and services
         $this->loadAppConfig("{$app_path}/config/{$config}.php");
-        // $this->loadAppServices("{$app_path}/config/services.php");
-        
-        # add application namespace and path
-        // $app_folder_name = trim(basename($app_folder));
-        // $this->pew['app_namespace'] = '\\' . $app_folder_name;
-        // $this->pew['app_folder'] = realpath($app_folder);
-        // $this->pew['app_config'] = $config;
 
-        // $this->pew['app'] = $this;
-
-        # user bootstrap
         $this->loadAppBootstrap();
     }
 
@@ -75,27 +65,6 @@ class App
             }
         }
     }
-
-    // /**
-    //  * Import the application services definitions.
-    //  * 
-    //  * @param string $services_filename The file name, relative to the base path
-    //  * @return null
-    //  */
-    // public function loadAppServices($services_filename)
-    // {
-    //     if (file_exists($services_filename)) {
-    //         $services = require $services_filename;
-
-    //         if (!is_array($services)) {
-    //             throw new \RuntimeException("Services file {$services_filename} does not return an array");
-    //         }
-
-    //         foreach ($services as $key => $factory) {
-    //             $this->pew->register($key, $factory);
-    //         }
-    //     }
-    // }
 
     /**
      * Load the user bootstrap file.
@@ -134,6 +103,8 @@ class App
 
         $controller = $injector->createinstance($controllerClass);
 
+        $response = null;
+
         if (method_exists($controller, 'beforeAction')) {
             $response = $injector->callMethod($controller, 'beforeAction');
         }
@@ -153,46 +124,7 @@ class App
             }
         }
 
-
         $response->send();
-        // die(__FILE__.'::'.__LINE__);
-
-        // $response = false;
-
-        // try {
-
-        //     # instantiate and configure the view
-        //     $view = $this->pew['view'];
-        //     $view->template($request->controller() . '/' . $request->action());
-        //     $view->layout($this->pew['default_layout']);
-        //     $view->title(ucfirst($request->action()) . ' - ' . ucfirst($request->controller()) . ' - ' . $this->pew['app_title']);
-            
-        //     $view_data = $this->handle_controller($request->controller(), $request->action());
-            
-        //     if (false !== $view_data) {
-        //         $response = $this->respond($request, $view, $view_data);
-        //     }
-        // } catch (\Exception $exception) {
-        //     $view = $this->pew->view;
-        //     $view->layout('error.layout');
-            
-        //     if ($this->pew['debug']) {
-        //         header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-
-        //         $view->template('error/error');
-        //         $view->title('Application Error (' . get_class($exception) . ')');
-        //     } else {
-        //         header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found', true, 404);
-        //         $view->template('error/404');
-        //         $view->title('Page not found');
-        //     }
-
-        //     $response = $this->respond($request, $view, ['exception' => $exception]);
-        // }
-
-        // if ($response) {
-        //     echo $response;
-        // }
     }
 
     protected function handle_callable($callable)
