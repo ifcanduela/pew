@@ -2,7 +2,7 @@
 
 namespace pew\model;
 
-use pew\libs\DAtabase;
+use pew\libs\Database;
 use pew\model\exception\TableNotSpecifiedException;
 use pew\model\exception\TableNotFoundException;
 
@@ -14,7 +14,7 @@ use Stringy\StaticStringy;
  * @package pew\db
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
+class Table
 {
     /**
      * Database abstraction instance.
@@ -35,7 +35,7 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      *
      * @var string
      */
-    protected $primary_key = null;
+    protected $primaryKey = null;
 
     /**
      * Miscellaneous table metadata.
@@ -45,7 +45,7 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      *
      * @var array
      */
-    protected $table_data = [];
+    protected $tableData = [];
 
     /**
      * Current resultset.
@@ -55,63 +55,6 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      * @var array
      */
     protected $record = [];
-
-    /**
-     * Related model tables.
-     *
-     * Holds an index for each related model.
-     *
-     * @var array
-     */
-    protected $relationships = [];
-
-    /**
-     * Related models to eagerly load on find() operations.
-     *
-     * @var array
-     */
-    protected $eager_load = [];
-
-    /**
-     * An associative array of child tables.
-     *
-     * The simplest way of defining a relationship is as follows:
-     *
-     *     <code>public $has_many = ['comments' => 'user_id'];</code>
-     * 
-     * This field can also be used with aliases using the following format:
-     *
-     *     <code>public $has_many = ['user_comments' => ['comments', 'user_id']];</code>
-     *
-     * @var array
-     */
-    protected $has_many = [];
-
-    /**
-     * An associative array of parent tables.
-     *
-     * The simplest way of defining a relationship is as follows:
-     *
-     *     <code>public $belongs_to = ['users' => 'user_id'];</code>
-     * 
-     * This field can also be used with aliases using the following format:
-     *
-     *     <code>public $belongs_to = ['owner' => ['users', 'user_id'];</code>
-     *
-     * @var array
-     */
-    protected $belongs_to = [];
-
-    /**
-     * An associative array of sibling tables.
-     *
-     * The way of defining a sibling relationship is as follows:
-     *
-     *     <code>public $has_and_belongs_to_many = ['tags' => ['tagged_posts', 'post_id, 'tag_id', 'tags']];</code>
-     *
-     * @var array
-     */
-    protected $has_and_belongs_to_many = [];
 
     /**
      * An associative array of twin tables.
@@ -211,30 +154,17 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
         }
 
         # some metadata about the table
-        $this->table_data['name'] = $this->table;
-        $this->table_data['primary_key'] = $this->db->get_pk($this->table);
+        $this->tableData['name'] = $this->table;
+        $this->tableData['primary_key'] = $this->db->get_pk($this->table);
         $columns = $this->db->get_cols($this->table);
-        $this->table_data['columns'] = $columns;
-        $this->table_data['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
+        $this->tableData['columns'] = $columns;
+        $this->tableData['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
 
         # initialize an empty record
-        $this->record = $this->table_data['column_names'];
+        $this->record = $this->tableData['column_names'];
 
-        if (!$this->primary_key) {
-            $this->primary_key = $this->table_data['primary_key'];
-        }
-
-        $relationship_types = [
-            'belongs_to' => 'add_parent',
-            'has_many' => 'add_child',
-            'has_one' => 'add_twin',
-            'has_and_belongs_to_many' => 'add_sibling',
-        ];
-
-        foreach ($relationship_types as $type => $method) {
-            foreach ($this->$type as $alias => $info) {
-                $this->$method($alias, $info);
-            }
+        if (!$this->primaryKey) {
+            $this->primaryKey = $this->tableData['primary_key'];
         }
     }
 
@@ -266,7 +196,7 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      */
     public function primaryKey()
     {
-        return $this->primary_key;
+        return $this->primaryKey;
     }
 
     /**
@@ -281,8 +211,8 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     public function column_names($as_keys = true)
     {
         return $as_keys 
-            ? $this->table_data['column_names'] 
-            : array_keys($this->table_data['column_names']);
+            ? $this->tableData['column_names'] 
+            : array_keys($this->tableData['column_names']);
     }
 
     /**
@@ -412,30 +342,6 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
         return $blank;
     }
 
-    public function blank(array $attributes = [])
-    {
-        return $this->create($attributes);
-    }
-
-    /**
-     * Get or set the current record values.
-     *
-     * This method will only update values for fields set in the $attributes 
-     * argument.
-     * 
-     * @param array $attributes Associative array of column names and values
-     * @return array An associative array of current column names and values
-     */
-    public function attributes(array $attributes = null)
-    {
-        if (!is_null($attributes)) {
-            $base_fields = $this->column_names();
-            $this->record = array_intersect_key($attributes, $base_fields) + $base_fields;
-        }
-        
-        return $this->record;
-    }
-
     /**
      * Simple transitional function to run a query directly.
      *
@@ -467,11 +373,6 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             if ($clause == 'SELECT') {
                 # return an array of Models
                 $result = $stm->fetchAll();
-
-                foreach ($result as $key => $value) {
-                    $result[$key] = clone $this;
-                    $result[$key]->record = $value;
-                }
 
                 return $result;
             } else {
@@ -532,98 +433,6 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
         return $models;
     }
 
-    // /**
-    //  * Retrieve a single item from the model table using its primary key.
-    //  *
-    //  * @param int $id Value to match to the primary key of the model table, or
-    //  *                an associative array with field name/ field value pairs.
-    //  * @return Model A model instance
-    //  */
-    // public function find($id)
-    // {
-    //     # if $id is not numeric, use it as a conditions array
-    //     if (is_array($id)) {
-    //         $this->where($id);
-    //     } else {
-    //         $this->clauses['where'][$this->primary_key] = $id;
-    //     }
-
-    //     #query the database
-    //     $result = $this->db
-    //                     ->where($this->where())
-    //                     ->group_by($this->group_by())
-    //                     ->having($this->having())
-    //                     ->limit($this->limit())
-    //                     ->order_by($this->order_by())
-    //                     ->single($this->table, $this->clauses['fields']);
-
-    //     $this->reset();
-
-    //     if ($result) {
-    //         $this->record = array_merge($this->column_names(), (array) $result);
-    //     } else {
-    //         # if there was no result, return false
-    //         $this->table_data['data'] = [];
-    //         $this->record = $this->column_names();
-    //         return false;
-    //     }
-
-    //     foreach ($this->eager_load as $related_model) {
-    //         $this->record[$related_model] = $this->offsetGet($related_model);
-    //     }
-
-    //     if (method_exists($this, 'after_find')) {
-    //         $this->record = current($this->after_find([$result]));
-    //     }
-
-    //     return clone $this;
-    // }
-
-    // /**
-    //  * Retrieve all items from a table.
-    //  *
-    //  * @param array $where An associative array with WHERE conditions.
-    //  * @return Model[] An array with the resulting records
-    //  */
-    // public function find_all($where = null)
-    // {
-    //     # if conditions are provided, overwrite the previous model conditions
-    //     if (is_array($where)) {
-    //         $this->where($where);
-    //     }
-
-    //     # query the database
-    //     $result = $this->db
-    //                 ->where($this->where())
-    //                 ->group_by($this->group_by())
-    //                 ->having($this->having())
-    //                 ->limit($this->limit())
-    //                 ->order_by($this->order_by())
-    //                 ->select($this->table, $this->clauses['fields']);
-
-    //     $this->reset();
-
-    //     if ($result) {
-    //         foreach ($result as $key => $value) {
-    //             $result[$key] = clone $this;
-    //             $result[$key]->record = $value;
-
-    //             foreach ($this->eager_load as $related_model) {
-    //                 $result[$key]->record[$related_model] = $result[$key]->offsetGet($related_model);
-    //             }
-    //         }
-    //     } else {
-    //         # return an empty array if there was no result
-    //         $result = [];
-    //     }
-
-    //     if (method_exists($this, 'after_find')) {
-    //         $result = $this->after_find($result);
-    //     }
-
-    //     return $result;
-    // }
-
     /**
      * Count the rows that fit the criteria.
      *
@@ -658,19 +467,15 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
      * @param array $data An associative array with database fields and values
      * @return Model The saved item on success, false otherwise
      */
-    public function save($data = null)
+    public function save(Record $record)
     {
-        if (is_null($data)) {
-            $data = $this->record;
+        if (method_exists($record, 'beforeSave')) {
+            $data->beforeSave();
         }
 
-        if (method_exists($this, 'before_save')) {
-            $data = $this->before_save($data);
-        }
+        $record = $data->attributes();
 
-        $record = [];
-
-        foreach ($this->table_data['columns'] as  $key) {
+        foreach ($this->tableData['columns'] as  $key) {
             if (array_key_exists($key, $data)) {
                 $record[$key] = $data[$key];
             }
@@ -680,29 +485,37 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             throw new \RuntimeException("Database file is not writable.");
         }
         
-        if (isset($record[$this->primary_key])) {
+        if (isset($record[$this->tableData['primary_key']])) {
             # set modification timestamp
-            if ($this->has_column('modified')) {
+            if ($this->hasColumn('modified')) {
                 $record['modified'] = time();
             }
 
+            if ($this->hasColumn('updated')) {
+                $record['updated'] = time();
+            }
+
             # if $id is set, perform an UPDATE
-            $result = $this->db->set($record)->where([$this->primary_key => $record[$this->primary_key]])->update($this->table);
-            $result = $this->db->where([$this->primary_key => $record[$this->primary_key]])->single($this->table);
+            $result = $this->db->set($record)->where([$this->tableData['primary_key'] => $record[$this->tableData['primary_key']]])->update($this->table);
+            $result = $this->db->where([$this->tableData['primary_key'] => $record[$this->tableData['primary_key']]])->single($this->table);
         } else {
             # set creation timestamp
-            if ($this->has_column('created')) {
+            if ($this->hasColumn('created')) {
                 $record['created'] = time();
             }
 
             # set modification timestamp
-            if ($this->has_column('modified')) {
+            if ($this->hasColumn('modified')) {
                 $record['modified'] = time();
+            }
+
+            if ($this->hasColumn('updated')) {
+                $record['updated'] = time();
             }
 
             # if $id is not set, perform an INSERT
             $result = $this->db->values($record)->insert($this->table);
-            $result = $this->db->where([$this->primary_key => $result])->single($this->table);
+            $result = $this->db->where([$this->tableData['primary_key'] => $result])->single($this->table);
         }
 
         if (method_exists($this, 'after_save')) {
@@ -737,7 +550,7 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             return $this->db->delete($this->table);
         } elseif (!is_null($id) && !is_bool($id)) {
             # delete the item as received, ignoring previous conditions
-            return $this->db->where([$this->primary_key => $id])->limit(1)->delete($this->table);
+            return $this->db->where([$this->tableData['primary_key'] => $id])->limit(1)->delete($this->table);
         } elseif ($this->clauses['where']) {
             # delete everything that matches the conditions
             return $this->db->where($this->clauses['where'])->delete($this->table);
@@ -745,50 +558,6 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
             # no valid configuration
             throw new \RuntimeException('Delete requires conditions or parameters');
         }
-    }
-
-    /**
-     * Set which related models to retrieve eagerly in a find() operaton.
-     *
-     * @param $related_model One or more related models
-     * @return Model The model
-     */
-    public function with()
-    {
-        $self = $this;
-
-        $this->eager_load = array_filter(func_get_args(), function($with) use ($self) {
-            return $self->has_related($with);
-        });
-
-        return $this;
-    }
-
-    /**
-     * Validate the data against a validator.
-     * 
-     * @param array $record Fields and values to validate
-     * @param array $rules Validation configuration
-     * @return array Validation errors
-     */
-    public function validate($record = null, array $rules = null)
-    {
-        if (is_null($rules)) {
-            if (!property_exists($this, 'rules')) {
-                throw new \RuntimeException("No valdation rules configured for model " . get_class($this));
-            } else {
-                $rules = $this->rules;
-            }
-        }
-
-        if (is_null($record)) {
-            $record = $this->record;
-        }
-
-        $validator = Pew::instance()->library('Validator', [$rules]);
-        $validator->validate($record);
-
-        return $validator->errors();
     }
 
     /**
@@ -1002,160 +771,13 @@ class Table implements \ArrayAccess, \IteratorAggregate, \JsonSerializable
     }
 
     /**
-     * Check if the field exists in the model.
+     * Check if the field exists in the table.
      * 
      * @param string $column_name
      * @return boolean
      */
-    public function has_column($column_name)
+    public function hasColumn(string $column_name): bool
     {
-        return array_key_exists($column_name, $this->record);
-    }
-
-    /**
-     * Check if an column or related model exists.
-     * 
-     * @return bool True if the offset exists, false otherwise
-     */
-    public function offsetExists($offset)
-    {
-        $has_column = $this->has_column($offset);
-        $has_related = $this->has_related($offset);
-        
-        return $has_column || $has_related;
-    }
-
-    /**
-     * Get a record field value or related model.
-     * 
-     * @return mixed The value at the offset.
-     * @throws \InvalidArgumentException When the offset does not exist
-     */
-    public function offsetGet($offset)
-    {
-        # check if the offset is a table field or a relationship alias
-        if (!$this->offsetExists($offset)) {
-            throw new \InvalidArgumentException("Invalid model field " . get_class($this) . '::' . $offset);
-        }
-
-        # the offset is a table field
-        if (isSet($this->record[$offset])) {
-            return $this->record[$offset];
-        }
-
-        # the offset is a relationship
-        if (isSet($this->relationships[$offset])) {
-            $relationship = $this->relationships[$offset];
-            # get the name of the FK -- it will be this table's PK in a belongs-to relationship
-            $fk = $this->record[$relationship->key() ?: $this->primary_key()];
-            
-            if (!is_null($fk)) {
-                $related_model = Pew::instance()->model($relationship->table());
-                # let the relationship resolve the call to the related table
-                $this->record[$offset] = $relationship->fetch($related_model, $fk);
-            } else {
-                $this->record[$offset] = null;
-            }
-
-            return $this->record[$offset];
-        }
-
-        return null;
-    }
-
-    /**
-     * Set the value of a record column.
-     * 
-     * @return void
-     */
-    public function offsetSet($offset, $value)
-    {
-        $this->record[$offset] = $value;
-    }
-
-    /**
-     * Remove an offset.
-     *
-     * ArrayAccess implementation.
-     *
-     * @param string $offset The offset to remove
-     */
-    public function offsetUnset($offset)
-    {
-        unset($this->record[$offset]);
-    }
-
-    /**
-     * Set a value in the registry.
-     * 
-     * @param string $key Key for the value
-     * @param mixed Value to store
-     */
-    public function __set($key, $value)
-    {
-        return $this->offsetSet($key, $value);
-    }
-
-    /**
-     * Get a stored value from the registry.
-     * 
-     * @param mixed $key Key for the value
-     * @return mixed Stored value
-     */
-    public function __get($key)
-    {
-        return $this->offsetGet($key);
-    }
-
-    /**
-     * Check if a key is in use.
-     * 
-     * @param mixed $key Key to check
-     * @return bool True if the key has been set, false otherwise.
-     */
-    public function __isset($key)
-    {
-        return $this->offsetExists($key);
-    }
-
-    /**
-     * Remove a stored value from the registry.
-     * 
-     * @param mixed $key Key to delete
-     */
-    public function __unset($key)
-    {
-        $this->offsetUnset($key);
-    }
-
-    /**
-     * Allow iteration over the current record fields.
-     * 
-     * @return ArrayIterator
-     */
-    public function getIterator()
-    {
-        return new \ArrayIterator($this->record);
-    }
-
-    /**
-     * JSON representation of the model object.
-     * 
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        return $this->attributes();
-    }
-
-    /**
-     * Disconnect the PDO instance before serialization.
-     * 
-     * @return array
-     */
-    public function __sleep()
-    {
-        $this->db = null;
-        return array_keys(get_object_vars($this));
+        return in_array($column_name, $this->tableData['columns'], true);
     }
 }

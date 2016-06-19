@@ -10,72 +10,57 @@ use Stringy\Stringy as Str;
  * @package pew\model
  * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Record implements \ArrayAccess, \JsonSerializable
+class Record implements \JsonSerializable
 {
     /**
-     * List of class properties to serialize as JSON.
-     * 
-     * @var array
-     */
-    public $serialize = [];
-
-    /**
-     * List of database columns to exclude from JSON serialization.
-     * 
-     * @var array
-     */
-    public $doNotSerialize = [];
-
-    /**
-     * Cached results for model get methods.
-     * 
-     * @var array
-     */
-    protected $getterResults = [];
-
-    /**
-     * Database table for the subject of the model.
-     *
-     * @var string
+     * @var string Database table for the subject of the model.
      */
     protected $tableName;
 
     /**
-     * Name of the primary key fields of the table the Model manages.
-     *
-     * @var string
+     * @var string Name of the primary key fields of the table the Model manages.
      */
     protected $primaryKey;
 
     /**
-     * Current resultset.
-     *
-     * Holds an index for each record in the last resultset.
-     *
-     * @var array
+     * @var array List of class properties to serialize as JSON.
+     */
+    public $serialize = [];
+
+    /**
+     * @var array List of database columns to exclude from JSON serialization.
+     */
+    public $doNotSerialize = [];
+
+    /**
+     * @var array Cached results for model get methods.
+     */
+    protected $getterResults = [];
+
+    /**
+     * @var array Current record data.
      */
     protected $record = [];
 
     /**
-     * Table data manager.
-     * 
-     * @var Table
+     * @var Table data manager.
      */
     protected $tableManager;
 
     /**
-     * Database connection name.
-     * 
-     * @var Table
+     * @var Database connection name.
      */
     protected $connectionName = 'default';
 
     /**
-     * Flag for new records.
-     * 
-     * @var boolean
+     * @var Flag for new records.
      */
     public $isNew = false;
+
+    /**
+     * @var List of validation errors.
+     */
+    public $errors = [];
 
     /**
      * The constructor builds the model!.
@@ -125,11 +110,20 @@ class Record implements \ArrayAccess, \JsonSerializable
     {
         $record = new static;
 
-        foreach ($data as $key => $value) {
-            $record->$key = $data[$key];
-        }
+        $record->attributes($data);
 
         return $record;
+    }
+
+    public static function fromQuery($query, $parameters)
+    {
+        $record = new static;
+
+        $result = $record->table()->query($query, $parameters);
+
+        return array_map(function ($r) {
+            return static::fromArray($r);
+        }, $result);
     }
 
     /**
@@ -144,11 +138,80 @@ class Record implements \ArrayAccess, \JsonSerializable
     public function attributes(array $attributes = null)
     {
         if (!is_null($attributes)) {
-            $base_fields = $this->tableManager->column_names();
-            $this->record = array_intersect_key($attributes, $base_fields) + $base_fields;
+            foreach ($attributes as $key => $value) {
+                if ($this->hasAttribute($key)) {
+                    $this->$key = $value;
+                }
+            }
         }
         
         return $this->record;
+    }
+
+    /**
+     * Check if the model has an attribute by that name.
+     * 
+     * @param string $key
+     * @return boolean
+     */
+    public function hasAttribute($key)
+    {
+        return array_key_exists($key, $this->record) || property_exists($this, $key);
+    }
+
+    /**
+     * Add an error for a field.
+     * 
+     * @param string $field
+     * @param string $message
+     */
+    public function addError(string $field, string $message)
+    {
+        $this->errors[] = (object) compact('field', 'message');
+    }
+
+    /**
+     * Check if the record passed validation.
+     * 
+     * @return boolean
+     */
+    public function hasErrors(): bool
+    {
+        return !empty($this->errors);
+    }
+
+    /**
+     * Get an array of all errors per field.
+     * 
+     * @param string|null $field
+     * @return array
+     */
+    public function getErrors(string $field = null): array
+    {
+        if (isset($field)) {
+            return $this->getErrorsForField($field);
+        }
+
+        return $this->errors;
+    }
+
+    /**
+     * Get a list of all errors for a field.
+     * 
+     * @param string $field
+     * @return array
+     */
+    public function getErrorsForField(string $field): array
+    {
+        $errors = [];
+
+        foreach ($this->errors as $error) {
+            if ($error->field == $field) {
+                $errors[] = $error->message;
+            }
+        }
+
+        return $errors;
     }
 
     /**
@@ -169,62 +232,9 @@ class Record implements \ArrayAccess, \JsonSerializable
      */
     public function delete()
     {
-        return $this->tableManager->where([$this->primaryKey => $this->id])->delete();
+        return $this->tableManager->where([$table->primaryKey() => $this->id])->delete();
     }
 
-    /**
-     * Check if an column or related model exists.
-     * 
-     * @return bool True if the offset exists, false otherwise
-     */
-    public function offsetExists($offset)
-    {
-        return array_key_exists($offset, $this->record);
-    }
-
-    /**
-     * Get a record field value or related model.
-     * 
-     * @return mixed The value at the offset.
-     * @throws \InvalidArgumentException When the offset does not exist
-     */
-    public function offsetGet($offset)
-    {
-        # check if the offset is a table field or a relationship alias
-        if (!$this->offsetExists($offset)) {
-            throw new \InvalidArgumentException("Invalid model field " . get_class($this) . '::' . $offset);
-        }
-
-        # the offset is a table field
-        if (isSet($this->record[$offset])) {
-            return $this->record[$offset];
-        }
-
-        return null;
-    }
-
-    /**
-     * Set the value of a record column.
-     * 
-     * @return void
-     */
-    public function offsetSet($offset, $value)
-    {
-        $this->record[$offset] = $value;
-    }
-
-    /**
-     * Remove an offset.
-     *
-     * ArrayAccess implementation.
-     *
-     * @param string $offset The offset to remove
-     */
-    public function offsetUnset($offset)
-    {
-        unset($this->record[$id]);
-    }
-    
     /**
      * Allow iteration over the current record fields.
      * 
@@ -266,7 +276,7 @@ class Record implements \ArrayAccess, \JsonSerializable
         $table = $record->tableManager;
         
         if ($id) {
-            return $table->where([$table->primaryKey => $id])->one();
+            return $table->where([$table->primaryKey() => $id])->one();
         }
         
         return $table;
@@ -280,7 +290,19 @@ class Record implements \ArrayAccess, \JsonSerializable
      */
     public function __set($key, $value)
     {
-        $this->record[$key] = $value;
+        $methodName = 'set' . Str::create($key)->upperCamelize();
+
+        if (method_exists($this, $methodName)) {
+            $this->$methodName($value);
+
+            return $this;
+        } elseif (array_key_exists($key, $this->record)) {
+            $this->record[$key] = $value;
+
+            return $this;
+        }
+
+        throw new \RuntimeException("Record attribute {$key} does not exist");
     }
 
     /**
@@ -317,7 +339,7 @@ class Record implements \ArrayAccess, \JsonSerializable
      */
     public function __isset($key)
     {
-        return $this->offsetExists($key);
+        return isset($this->record[$key]);
     }
 
     /**

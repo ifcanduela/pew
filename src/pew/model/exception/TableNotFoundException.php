@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\db\exception;
+namespace pew\model\exception;
 
 class TableNotFoundException extends \RuntimeException {
     
