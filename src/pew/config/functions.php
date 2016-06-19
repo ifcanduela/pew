@@ -24,111 +24,6 @@ function pew($key = null, $app = null)
 }
 
 /**
- * Logs something to a file.
- *
- * The location of the file must be available to write.
- * 
- * @param mixed $what What you want to write to the log
- * @return int Number of bytes written to file, or false on failure
- */
-function flog($what, $filename = null)
-{
-    if (is_null($filename)) {
-        $filename = 'logs/log_' . date('Y-m-d') . '.txt';
-    }
-
-    $data = print_r($what, true);
-    $entry = date('Y-m-d H:i:s') . ' | ' . $data . PHP_EOL;
-    
-    return file_put_contents($filename, $entry, FILE_APPEND);
-}
-
-/**
- * Extracts the base class name from a namespaced class.
- *
- * @param string $class_name Namespaced class name
- * @return string Class name without namespace
- */
-function class_base_name($class_name)
-{
-    $class_name_parts = explode('\\', $class_name);
-    $class_base_name = end($class_name_parts);
-
-    return $class_base_name;
-}
-
-/**
- * A basic configuration storage.
- *
- * The cfg() function can be called with a single parameter to retrieve its 
- * value from the storage, or with two parameters to save the value in the
- * storage.
- * 
- * If the $key parameter is boolean true, the return value is the full content
- * of the storage.
- * 
- * @param int|string $key Key to set
- * @param mixed $value Value to set
- * @return mixed
- */
-function cfg($key, $value = null, $default = null)
-{
-    # static storage
-    static $_config_values = [];
-    
-    # return all values in special case
-    if ($key === true) {
-        return $_config_values;
-    }
-    
-    # return null if key is invalid
-    if (!is_string($key) && !is_int($key)) {
-        return null;
-    }
-
-    # if there is no value argument...
-    if (is_null($value)) {
-        # and the key was created
-        if (array_key_exists($key, $_config_values)) {
-            # return the value
-            return $_config_values[$key];
-        } else {
-            # if the key does not exist, create it and assign $default/null
-            return $_config_values[$key] = $default;
-        }
-    } else {
-        # assign the value to the key
-        $_config_values[$key] = $value;
-        # and return it
-        return $value;
-    }
-}
-
-/**
- * Builds a path out of several segments.
- *
- * The first argument can be a single-character separator.              
- *
- * @param string Path segments to join
- * @return string The full path
- */
-function make_path()
-{
-    $separator = DIRECTORY_SEPARATOR;
-    $arguments = func_get_args();
-
-    if (strlen($arguments[0]) === 1) {
-        $separator = array_shift($arguments);
-    }
-
-    $segments = array_map(function ($segment) use ($separator) {
-        return preg_replace('~[\\\/]+~' , $separator, trim($segment, '\\/'));
-    }, $arguments);
-
-    return join($separator, array_filter($segments));
-}
-
-/**
  * Generates a floating-point pseudo-random number.
  *
  * If only one parameter is provided, it's used as upper boundary. If no parameters are 
@@ -155,64 +50,6 @@ function frand($from = null, $to = null)
     $result = rand($from * $multiplier, $to * $multiplier) / $multiplier;
 
     return $result;
-}
-
-/**
- * A handy wrapper for print_r.
- *
- * The pr() function calls print_r with the $data parameter, wrapping the call
- * inside &lt;pre> tags and preprending the optional $title parameter to help
- * identify the output. It will not produce HTML if the script is running from 
- * the console.
- * 
- * @param mixed $data The data to be printed
- * @param string $title Optional title of the printed data
- * @param boolean $print Whether to print or return the output
- * @return void
- */
-function pr($data, $title = null, $print = true)
-{
-    # acquire formatted $data
-    $echo = print_r($data, true);
-    
-    if (defined('STDIN')) {
-        # don't add markup for console output
-        if ($title) {
-            $echo = "$title: $echo";
-        }
-    } else {
-        # add markup for browser output
-        if ($title) {
-            $echo = "<em>$title</em>: $echo";
-        }
-        # wrap the text in <pre> tags
-        $echo = "<pre>$echo</pre>";
-    }
-    
-    if ($print) {
-        echo $echo;
-    } else {
-        return $echo;
-    }
-}
-
-/**
- * Triggers an E_USER_ERROR message and shows a simple trace.
- * 
- * @param string $message A descriptive error message
- * @param int $level Error level, E_USER_ERROR by default
- * @return void
- * @see http://php.net/debug_backtrace
- */
-function pew_exit($message, $level = E_USER_ERROR)
-{
-    $debug_backtrace = debug_backtrace();
-    # get the caller of the function that called pew_exit()
-    $callee = $debug_backtrace[0];
-    # trigger the appropriate error
-    trigger_error("ERROR: $message in {$callee['file']} on line {$callee['line']}", $level);
-    # print the complete backtrace
-    debug_print_backtrace();
 }
 
 /**
@@ -345,22 +182,6 @@ function sanitize($string)
     } else {
         return $string;
     }
-}
-
-/**
- * Escapes form data in a recursive way.
- * 
- * @param array $post The data from the $_POST array
- * @return array The properly-escaped data
- * @see http://php.net/manual/en/function.stripslashes.php
- */
-function clean_array_data($post)
-{
-    $post = is_array($post)
-          ? array_map('clean_array_data', $post)
-          : stripslashes($post);
-
-    return $post;
 }
 
 /**
@@ -605,81 +426,6 @@ function array_to_xml(array $data, &$xml, $root_name = 'root')
 }
 
 /**
- * A quick way of converting file names to class names.
- * 
- * @param string $file_name The file name, without extension
- * @return string The properly-cased class name
- */
-function file_name_to_class_name($file_name)
-{
-    #obtain the words in the file name
-    $words = explode('_', $file_name);
-    
-    # use an anonymous function to upper-case-first every word in the array
-    array_walk($words, function(&$word) {
-        # convert the word to upper-case
-        $word = ucfirst($word);
-    });
-    
-    # return the words
-    return join('', $words);
-}
-
-/**
- * A quick way of converting file names to class names.
- *
- * Alias of file_name_to_class_name
- * 
- * @param string $file_name The file name, without extension
- * @return string The properly-cased class name
- */
-function f2c($file_name)
-{
-    return file_name_to_class_name($file_name);
-}
-
-/**
- * A quick way of converting class names to file names.
- * 
- * @param string $class_name The came-case class name
- * @return string The lower-case and underscore-separated file name
- */
-function class_name_to_file_name($class_name)
-{
-    $file_name = preg_replace('/([A-Z])/', '_$1', $class_name);
-    return strtolower(trim($file_name, '_'));
-}
-
-/**
- * A quick way of converting class names to file names.
- *
- * Alias of class_name_to_file_name
- * 
- * @param string $class_name The came-case class name
- * @return string The lower-case and underscore-separated file name
- */
-function c2f($class_name)
-{
-    return class_name_to_file_name($class_name);
-}
-
-/**
- * Sends a 302-redirect http header that points to the application url passed
- * as parameter, prepending the URL constant to it.
- *
- * This function stops the execution of the current script.
- *
- * @param string $url The target address, in the form of controller/action/params
- * @return void
- */
-function redirect($url)
-{
-    $url = ltrim($url, '/');
-    header('Location: ' . pew('app_url') . $url);
-    exit(302);
-}
-
-/**
  * Makes sure the folders in a slash-delimited path exist.
  *
  * This is useful when mkdir() does not support the $recursive parameter,
@@ -811,18 +557,20 @@ function to_underscores($str, $chars = [' ', '-'], $replacements = '_')
  * @param string $path A path to include in the output
  * @return string The resulting path
  */
-function root($path = '')
+function root(...$path)
 {
     static $root_path;
 
     if (!isset($root_path)) {
          $root_path = pew('root_path');   
-     }
-     
-    // $path = ltrim(str_replace('/', DIRECTORY_SEPARATOR, $path), ' \\/');
-    // $root_path = pew('root_folder') . ($path ? '/' . $path : '');
-    
-    return join(DIRECTORY_SEPARATOR, array_filter([$root_path, $path]));
+    }
+
+    array_unshift($path, $root_path);
+
+    $path = join(DIRECTORY_SEPARATOR, array_filter($path));
+    $path = preg_replace('~[\\\/]+~', DIRECTORY_SEPARATOR, $path);
+
+    return $path;
 }
 
 /**
@@ -836,7 +584,7 @@ function root($path = '')
  * @param string $path One or more path segments
  * @return string The resulting url
  */
-function url(string ...$path): string
+function url(...$path): string
 {
     static $base_url;
 
@@ -848,6 +596,23 @@ function url(string ...$path): string
     $path = preg_replace('~\/+~', '/', join('/', array_filter($path)));
 
     return $base_url . trim($path, '/');
+}
+
+/**
+ * Gets an absolute URL, having the location of the assets folder as base URL.
+ *
+ * If the site is hosted at http://www.example.com/pewexample and the 
+ * "www_url" app config setting is url('www'), the call
+ *     echo www('css/styles.css');
+ * will print
+ *     http://www.example.com/pewexample/www/css/styles.css.
+ * 
+ * @param string $url A string to print after the server, path and www location.
+ * @return string The resulting url
+ */
+function www(...$path)
+{
+    return url(...$path);
 }
 
 /**
@@ -867,26 +632,6 @@ function here()
 }
 
 /**
- * Gets an absolute URL, having the location of the assets folder as base URL.
- *
- * If the site is hosted at http://www.example.com/pewexample and the 
- * "www_url" app config setting is url('www'), the call
- *     echo www('css/styles.css');
- * will print
- *     http://www.example.com/pewexample/www/css/styles.css.
- * 
- * @param string $url A string to print after the server, path and www location.
- * @return string The resulting url
- */
-function www($path = '')
-{
-    $path = trim($path, '/');
-    $www_url = rtrim(pew('www_url'), '/') . ($path ? '/' . $path : '');
-
-    return $www_url;
-}
-
-/**
  * Gets the currently logged-in user data, if any.
  * 
  * Commonly used in this way: echo user()->username;
@@ -896,7 +641,7 @@ function www($path = '')
  */
 function user()
 {
-    return session('user') ? (object) session('user') : false;
+    return session('user') ?? false;
 }
 
 /**
@@ -920,24 +665,7 @@ function session($path = null, $default = null)
         return $session->all();
     }
 
-    return $session[$path];
-
-    // $indexes = explode('.', $path);
-    // $first_index = array_shift($indexes);
-
-    // $value = $session[$first_index];
-
-    // while (!empty($indexes)) {
-    //     $index = array_shift($indexes);
-        
-    //     if (!isSet($value[$index])) {
-    //         return $default;
-    //     }
-
-    //     $value = $value[$index];
-    // }
-
-    // return $value;
+    return $session[$path] ?? $default;
 }
 
 /**
@@ -962,16 +690,4 @@ function flash($key = null, $default = null)
     }
 
     return $default;
-}
-
-/**
- * Checks is a value is defined exists and returns ir or a default.
- * 
- * @param mixed $ref A value reference to check
- * @param mixed $default A fallback value to return
- * @return mixed
- */
-function set_or_default(&$ref, $default = null)
-{
-    return isSet($ref) ? $ref : $default;
 }
