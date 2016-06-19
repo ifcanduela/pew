@@ -833,10 +833,10 @@ function root($path = '')
  * will print
  *     http://www.example.com/pewexample/www/css/styles.css.
  * 
- * @param string $url A string to print after the server and path
+ * @param string $path One or more path segments
  * @return string The resulting url
  */
-function url($path = '')
+function url(string ...$path): string
 {
     static $base_url;
 
@@ -844,6 +844,8 @@ function url($path = '')
         $base_url = pew('request')->getSchemeAndHttpHost();
         $base_url = rtrim($base_url, '/') . '/';
     }
+
+    $path = preg_replace('~\/+~', '/', join('/', array_filter($path)));
 
     return $base_url . trim($path, '/');
 }
