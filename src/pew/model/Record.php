@@ -221,8 +221,8 @@ class Record implements \JsonSerializable
      */
     public function save()
     {
-        $result = $this->tableManager->save($this->record);
-        $this->record = array_merge($this->record, $result->attributes());
+        $result = $this->tableManager->save($this);
+        $this->record = array_merge($this->record, $result);
 
         $this->isNew = false;
     }

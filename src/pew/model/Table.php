@@ -154,18 +154,12 @@ class Table
         }
 
         # some metadata about the table
-        $this->tableData['name'] = $this->table;
-        $this->tableData['primary_key'] = $this->db->get_pk($this->table);
+        $primary_key = $this->db->get_pk($this->table);
         $columns = $this->db->get_cols($this->table);
+        $this->tableData['name'] = $this->table;
+        $this->tableData['primary_key'] = $primary_key;
         $this->tableData['columns'] = $columns;
         $this->tableData['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
-
-        # initialize an empty record
-        $this->record = $this->tableData['column_names'];
-
-        if (!$this->primaryKey) {
-            $this->primaryKey = $this->tableData['primary_key'];
-        }
     }
 
     /**
@@ -196,7 +190,7 @@ class Table
      */
     public function primaryKey()
     {
-        return $this->primaryKey;
+        return $this->tableData['primary_key'];
     }
 
     /**
@@ -467,25 +461,28 @@ class Table
      * @param array $data An associative array with database fields and values
      * @return Model The saved item on success, false otherwise
      */
-    public function save(Record $record)
+    public function save(Record $model)
     {
-        if (method_exists($record, 'beforeSave')) {
-            $data->beforeSave();
+        if (method_exists($model, 'beforeSave')) {
+            $model->beforeSave();
         }
 
-        $record = $data->attributes();
+        $attributes = $model->attributes();
+        $record = [];
 
         foreach ($this->tableData['columns'] as  $key) {
-            if (array_key_exists($key, $data)) {
-                $record[$key] = $data[$key];
+            if (array_key_exists($key, $attributes)) {
+                $record[$key] = $attributes[$key];
             }
         }
 
         if (!$this->db->is_writable) {
             throw new \RuntimeException("Database file is not writable.");
         }
+
+        $primary_key = $this->tableData['primary_key'];
         
-        if (isset($record[$this->tableData['primary_key']])) {
+        if (isset($record[$primary_key])) {
             # set modification timestamp
             if ($this->hasColumn('modified')) {
                 $record['modified'] = time();
@@ -496,8 +493,9 @@ class Table
             }
 
             # if $id is set, perform an UPDATE
-            $result = $this->db->set($record)->where([$this->tableData['primary_key'] => $record[$this->tableData['primary_key']]])->update($this->table);
-            $result = $this->db->where([$this->tableData['primary_key'] => $record[$this->tableData['primary_key']]])->single($this->table);
+            $where = [$primary_key => $record[$primary_key]];
+            $result = $this->db->set($record)->where($where)->update($this->table);
+            $result = $this->db->where($where)->single($this->table);
         } else {
             # set creation timestamp
             if ($this->hasColumn('created')) {
@@ -515,17 +513,14 @@ class Table
 
             # if $id is not set, perform an INSERT
             $result = $this->db->values($record)->insert($this->table);
-            $result = $this->db->where([$this->tableData['primary_key'] => $result])->single($this->table);
+            $result = $this->db->where([$primary_key => $result])->single($this->table);
         }
 
-        if (method_exists($this, 'after_save')) {
-            $result = $this->after_save($result);
+        if (method_exists($model, 'afterSave')) {
+            $model->afterSave();
         }
 
-        $this->record = array_merge($this->record, $result);
-        $model = $this->create($this->record);
-
-        return $model;
+        return array_merge($this->tableData['column_names'], $result);;
     }
 
     /**
@@ -778,6 +773,6 @@ class Table
      */
     public function hasColumn(string $column_name): bool
     {
-        return in_array($column_name, $this->tableData['columns'], true);
+        return isset($this->tableData['column_names'][$column_name]);
     }
 }
