@@ -12,54 +12,40 @@ use Stringy\Stringy as Str;
  */
 class Record implements \JsonSerializable
 {
-    /**
-     * @var string Database table for the subject of the model.
-     */
+    /** @var string Database table for the subject of the model. */
     protected $tableName;
 
-    /**
-     * @var string Name of the primary key fields of the table the Model manages.
-     */
+    /** @var string Name of the primary key fields of the table the Model manages. */
     protected $primaryKey;
 
-    /**
-     * @var array List of class properties to serialize as JSON.
-     */
+    /** @var array List of class properties to serialize as JSON. */
     public $serialize = [];
 
-    /**
-     * @var array List of database columns to exclude from JSON serialization.
-     */
+    /** @var array List of database columns to exclude from JSON serialization. */
     public $doNotSerialize = [];
 
-    /**
-     * @var array Cached results for model get methods.
-     */
+    /** @var array Cached results for model get methods. */
     protected $getterResults = [];
 
-    /**
-     * @var array Current record data.
-     */
+    /** @var array List of getter method names. */
+    protected static $getterMethods = [];
+
+    /** @var array List of setter method names. */
+    protected static $setterMethods = [];
+
+    /** @var array Current record data. */
     protected $record = [];
 
-    /**
-     * @var Table data manager.
-     */
+    /** @var Table data manager. */
     protected $tableManager;
 
-    /**
-     * @var Database connection name.
-     */
+    /** @var Database connection name. */
     protected $connectionName = 'default';
 
-    /**
-     * @var Flag for new records.
-     */
+    /** @var Flag for new records. */
     public $isNew = false;
 
-    /**
-     * @var List of validation errors.
-     */
+    /** @var List of validation errors. */
     public $errors = [];
 
     /**
@@ -81,7 +67,7 @@ class Record implements \JsonSerializable
 
     /**
      * Get the table manager.
-     * 
+     *
      * @return Table
      */
     public function table()
@@ -129,9 +115,9 @@ class Record implements \JsonSerializable
     /**
      * Get or set the current record values.
      *
-     * This method will only update values for fields set in the $attributes 
+     * This method will only update values for fields set in the $attributes
      * argument.
-     * 
+     *
      * @param array $attributes Associative array of column names and values
      * @return array An associative array of current column names and values
      */
@@ -150,7 +136,7 @@ class Record implements \JsonSerializable
 
     /**
      * Check if the model has an attribute by that name.
-     * 
+     *
      * @param string $key
      * @return boolean
      */
@@ -161,7 +147,7 @@ class Record implements \JsonSerializable
 
     /**
      * Add an error for a field.
-     * 
+     *
      * @param string $field
      * @param string $message
      */
@@ -172,7 +158,7 @@ class Record implements \JsonSerializable
 
     /**
      * Check if the record passed validation.
-     * 
+     *
      * @return boolean
      */
     public function hasErrors(): bool
@@ -182,7 +168,7 @@ class Record implements \JsonSerializable
 
     /**
      * Get an array of all errors per field.
-     * 
+     *
      * @param string|null $field
      * @return array
      */
@@ -197,7 +183,7 @@ class Record implements \JsonSerializable
 
     /**
      * Get a list of all errors for a field.
-     * 
+     *
      * @param string $field
      * @return array
      */
@@ -237,7 +223,7 @@ class Record implements \JsonSerializable
 
     /**
      * Allow iteration over the current record fields.
-     * 
+     *
      * @return ArrayIterator
      */
     public function getIterator()
@@ -247,13 +233,13 @@ class Record implements \JsonSerializable
 
     /**
      * JSON representation of the model object.
-     * 
+     *
      * @return array
      */
     public function jsonSerialize()
     {
         $record = array_diff_key(
-            $this->attributes(), 
+            $this->attributes(),
             array_flip($this->doNotSerialize)
         );
 
@@ -266,7 +252,7 @@ class Record implements \JsonSerializable
 
     /**
      * Returns a Table object to perform queries against.
-     * 
+     *
      * @param mixed $id A primary key value
      * @return Table
      */
@@ -274,25 +260,30 @@ class Record implements \JsonSerializable
     {
         $record = new static();
         $table = $record->tableManager;
-        
+
         if ($id) {
             return $table->where([$table->primaryKey() => $id])->one();
         }
-        
+
         return $table;
     }
 
     /**
      * Set a value in the registry.
-     * 
+     *
      * @param string $key Key for the value
      * @param mixed Value to store
      */
     public function __set($key, $value)
     {
-        $methodName = 'set' . Str::create($key)->upperCamelize();
+        if (!array_key_exists($key, static::$setterMethods)) {
+            $methodName = 'set' . Str::create($key)->upperCamelize();
+            static::$setterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
+        }
 
-        if (method_exists($this, $methodName)) {
+        $methodName = static::$setterMethods[$key];
+
+        if ($methodName) {
             $this->$methodName($value);
 
             return $this;
@@ -307,13 +298,18 @@ class Record implements \JsonSerializable
 
     /**
      * Get a stored value from the registry.
-     * 
+     *
      * @param mixed $key Key for the value
      * @return mixed Stored value
      */
     public function __get($key)
     {
-        $methodName = 'get' . Str::create($key)->upperCamelize();
+        if (!array_key_exists($key, static::$getterMethods)) {
+            $methodName = 'get' . Str::create($key)->upperCamelize();
+            static::$getterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
+        }
+
+        $methodName = static::$getterMethods[$key];
 
         if (method_exists($this, $methodName)) {
             if (!array_key_exists($methodName, $this->getterResults)) {
@@ -333,7 +329,7 @@ class Record implements \JsonSerializable
 
     /**
      * Check if a key is in use.
-     * 
+     *
      * @param mixed $key Key to check
      * @return bool True if the key has been set, false otherwise.
      */
@@ -344,7 +340,7 @@ class Record implements \JsonSerializable
 
     /**
      * Remove a stored value from the registry.
-     * 
+     *
      * @param mixed $key Key to delete
      */
     public function __unset($key)
@@ -354,7 +350,7 @@ class Record implements \JsonSerializable
 
     /**
      * Shortcuts for the find() method.
-     * 
+     *
      * @param string $method
      * @param array $arguments
      * @return mixed
@@ -380,7 +376,7 @@ class Record implements \JsonSerializable
 
     /**
      * Disconnect the PDO instance before serialization.
-     * 
+     *
      * @return array
      */
     public function __sleep()
