@@ -11,10 +11,16 @@ $container = new \Pimple\Container();
 $container['app_namespace'] = "\\app\\";
 $container['default_action'] = 'index';
 $container['env'] = 'dev';
-$container['root_path'] = dirname(getcwd());
 $container['use_db'] = $container['env'];
 $container['www_path'] = getcwd();
-$container['cache_path'] = $container['root_path'] . DIRECTORY_SEPARATOR . 'cache';
+
+$container['root_path'] = function ($c) {
+    return dirname($c['app_path']);
+};
+
+$container['cache_path'] = function ($c) {
+    return $c['root_path'] . DIRECTORY_SEPARATOR . 'cache';
+};
 
 //
 // FACTORIES
