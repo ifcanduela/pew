@@ -5,7 +5,7 @@ namespace pew;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-use Stringy\StaticStringy as Str;
+use Stringy\Stringy as Str;
 
 /**
  * The App class is a simple interface between the front controller and the
@@ -21,7 +21,7 @@ class App
     public function __construct($app_folder = 'app', $config_file_name = 'config')
     {
         $this->container = require __DIR__ . '/config/bootstrap.php';
-        
+
         $app_path_pre = getcwd() . DIRECTORY_SEPARATOR . $app_folder;
         $app_path = realpath($app_path_pre);
 
@@ -89,7 +89,7 @@ class App
         $view_data = [];
         $request = $this->container['request'];
         $controllerClass = $this->container['controller'];
-        $controllerSlug = Str::slugify(basename($controllerClass));
+        $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
         $actionName = $this->container['action'];
         $injector = $this->container['injector'];
 
