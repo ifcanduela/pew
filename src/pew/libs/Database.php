@@ -16,7 +16,7 @@ use PDOException;
  *
  * The methods contained within this class are aimed to simplify basic database
  * operations, such as simple selects, inserts and updates.
- * 
+ *
  * @package pew\db
  * @author ifcanduela <ifcanduela@gmail.com>
  */
@@ -47,7 +47,7 @@ class Database
      * @var bool Connection established flag.
      */
     private $is_connected = false;
-    
+
     /**
      * @var array Configuration parameters.
      */
@@ -62,17 +62,17 @@ class Database
      * @var string Last query run.
      */
     public $last_query = null;
-    
+
     /**
      * @var string List of tables for FROM clause.
      */
     private $from = null;
-    
+
     /**
      * @var string list of fields for SELECT or INSERT clauses.
      */
     private $fields = '*';
-    
+
     /**
      * @var array SQL-formatted WHERE clause.
      */
@@ -92,58 +92,58 @@ class Database
      * @var array SQL-formatted HAVING clause.
      */
     private $having = null;
-    
+
     /**
      * @var string SQL-formatted ORDER BY clause.
      */
     private $order_by = null;
-    
+
     /**
      * @var array SQL-formatted VALUES clause.
      */
     private $values = null;
-    
+
     /**
      * @var array SQL-formatted SET clause.
      */
     private $set = null;
-    
+
     /**
      * @var array Key/value pairs for prepared statements.
      */
     private $tags = [];
-    
+
     /**
      * @var int Number of tagged parameters in a prepared statement.
      */
     protected static $tag_count = 0;
-    
+
     /**
      * @var array Key/value pairs for WHERE clauses in prepared statements.
      */
     private $where_tags = [];
-    
+
     /**
      * @var array Key/value pairs for SET clauses in prepared statements.
      */
     private $set_tags = [];
-    
+
     /**
      * @var array Key/value pairs for use in prepared statements with INSERT.
      */
     private $insert_tags = [];
-    
+
     /**
      * @var array Key/value pairs for HAVING clauses in prepared statements.
      */
     private $having_tags = [];
-    
+
     /**
      * Build the connection string and connect to the selected database engine.
      *
      * Connects to the specified database engine and sets PDO error mode to
      * ERRMODE_EXCEPTION.
-     * 
+     *
      * @param mixed $config A PDO object or an array
      * @throws InvalidArgumentException If the DB engine is not selected
      */
@@ -155,13 +155,13 @@ class Database
             }
 
             $this->config = $config;
-            
+
             $this->connect($config);
         } elseif ($config instanceof PDO) {
             $this->pdo($config);
         }
     }
-    
+
     /**
      * Connects to the configured database provider.
      *
@@ -171,16 +171,16 @@ class Database
     {
         if (!$this->is_connected) {
             extract($config);
-            
+
             try {
                 switch ($engine) {
                     case self::SQLITE:
                         $this->pdo = new PDO($engine . ':' . $file);
-                        
+
                         # check if file and containing folder are writable
                         $this->is_writable = is_writable(dirname($file)) && is_writable($file);
                     break;
-                    
+
                     case self::MYSQL:
                     default:
                         $this->pdo = new PDO(
@@ -188,7 +188,7 @@ class Database
                             $user, $pass, [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"]
                         );
                 }
-                
+
                 $this->is_connected = true;
             } catch (PDOException $e) {
                 $this->is_connected = false;
@@ -197,13 +197,13 @@ class Database
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
          }
-        
+
         return $this->is_connected;
     }
 
     /**
      * Destroy the PDO connection.
-     * 
+     *
      * @return null
      */
     public function disconnect()
@@ -214,7 +214,7 @@ class Database
 
     /**
      * Set and retrieves the PDO instance in use.
-     * 
+     *
      * @param PDO $pdo Set a PDO instance for the wrapper.
      * @return PDO The PDO instance
      */
@@ -227,7 +227,7 @@ class Database
 
         return $this->pdo;
     }
-    
+
     /**
      * Sets the FROM field for subsequent queries.
      *
@@ -239,7 +239,7 @@ class Database
         $this->from = $from;
         return $this;
     }
-    
+
     /**
      * Sets the INTO field for INSERT queries.
      *
@@ -275,10 +275,10 @@ class Database
     public function where($conditions)
     {
         list($this->where_tags, $this->where) = $this->build_tags($conditions, 'w_');
-        
+
         return $this;
     }
-    
+
     /**
      * Sets the GROUP BY field and their values for an INSERT prepared
      * statement.
@@ -293,10 +293,10 @@ class Database
         if ($group_by = trim($group_by)) {
             $this->group_by = " GROUP BY $group_by ";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Sets the HAVING field and its values for prepared statements.
      *
@@ -306,10 +306,10 @@ class Database
     public function having($conditions)
     {
         list($this->having_tags, $this->having) = $this->build_tags($conditions, 'h_', ' HAVING ');
-        
+
         return $this;
     }
-    
+
     /**
      * Sets the ORDER BY field and their values for an INSERT prepared
      * statement.
@@ -324,10 +324,10 @@ class Database
         if ($order_by = trim($order_by)) {
             $this->order_by = " ORDER BY $order_by ";
         }
-        
+
         return $this;
     }
-    
+
     /**
      * Sets the LIMIT clause for a prepared statement.
      *
@@ -341,7 +341,7 @@ class Database
         if ($limit = trim($limit)) {
             $this->limit = " LIMIT $limit ";
         }
-        
+
         return $this;
     }
 
@@ -354,10 +354,10 @@ class Database
     public function set($set)
     {
         list($this->set_tags, $this->set) = $this->build_tags($set, 's_', ' SET ', ', ');
-        
+
         return $this;
     }
-    
+
     /**
      * Sets the INTO and VALUES fields and their values for an INSERT prepared
      * statement.
@@ -367,13 +367,14 @@ class Database
      */
     public function values($values)
     {
-        list($this->insert_tags) = $this->build_tags($values, 'i_');
+        list($this->insert_tags) = $this->build_tags($values, 'i_', 'VALUES');
+        
         $this->fields = join(', ', array_keys($values));
         $this->values = ' VALUES (' . join(', ', array_keys($this->insert_tags)) . ') ';
 
         return $this;
     }
-    
+
     /**
      * Finds the Primary Key fields of a table.
      *
@@ -393,9 +394,9 @@ class Database
         if (!$this->is_connected) {
             throw new PDOException;
         }
-        
+
         $pk = [];
-        
+
         try {
             $sql = "SHOW COLUMNS FROM {$table}";
             $primary_key_index = 'Key';
@@ -423,12 +424,12 @@ class Database
                 $pk[] = $col[$table_name_index];
             }
         }
-        
+
         # if the return value is preferred as string
         if (!$as_array) {
             $pk = join(',', $pk);
         }
-        
+
         return $pk;
     }
 
@@ -443,9 +444,9 @@ class Database
         if (!$this->is_connected) {
             throw new PDOException;
         }
-        
+
         $cols = [];
-        
+
         try {
             $sql = "SHOW COLUMNS FROM {$table}";
             $table_name_index = 'Field';
@@ -456,19 +457,19 @@ class Database
             try {
                 $sql = "PRAGMA table_info({$table})";
                 $table_name_index = 'name';
-                
+
                 # Get all columns from a selected table
                 $r = $this->pdo->query($sql)->fetchAll();
             } catch (PDOException $e) {
                 throw $e;
             }
         }
-        
+
         # Add column names to $cols array
         foreach ($r as $col) {
             $cols[] = $col[$table_name_index];
         }
-        
+
         return $cols;
     }
 
@@ -481,14 +482,14 @@ class Database
     public function table_exists($table)
     {
         $exists = false;
-        
+
         try {
             $this->pdo->prepare("SELECT 1 FROM $table");
             $exists = true;
         } catch (PDOException $e) {
             $exists = false;
         }
-        
+
         return $exists;
     }
 
@@ -498,7 +499,7 @@ class Database
      * This function returns a string for the WHERE and HAVING and SET clauses,
      * and an array of :field_tag => field_value pairs for the binding of
      * parameters to tags in PDO prepared statements.
-     * 
+     *
      * The IN and BETWEEN operators are not yet supported.
      *
      * @param array $conditions An array with the conditions
@@ -518,24 +519,26 @@ class Database
         if (count($conditions) == 0) {
             return [[], ''];
         }
-        
+
         $where = '';
         $atoms = [];
         $tags = [];
-        
+
         if (count($conditions) > 0) {
             foreach ($conditions as $k => $v) {
                 if (is_numeric($k) && is_string($v)) {
                     # If the key is numeric, the value is a string with the
                     # condition; There is nothing else to do
                     $atoms[] = $v;
+                } elseif (is_null($v) && $clause === 'WHERE') {
+                    $atoms[] = "`$k` IS NULL";
                 } else {
                     # If the key is a table field, use PDO parameters
                     ++self::$tag_count;
                     # Build a tag as :PREFIX_fieldname_TAGCOUNT
                     $tag = str_replace(['.', '*', '(', ')'], '_', $k);
                     $tag = ':' . $prefix . $tag . '_' . self::$tag_count;
-                    
+
                     if (is_array($v)) {
                         # The comparison operator is provided
                         if (strtoupper($v[0]) == 'IN') {
@@ -550,11 +553,12 @@ class Database
                             $tags[$tag.'_b'] = $v[2];
                         } else {
                             $atoms[] = "$k {$v[0]} $tag";
-                            $tags[$tag] = $v[1];  
+                            $tags[$tag] = $v[1];
                         }
                     } else {
                         # The comparison operator defaults to '=' or IS
                         if (is_null($v) && $clause === 'WHERE') {
+                            # this is duplicate, test a bit
                             $atoms[] = "$k IS NULL";
                         } else {
                             $atoms[] = "$k = $tag";
@@ -564,16 +568,16 @@ class Database
                     }
                 }
             }
-            
+
             $where_string = " $clause " . join($separator, $atoms);
         }
-        
+
         return [$tags, $where_string, 'tags' => $tags, 'clause' => $where_string];
     }
 
     /**
      * Runs a prepared statement.
-     * 
+     *
      * @param string $query The SQL query to run
      * @return PDOStatement The resulting PDO Statement object
      * @throws PDOException In case of preparation or execution error
@@ -588,16 +592,16 @@ class Database
         try {
             $stm = $this->pdo->prepare($query);
         } catch (PDOException $e) {
-            throw new PDOException("Query could not be prepared: $query");
+            throw new PDOException("Query could not be prepared: $query -- Original message is " . $e->getMessage());
         }
-        
+
         # Execute the prepared statement
         try {
             $stm->execute($this->tags);
         } catch(PDOException $e) {
-            throw new PDOException("Query could not be executed: $query");
+            throw new PDOException("Query could not be prepared: $query -- Original message is " . $e->getMessage());
         }
-        
+
         # Everything's OK, return the complete statement
         return $stm;
     }
@@ -619,15 +623,15 @@ class Database
                 throw new \InvalidArgumentException("No table provided for method PewDatabase::cell()");
             }
         }
-        
+
         if (isset($fields)) {
             $this->fields = $fields;
         }
-        
+
         if (!isset($this->limit)) {
             $this->limit(1);
         }
-        
+
         $query = $this->get_query('SELECT');
         $stm = $this->run_query($query);
         $this->reset();
@@ -652,15 +656,15 @@ class Database
                 throw new \InvalidArgumentException("No table provided for method PewDatabase::single()");
             }
         }
-        
+
         if (isset($fields)) {
             $this->fields = $fields;
         }
-        
+
         if (!isset($this->limit)) {
             $this->limit(1);
         }
-        
+
         $query = $this->get_query('SELECT');
         $stm = $this->run_query($query);
         $this->reset();
@@ -691,11 +695,11 @@ class Database
                 throw new \InvalidArgumentException("No table provided for method PewDatabase::select()");
             }
         }
-        
+
         if (isset($fields)) {
             $this->fields = $fields;
         }
-        
+
         $query = $this->get_query('select', $this->from);
         $stm = $this->run_query($query);
         $this->reset();
@@ -723,7 +727,7 @@ class Database
         if (!$this->is_writable) {
             throw new PDOException("Database is not writable.");
         }
-        
+
         if (isset($table)) {
             $this->from = $table;
         } else {
@@ -731,15 +735,15 @@ class Database
                 throw new \InvalidArgumentException("No table provided for method PewDatabase::insert()");
             }
         }
-        
+
         $query = $this->get_query('INSERT', $this->from);
-        
+
         $stm = $this->run_query($query);
-        
+
         $this->reset();
         return $this->pdo->lastInsertId();
     }
-    
+
     /**
      * Updates rows in a table.
      *
@@ -762,14 +766,14 @@ class Database
                 throw new \InvalidArgumentException("No table provided for method PewDatabase::update()");
             }
         }
-        
+
         $query = $this->get_query('UPDATE', $this->from);
         $stm = $this->run_query($query);
         $this->reset();
-        
+
         return $stm->rowCount();
     }
-    
+
     /**
      * Deletes rows in a table.
      *
@@ -783,7 +787,7 @@ class Database
         if (!$this->is_writable) {
             throw new PDOException("Database is not writable.");
         }
-        
+
         if (isset($table)) {
             $this->from = $table;
         } else {
@@ -791,14 +795,14 @@ class Database
                 throw new \InvalidArgumentException("No table provided for method PewDatabase::delete()");
             }
         }
-        
+
         $query = $this->get_query('DELETE', $this->from);
         $stm = $this->run_query($query);
         $this->reset();
-        
+
         return $stm->rowCount();
     }
-    
+
     /**
      * Builds a Select, Update, Insert or Delete query.
      *
@@ -812,11 +816,11 @@ class Database
     public function get_query($type, $table = null)
     {
         $sql = '';
-        
+
         if (!isset($table)) {
             $table = $this->from;
         }
-        
+
         switch (strtoupper($type)) {
             case 'SELECT':
                 $sql = "SELECT $this->fields FROM $table $this->where $this->group_by $this->having $this->order_by $this->limit";
@@ -837,14 +841,14 @@ class Database
             default:
                 throw new \RuntimeException("Unknown query mode: {$type}");
         }
-        
+
         $sql = trim(preg_replace('/\s+/', ' ', $sql));
-        
+
         $this->last_query = $sql;
-        
+
         return $sql;
     }
-    
+
     /**
      * Resets the data in the SQL clauses.
      *
@@ -855,14 +859,14 @@ class Database
         $this->from =       $this->where =       $this->order_by =
         $this->group_by =   $this->having =      $this->limit =
         $this->where =      $this->set =         null;
-        
+
         $this->tags =       $this->where_tags =  $this->having_tags =
         $this->set_tags =   $this->insert_tags = [];
-        
+
         $this->fields = '*';
-        
+
         self::$tag_count = 0;
-        
+
         return $this;
     }
 
@@ -873,17 +877,17 @@ class Database
      *
      *     # get an array of all rows that match the query
      *     $db->query("SELECT * FROM table1 WHERE name = ?", [$name]);
-     * 
+     *
      *     # get the resulting PDOStatement object
      *     $db->query("SELECT * FROM table1 LIMIT 100", [], true);
-     * 
+     *
      *     # get the count of affected rows
      *     $db->query("INSERT INTO table3 () VALLUES (:alpha, :beta, :gamma)", [
      *         ':alpha' => $alpha,
      *         ':beta' => $beta,
      *         ':gamma' => $gamma,
      *     ]);
-     * 
+     *
      * @param string $sql SQL Statement to execute
      * @param array $params Placeholder and value pairs
      * @param boolean $return_stm Return the PDOStatement object
