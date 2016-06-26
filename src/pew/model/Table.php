@@ -773,6 +773,6 @@ class Table
      */
     public function hasColumn(string $column_name): bool
     {
-        return isset($this->tableData['column_names'][$column_name]);
+        return array_key_exists($column_name, $this->tableData['column_names']);
     }
 }
