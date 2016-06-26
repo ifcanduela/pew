@@ -3,12 +3,6 @@
 namespace pew;
 
 use SplStack;
-use pew\libs\Registry;
-use pew\libs\FileCache;
-
-use pew\response\exception\ViewTemplateNotFoundException;
-use pew\response\exception\ViewLayoutNotFoundException;
-use pew\response\exception\ViewElementFileNotFoundException;
 
 /**
  * This class encapsulates the template rendering functionality.
@@ -105,7 +99,7 @@ class View implements \ArrayAccess
         $template_file = $this->resolve($template . $this->extension());
 
         if ($template_file === false) {
-            throw new ViewTemplateNotFoundException("Template {$template} not found");
+            throw new \RuntimeException("Template {$template} not found");
         }
 
         $view_data = array_merge($this->variables, $data);
@@ -115,7 +109,7 @@ class View implements \ArrayAccess
             $layout_file = $this->resolve($this->layout . $this->extension());
 
             if ($layout_file === false) {
-                throw new ViewLayoutNotFoundException("Layout {$this->layout} not found");
+                throw new \RuntimeException("Layout {$this->layout} not found");
             }
 
             $output = $this->_render($layout_file, $view_data);
@@ -269,7 +263,7 @@ class View implements \ArrayAccess
         $element_file = $this->resolve($element . $this->extension());
 
         if ($element_file === false) {
-            throw new ViewElementFileNotFoundException("The element file $element could not be found.");
+            throw new \RuntimeException("The element file $element could not be found.");
         }
 
         # Render the element.
