@@ -5,6 +5,7 @@ namespace pew\router;
 use function FastRoute\simpleDispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
+use Stringy\Stringy;
 
 /**
  * The Router class wraps the nikic\FastRoute library for slightly taylor-made functionality.
@@ -27,15 +28,36 @@ class Router
     {
         $this->dispatcher = simpleDispatcher(function($r) use ($routeData) {
             foreach ($routeData as $data) {
-                $methods = '*';
+                if (isset($data['resource'])) {
+                    $controller = $data['resource'];
+                    $slug = Stringy::create($data['resource'])->slugify();
 
-                if (isset($data['methods'])) {
-                    $methods = preg_split('/\W+/', strtoupper($data['methods']));
+                    $r->addRoute(['GET', 'POST'], "/{$slug}/{id}/edit", [
+                            'controller' => "{$controller}@edit",
+                        ]);
+                    $r->addRoute(['GET', 'POST'], "/{$slug}/{id}/delete", [
+                            'controller' => "{$controller}@delete",
+                        ]);
+                    $r->addRoute(['GET', 'POST'], "/{$slug}/add", [
+                            'controller' => "{$controller}@add",
+                        ]);
+                    $r->addRoute(['GET'], "/{$slug}/{id}", [
+                            'controller' => "{$controller}@view",
+                        ]);
+                    $r->addRoute(['GET'], "/{$slug}", [
+                            'controller' => "{$controller}@index",
+                        ]);
+                } else {
+                    $methods = '*';
+
+                    if (isset($data['methods'])) {
+                        $methods = preg_split('/\W+/', strtoupper($data['methods']));
+                    }
+
+                    $path = '/' . ltrim($data['path'], '/');
+
+                    $r->addRoute($methods, $path, $data);
                 }
-
-                $path = '/' . ltrim($data['path'], '/');
-
-                $r->addRoute($methods, $path, $data);
             }
         });
     }

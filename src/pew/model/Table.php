@@ -393,7 +393,7 @@ class Table
             ->single($this->table, $this->clauses['fields']);
         $this->reset();
 
-        $model = false;
+        $model = null;
 
         if ($record) {
             $model = new $className();

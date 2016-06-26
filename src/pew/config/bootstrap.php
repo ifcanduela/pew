@@ -1,9 +1,5 @@
 <?php
 
-$whoops = new \Whoops\Run;
-$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-$whoops->register();
-
 require __DIR__ . '/functions.php';
 
 $container = new \Pimple\Container();
@@ -12,6 +8,7 @@ $container = new \Pimple\Container();
 // CONFIG
 //
 
+$container['app_namespace'] = "\\app\\";
 $container['default_action'] = 'index';
 $container['env'] = 'dev';
 $container['root_path'] = dirname(getcwd());
@@ -51,6 +48,7 @@ $container['controller_slug'] = function ($c) {
 
 $container['db'] = function ($c) {
     $db_config = require $c['app_path'] . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'database.php';
+
     if (isSet($c['use_db'])) {
         $use_db = $c['use_db'];
     } else {
@@ -151,6 +149,20 @@ $container['view'] = function ($c) {
 
     return new \pew\View($views_folder);
 };
+
+$container['whoops_handler'] = function ($c) {
+    if (php_sapi_name() === 'cli') {
+        return new \Whoops\Handler\PlainTextHandler();
+    }
+
+    return new \Whoops\Handler\PrettyPageHandler();
+};
+
+# setup the Whoops error handler
+
+$whoops = new \Whoops\Run;
+$whoops->pushHandler($container['whoops_handler']);
+$whoops->register();
 
 \pew\model\TableFactory::setConnection('default', null, function () use ($container) {
     return $container['db'];

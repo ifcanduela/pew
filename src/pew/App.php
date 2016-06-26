@@ -18,20 +18,26 @@ class App
 {
     protected $container;
 
-    public function __construct($app_folder = 'app', $config = 'config')
+    public function __construct($app_folder = 'app', $config_file_name = 'config')
     {
         $this->container = require __DIR__ . '/config/bootstrap.php';
         
-        $this->container['app_namespace'] = "\\{$app_folder}\\";
-        $this->container['app_path'] = $app_path = dirname(getcwd()) . DIRECTORY_SEPARATOR . $app_folder;
-        $this->container['config_folder'] = $config;
+        $app_path_pre = getcwd() . DIRECTORY_SEPARATOR . $app_folder;
+        $app_path = realpath($app_path_pre);
+
+        if ($app_path === false) {
+            throw new \InvalidArgumentException("The app path does not exist: {$app_path_pre}");
+        }
+
+        $this->container['app_path'] = $app_path;
+        $this->container['config_folder'] = $config_file_name;
 
 
         # init the pew() helper
         pew(null, $this->container);
 
         # import app config and services
-        $this->loadAppConfig("{$app_path}/config/{$config}.php");
+        $this->loadAppConfig("{$app_path}/config/{$config_file_name}.php");
 
         $this->loadAppBootstrap();
     }
@@ -116,5 +122,10 @@ class App
         }
 
         $response->send();
+    }
+
+    public function get($key)
+    {
+        return $this->container[$key];
     }
 }

@@ -218,7 +218,7 @@ class Record implements \JsonSerializable
      */
     public function delete()
     {
-        return $this->tableManager->where([$table->primaryKey() => $this->id])->delete();
+        return $this->tableManager->delete($this->id);
     }
 
     /**
