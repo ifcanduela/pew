@@ -48,7 +48,7 @@ $container['controller_namespace'] = function ($c) {
 $container['controller_slug'] = function ($c) {
     $controller_class = basename($c['controller']);
     $controller_name = preg_replace('/.+(Controller)$/', '', $controller_class);
-    
+
     return Stringy\StaticStringy::slugify($controller_name);
 };
 
@@ -60,7 +60,7 @@ $container['db'] = function ($c) {
     } else {
         $use_db = 'default';
     }
-    
+
     if (!array_key_exists($use_db, $db_config)) {
         throw new \RuntimeException("Database configuration preset '$use_db' does not exist");
     }
@@ -128,17 +128,56 @@ $container['routes'] = function ($c) {
     $app_folder = $c['app_path'];
     $routes_path = $app_folder . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'routes.php';
 
-    $routes = require($routes_path);
+    $definitions = require($routes_path);
 
-    foreach ($routes as $path => $controller) {
+    $routes = [];
+
+    foreach ($definitions as $path => $controller) {
         if (!is_array($controller) ) {
+            // convert simple route to array route
             $controller = [
                 'path' => $path,
                 'controller' => $controller,
                 'methods' => 'GET POST',
             ];
-            
-            $routes[$path] = $controller;
+
+            $routes[] = $controller;
+        } elseif (isset($controller['resource'])) {
+            // create CRUD routes from resource route
+            $controller_class = $controller['resource'];
+            $slug = \Stringy\Stringy::create($controller_class)->humanize()->slugify();
+            $underscored = $slug->underscored();
+
+            $routes[] = [
+                    'path' => "/{$slug}/{id}/edit",
+                    'controller' => "{$controller_class}@edit",
+                    'methods' => 'GET POST',
+                    'name'=> "{$underscored}_edit",
+                ];
+            $routes[] = [
+                    'path' => "/{$slug}/{id}/delete",
+                    'controller' => "{$controller_class}@delete",
+                    'methods' => 'GET POST',
+                    'name'=> "{$underscored}_delete",
+                ];
+            $routes[] = [
+                    'path' => "/{$slug}/add",
+                    'controller' => "{$controller_class}@add",
+                    'methods' => 'GET POST',
+                    'name'=> "{$underscored}_add",
+                ];
+            $routes[] = [
+                    'path' => "/{$slug}/{id}",
+                    'controller' => "{$controller_class}@view",
+                    'name'=> "{$underscored}_view",
+                ];
+            $routes[] = [
+                    'path' => "/{$slug}",
+                    'controller' => "{$controller_class}@index",
+                    'name'=> "{$underscored}_index",
+                ];
+        } else {
+            $routes[] = $controller;
         }
     }
 
@@ -147,6 +186,11 @@ $container['routes'] = function ($c) {
 
 $container['session'] = function ($c) {
     return new \pew\libs\Session();
+};
+
+$container['url_helper'] = function ($c) {
+    $request = $c['request'];
+    $routes = $c['routes'];
 };
 
 $container['view'] = function ($c) {
