@@ -161,11 +161,11 @@ $container['routes'] = function ($c) {
                     'name'=> "{$underscored}_delete",
                 ];
             $routes[] = [
-                    'path' => "/{$slug}/add",
-                    'controller' => "{$controller_class}@add",
-                    'methods' => 'GET POST',
-                    'name'=> "{$underscored}_add",
-                ];
+                'path' => "/{$slug}/add",
+                'controller' => "{$controller_class}@add",
+                'methods' => 'GET POST',
+                'name'=> "{$underscored}_add",
+            ];
             $routes[] = [
                     'path' => "/{$slug}/{id}",
                     'controller' => "{$controller_class}@view",
@@ -188,9 +188,11 @@ $container['session'] = function ($c) {
     return new \pew\libs\Session();
 };
 
-$container['url_helper'] = function ($c) {
+$container['url'] = function ($c) {
     $request = $c['request'];
     $routes = $c['routes'];
+
+    return new \pew\libs\Url($request, $routes);
 };
 
 $container['view'] = function ($c) {

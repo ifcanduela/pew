@@ -18,14 +18,13 @@ class Url
 
     /**
      * Get a URL to a path.
-     * 
+     *
      * @param string $path
      * @return string
      */
     public function to(string ...$path)
     {
         $path = rtrim('/' . join('/', $path), '/');
-
         $path = preg_replace('~\/+~', '/', $path);
 
         return $this->request->getSchemeAndHttpHost() . $path;
@@ -33,7 +32,7 @@ class Url
 
     /**
      * obtain a URL to a named route.
-     * 
+     *
      * @param string $routeName
      * @param array $params
      * @return string
