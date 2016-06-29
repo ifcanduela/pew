@@ -17,6 +17,16 @@ class Url
     }
 
     /**
+     * Get the base URL.
+     *
+     * @return string
+     */
+    public function base()
+    {
+        return $this->to();
+    }
+
+    /**
      * Get a URL to a path.
      *
      * @param string $path
