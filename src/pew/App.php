@@ -88,6 +88,7 @@ class App
         $skip_action = false;
         $view_data = [];
         $request = $this->container['request'];
+        $route = $this->container['route'];
         $controllerClass = $this->container['controller'];
         $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
         $actionName = $this->container['action'];
@@ -98,26 +99,41 @@ class App
         $view->template($controllerSlug . '/' . $actionName);
         $view->layout('default.layout');
 
-        $controller = $injector->createinstance($controllerClass);
+        try {
+            foreach ($route->getConditions() as $callback) {
+                $injector->callFunction($callback);
+            }
 
-        $response = null;
+            $controller = $injector->createinstance($controllerClass);
 
-        if (method_exists($controller, 'beforeAction')) {
-            $response = $injector->callMethod($controller, 'beforeAction');
-        }
+            $response = null;
 
-        if (!is_a($response, Response::class)) {
-            $response = $injector->callMethod($controller, $actionName);
+            if (method_exists($controller, 'beforeAction')) {
+                $response = $injector->callMethod($controller, 'beforeAction');
+            }
 
-            if ($response === false) {
-                die();
-            } elseif (!is_object($response) || !is_a($response, Response::class)) {
-                if ($request->isJson()) {
-                    $response = new JsonResponse($response);
-                } else {
-                    $output = $view->render($response);
-                    $response = new Response($output);
+            if (!is_a($response, Response::class)) {
+                $response = $injector->callMethod($controller, $actionName);
+
+                if ($response === false) {
+                    die();
+                } elseif (!is_object($response) || !is_a($response, Response::class)) {
+                    if ($request->isJson()) {
+                        $response = new JsonResponse($response);
+                    } else {
+                        $output = $view->render($response);
+                        $response = new Response($output);
+                    }
                 }
+            }
+        } catch (\Exception $e) {
+            if ($this->container['debug']) {
+                throw $e;
+            } else {
+                $view->template('errors/404');
+                $view->layout(false);
+                $output = $view->render(['exception' => $e]);
+                $response = new Response($output);
             }
         }
 

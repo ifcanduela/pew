@@ -85,7 +85,7 @@ class Injector
                 $paramName = $param->getName().' ('.$param->getType().')';
                 throw new \RuntimeException("Could not find a definition for $paramName.");
             }
-            
+
             $injections[] = $injection;
         }
 
@@ -146,5 +146,20 @@ class Injector
         $injections = $this->getInjections($method);
 
         return $method->invokeArgs($object, $injections);
+    }
+
+    /**
+     * Invokes a function.
+     *
+     * @param object $object An object on which to invoke the method
+     * @param string $methodName Method name
+     * @return mixed Result of calling the method on the object
+     */
+    public function callFunction(callable $callable)
+    {
+        $function = new \ReflectionFunction($callable);
+        $injections = $this->getInjections($function);
+
+        return $function->invokeArgs($injections);
     }
 }

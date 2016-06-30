@@ -9,6 +9,7 @@ $container = new \Pimple\Container();
 //
 
 $container['app_namespace'] = "\\app\\";
+$container['debug'] = false;
 $container['default_action'] = 'index';
 $container['env'] = 'dev';
 $container['use_db'] = $container['env'];
@@ -153,28 +154,38 @@ $container['routes'] = function ($c) {
                     'controller' => "{$controller_class}@edit",
                     'methods' => 'GET POST',
                     'name'=> "{$underscored}_edit",
+                    'defaults' => $controller['defaults'] ?? [],
+                    'conditions' => $controller['conditions'] ?? [],
                 ];
             $routes[] = [
                     'path' => "/{$slug}/{id}/delete",
                     'controller' => "{$controller_class}@delete",
                     'methods' => 'GET POST',
                     'name'=> "{$underscored}_delete",
+                    'defaults' => $controller['defaults'] ?? [],
+                    'conditions' => $controller['conditions'] ?? [],
                 ];
             $routes[] = [
-                'path' => "/{$slug}/add",
-                'controller' => "{$controller_class}@add",
-                'methods' => 'GET POST',
-                'name'=> "{$underscored}_add",
-            ];
+                    'path' => "/{$slug}/add",
+                    'controller' => "{$controller_class}@add",
+                    'methods' => 'GET POST',
+                    'name'=> "{$underscored}_add",
+                    'defaults' => $controller['defaults'] ?? [],
+                    'conditions' => $controller['conditions'] ?? [],
+                ];
             $routes[] = [
                     'path' => "/{$slug}/{id}",
                     'controller' => "{$controller_class}@view",
                     'name'=> "{$underscored}_view",
+                    'defaults' => $controller['defaults'] ?? [],
+                    'conditions' => $controller['conditions'] ?? [],
                 ];
             $routes[] = [
                     'path' => "/{$slug}",
                     'controller' => "{$controller_class}@index",
                     'name'=> "{$underscored}_index",
+                    'defaults' => $controller['defaults'] ?? [],
+                    'conditions' => $controller['conditions'] ?? [],
                 ];
         } else {
             $routes[] = $controller;

@@ -19,6 +19,9 @@ class Route implements \ArrayAccess
     /** @var array */
     protected $params = [];
 
+    /** @var array */
+    protected $conditions = [];
+
     /**
      * @param array $routeInfo
      */
@@ -27,6 +30,7 @@ class Route implements \ArrayAccess
         $this->handler = $routeInfo[1]['controller'];
         $this->defaults = $routeInfo[1]['defaults'] ?? [];
         $this->params = $routeInfo[2];
+        $this->conditions = $routeInfo[1]['conditions'] ?? [];
     }
 
     /**
@@ -37,6 +41,11 @@ class Route implements \ArrayAccess
     public function getHandler()
     {
         return $this->handler;
+    }
+
+    public function getConditions()
+    {
+        return $this->conditions ?? [];
     }
 
     /**
