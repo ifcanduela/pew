@@ -236,6 +236,28 @@ function deref(array $array, $index, $strict = false)
 }
 
 /**
+ * Group elements of an array by the value of one of their keys.
+ * 
+ * @param array $array Source array
+ * @param mixed $field Grouping field
+ * @return array The grouped array
+ */
+function array_group(array $array, $field): array
+{
+    $result = [];
+
+    foreach ($array as $entry) {
+        if (array_key_exists($field, $entry)) {
+            $key = $entry[$field];
+            $result[$key][] = $entry;
+            
+        }
+    };
+
+    return $result;
+}
+
+/**
  * Builds a key/value array using a value from an array as index.
  *
  * The result is an array with keys corresponding to values from the 
