@@ -83,9 +83,9 @@ abstract class Command implements CommandInterface
      * @param text $text
      * @return MessageBox
      */
-    public function messageBox(string $text): MessageBox
+    public function messageBox(string ...$text): MessageBox
     {
-        return new MessageBox($text);
+        return new MessageBox(...$text);
     }
 
     /**
@@ -94,9 +94,9 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return MessageBox
      */
-    public function infoMessageBox(string $text): MessageBox
+    public function infoBox(string ...$text): MessageBox
     {
-        return $this->messageBox($text)->fg('white')->bg('cyan');
+        return $this->messageBox(...$text)->fg('white')->bg('cyan');
     }
 
     /**
@@ -105,9 +105,9 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return MessageBox
      */
-    public function warningMessageBox($text)
+    public function warningBox(string ...$text): MessageBox
     {
-        return $this->messageBox($text)->fg('black')->bg('yellow');
+        return $this->messageBox(...$text)->fg('black')->bg('yellow');
     }
 
     /**
@@ -116,8 +116,8 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return MessageBox
      */
-    public function errorMessageBox($text)
+    public function errorBox(string ...$text): MEssageBox
     {
-        return $this->messageBox($text)->fg('black')->bg('red');
+        return $this->messageBox(...$text)->fg('black')->bg('red');
     }
 }

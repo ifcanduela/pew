@@ -8,6 +8,11 @@ class MessageBox extends Message
     public $margin = 0;
     public $padding = 1;
 
+    public function __construct(...$lines)
+    {
+        $this->text = $lines;
+    }
+
     /**
      * Set a left margin for the message box.
      * 
@@ -43,8 +48,17 @@ class MessageBox extends Message
     public function format(string $text = null): string
     {
         $text = $text ?? $this->text;
+        
+        if (!is_array($text)) {
+            $text = [$text];
+        }
 
-        $lines = explode('#$#', wordwrap($text, $this->width - ($this->padding * 2), '#$#'));
+        $lines = [];
+
+        foreach ($text as $line) {
+            $more = explode('#$#', wordwrap($line, $this->width - ($this->padding * 2), '#$#'));
+            $lines = array_merge($lines, $more);
+        }
 
         array_unshift($lines, str_repeat(' ', $this->width - ($this->padding * 2)));
         array_push($lines, str_repeat(' ', $this->width - ($this->padding * 2)));
@@ -57,12 +71,6 @@ class MessageBox extends Message
             $formattedLines[] = str_repeat(' ', $this->margin) . parent::format($str);
         }
 
-        $string = '';
-
-        foreach ($formattedLines as $line) {
-            $string .= $line . PHP_EOL;
-        }
-
-        return $string;
+        return join(PHP_EOL, $formattedLines);
     }
 }
