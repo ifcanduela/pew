@@ -39,7 +39,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function message($text)
+    public function message(string $text): Message
     {
         return new Message($text);
     }
@@ -61,7 +61,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function warning(string: $text): Message
+    public function warning(string $text): Message
     {
         return $this->message($text)->fg('yellow');
     }
