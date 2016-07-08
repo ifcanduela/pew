@@ -2,7 +2,7 @@
 
 namespace pew\console;
 
-class Box extends Message
+class MessageBox extends Message
 {
     public $width = 80;
     public $margin = 0;
