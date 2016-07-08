@@ -4,7 +4,10 @@ namespace pew\console;
 
 class CommandArguments
 {
+    /** @var array Arguments preceded by a nametag (-n or --name) */
     protected $namedArguments = [];
+
+    /** @var array Arguments given without a nametag */
     protected $anonymousArguments = [];
 
     /**
@@ -43,6 +46,7 @@ class CommandArguments
                 if ($keyName) {
                     $this->namedArguments[$keyName] = true;
                 }
+                
                 $keyName = trim($value, '-');
             }
         }
