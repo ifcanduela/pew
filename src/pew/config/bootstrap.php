@@ -36,8 +36,13 @@ $container['action'] = function ($c) {
 
 $container['controller'] = function ($c) {
     $route = $c['route'];
+    $handler = $route->getHandler();
 
-    $parts = explode('@', $route->getHandler());
+    if (is_callable($handler)) {
+        return $handler;
+    }
+
+    $parts = explode('@', $handler);
 
     return $c['controller_namespace'] . $parts[0];
 };
@@ -75,7 +80,7 @@ $container['db'] = function ($c) {
     return new \pew\libs\Database($config);
 };
 
-$container['fileCache'] = function ($c) {
+$container['file_cache'] = function ($c) {
     $cache_path = $c['cache_path'];
 
     return new \pew\libs\FileCache($cache_path);
@@ -208,9 +213,10 @@ $container['url'] = function ($c) {
 
 $container['view'] = function ($c) {
     $app_path = $c['app_path'];
+    $file_cache = $c['file_cache'];
     $views_folder = $app_path . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
 
-    return new \pew\View($views_folder);
+    return new \pew\View($views_folder, $file_cache);
 };
 
 $container['whoops_handler'] = function ($c) {

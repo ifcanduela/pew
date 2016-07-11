@@ -89,27 +89,14 @@ class App
         $view_data = [];
         $request = $this->container['request'];
         $route = $this->container['route'];
-        $controllerClass = $this->container['controller'];
-        $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
-        $actionName = $this->container['action'];
         $injector = $this->container['injector'];
-
-        $view = $this->container['view'];
-
-        $view->template($controllerSlug . '/' . $actionName);
-        $view->layout('default.layout');
+        $handler = $this->container['controller'];
 
         try {
-            foreach ($route->getConditions() as $callback) {
-                $injector->callFunction($callback);
-            }
-
-            $controller = $injector->createinstance($controllerClass);
-
-            $response = null;
-
-            if (method_exists($controller, 'beforeAction')) {
-                $response = $injector->callMethod($controller, 'beforeAction');
+            if (is_callable($handler)) {
+                $response = $this->handleCallback($handler, $injector);
+            } else {
+                $response = $this->handleAction($handler, $injector);
             }
 
             if (!is_a($response, Response::class)) {
@@ -138,6 +125,48 @@ class App
         }
 
         $response->send();
+    }
+
+    protected function handleCallback(callable $handler, Injector $injector)
+    {
+        $injector = $this->container['injector'];
+
+        $response = $injector->callFunction($handler);
+    }
+
+    protected function handleAction(string $handler, Injector $injector)
+    {
+        $controllerClass = $handler;
+        $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
+        $actionName = $this->container['action'];
+
+        $view = $this->container['view'];
+
+        $view->template($controllerSlug . '/' . $actionName);
+        $view->layout('default.layout');
+
+        foreach ($route->getConditions() as $callback) {
+            $injector->callFunction($callback);
+        }
+
+        $controller = $injector->createinstance($controllerClass);
+
+        $response = null;
+
+        if (method_exists($controller, 'beforeAction')) {
+            $response = $injector->callMethod($controller, 'beforeAction');
+        }
+
+        if (!is_a($response, Response::class)) {
+            $response = $injector->callMethod($controller, $actionName);
+        }
+
+        return $response;
+    }
+
+    public function transformResponse($response)
+    {
+        return $response;
     }
 
     public function get($key)

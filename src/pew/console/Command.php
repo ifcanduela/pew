@@ -56,6 +56,17 @@ abstract class Command implements CommandInterface
     }
 
     /**
+     * Create an success message with green text.
+     * 
+     * @param string $text
+     * @return Message
+     */
+    public function success(string $text): Message
+    {
+        return $this->message($text)->fg('green');
+    }
+
+    /**
      * Create a warning message with yellow text.
      * 
      * @param string $text
@@ -97,6 +108,17 @@ abstract class Command implements CommandInterface
     public function infoBox(string ...$text): MessageBox
     {
         return $this->messageBox(...$text)->fg('white')->bg('cyan');
+    }
+
+    /**
+     * Create an infomessage box with green background and white text.
+     * 
+     * @param string $text
+     * @return MessageBox
+     */
+    public function successBox(string ...$text): MessageBox
+    {
+        return $this->messageBox(...$text)->fg('white')->bg('green');
     }
 
     /**

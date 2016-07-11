@@ -3,10 +3,11 @@
 namespace pew;
 
 use SplStack;
+use pew\libs\FileCache;
 
 /**
  * This class encapsulates the template rendering functionality.
- * 
+ *
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
@@ -67,10 +68,11 @@ class View implements \ArrayAccess
      *
      * If no folder is provided, the current working directory is used.
      */
-    public function __construct($templates_folder = null)
+    public function __construct($templates_folder = null, FileCache $file_cache = null)
     {
         $this->blockStack = new SplStack;
         $this->folderStack = new SplStack;
+        $this->fileCache = $file_cache;
 
         if (is_null($templates_folder)) {
             $templates_folder = getcwd();
@@ -139,10 +141,13 @@ class View implements \ArrayAccess
      * Add a template folder to the current stack.
      *
      * @param string $folder Folder location
+     * @return self
      */
     protected function addFolder($folder)
     {
         $this->folderStack->push(rtrim($folder, '\\/'));
+
+        return $this;
     }
 
     /**
@@ -168,12 +173,13 @@ class View implements \ArrayAccess
      * Always includes a trailing slash (OS-dependent)
      *
      * @param string $folder Folder where templates should be located
-     * @return string Folder where templates should be located
+     * @return self|string Folder where templates should be located
      */
     public function folder($folder = null)
     {
         if (!is_null($folder)) {
             $this->folderStack->push($folder);
+            return $this;
         }
 
         return $this->folderStack->top();
@@ -183,12 +189,13 @@ class View implements \ArrayAccess
      * Set and get the template to render.
      *
      * @param string $template Name of the template
-     * @return string Name of the template
+     * @return self|string Name of the template
      */
     public function template($template = null)
     {
         if (!is_null($template)) {
             $this->template = $template;
+            return $this;
         }
 
         return $this->template;
@@ -198,12 +205,13 @@ class View implements \ArrayAccess
      * Set and get the view file extension.
      *
      * @param string $extension View file extension
-     * @return string View file extension
+     * @return self|string View file extension
      */
     public function extension($extension = null)
     {
         if (!is_null($extension)) {
             $this->extension = '.' . ltrim($extension, '.');
+            return $this;
         }
 
         return '.' . ltrim($this->extension, '.');
@@ -213,12 +221,13 @@ class View implements \ArrayAccess
      * Set and get the layout to use.
      *
      * @param string $layout Name of the layout
-     * @return string Name of the layout
+     * @return self|string Name of the layout
      */
     public function layout($layout = null)
     {
         if (!is_null($layout)) {
             $this->layout = $layout;
+            return $this;
         }
 
         return $this->layout;
@@ -228,12 +237,13 @@ class View implements \ArrayAccess
      * Set and get the view title.
      *
      * @param string $title The title of the view
-     * @return string The title of the view
+     * @return self|string The title of the view
      */
     public function title($title = null)
     {
         if (!is_null($title)) {
             $this->title = $title;
+            return $this;
         }
 
         return $this->title;
@@ -307,19 +317,21 @@ class View implements \ArrayAccess
      */
     public function load($key, $duration, $open_buffer = true)
     {
-        $cache = Pew::instance()->file_cache;
+        if ($this->fileCache) {
+            if ($this->fileCache->cached($key, $duration)) {
+                $fragment = $this->fileCache->load($key);
+                echo $fragment;
+                return true;
+            }
 
-        if ($cache->cached($key, $duration)) {
-            $fragment = $cache->load($key);
-            echo $fragment;
-            return true;
+            if ($open_buffer) {
+                ob_start();
+            }
+
+            return false;
         }
 
-        if ($open_buffer) {
-            ob_start();
-        }
-
-        return false;
+        return null;
     }
 
     /**
@@ -329,13 +341,15 @@ class View implements \ArrayAccess
      */
     public function save($key)
     {
-        # save the output into a cache key
-        $cache = Pew::instance()->file_cache;
+        if ($this->fileCache) {
+            # save the output into a cache key
+            $output = ob_end_clean();
+            $this->fileCache->save($key, $output);
 
-        $output = ob_end_clean();
-        $cache->save($key, $output);
+            echo $output;
+        }
 
-        echo $output;
+        return null;
     }
 
     /**
@@ -380,12 +394,10 @@ class View implements \ArrayAccess
         $this->blocks[$block_name][] = $output;
     }
 
-
     public function offsetGet($key)
     {
         return $this->variables[$key];
     }
-
 
     public function offsetSet($key, $value)
     {

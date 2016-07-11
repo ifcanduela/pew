@@ -57,7 +57,9 @@ class Route implements \ArrayAccess
      */
     public function getParam($key, $default = null)
     {
-        return $this->params[$key] ?? $this->defaults[$key] ?? $default;
+        $value = $this->params[$key] ?? $this->defaults[$key] ?? $default;
+
+        return $key === 'rest' ? explode('/', $value) : $value;
     }
 
     /**
