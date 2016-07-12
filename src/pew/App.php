@@ -88,7 +88,6 @@ class App
         $skip_action = false;
         $view_data = [];
         $request = $this->container['request'];
-        $route = $this->container['route'];
         $injector = $this->container['injector'];
         $handler = $this->container['controller'];
 
@@ -99,24 +98,12 @@ class App
                 $response = $this->handleAction($handler, $injector);
             }
 
-            if (!is_a($response, Response::class)) {
-                $response = $injector->callMethod($controller, $actionName);
-
-                if ($response === false) {
-                    die();
-                } elseif (!is_object($response) || !is_a($response, Response::class)) {
-                    if ($request->isJson()) {
-                        $response = new JsonResponse($response);
-                    } else {
-                        $output = $view->render($response);
-                        $response = new Response($output);
-                    }
-                }
-            }
+            $response = $this->transformResponse($response);
         } catch (\Exception $e) {
             if ($this->container['debug']) {
                 throw $e;
             } else {
+                $view = $this->container['view'];
                 $view->template('errors/404');
                 $view->layout(false);
                 $output = $view->render(['exception' => $e]);
@@ -138,6 +125,7 @@ class App
     {
         $controllerClass = $handler;
         $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
+        $route = $this->container['route'];
         $actionName = $this->container['action'];
 
         $view = $this->container['view'];
@@ -166,7 +154,24 @@ class App
 
     public function transformResponse($response)
     {
-        return $response;
+        if (is_a($response, Response::class)) {
+            return $response;
+        }
+
+        $request = $this->container['request'];
+        
+        if ($request->isJson()) {
+            return new JsonResponse($response);
+        }
+
+        if (is_object($response) || is_array($response)) {
+            $view = $this->container['view'];
+            $output = $view->render($response);
+        } else {
+            $output = $reponse;
+        }
+
+        return new Response($output);
     }
 
     public function get($key)
