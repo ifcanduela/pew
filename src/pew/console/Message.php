@@ -14,7 +14,7 @@ class Message
     const COLOR_WHITE = 'white';
     const COLOR_DEFAULT = 'default';
 
-    /** @var string text to format and print */
+    /** @var string Text to format and print */
     protected $text = '';
 
     /** @var int|null Width of the text, use NULL for automatic width */
@@ -25,6 +25,9 @@ class Message
 
     /** @var array Codes to reverse the formatting */
     public $unsetCodes = [];
+
+    /** @var boolean Add a line break to the end of message */
+    public $newLine = true;
 
     /** @var array Map of color names to color codes */
     public $colors = [
@@ -49,7 +52,7 @@ class Message
 
     /**
      * Set the foreground color.
-     * 
+     *
      * @param string $color
      * @return self
      */
@@ -63,7 +66,7 @@ class Message
 
     /**
      * Set the background color.
-     * 
+     *
      * @param string $color
      * @return self
      */
@@ -74,10 +77,22 @@ class Message
 
         return $this;
     }
-    
+
+    /**
+     * Append a new line to the message.
+     *
+     * @return self
+     */
+    public function eol($eol = true)
+    {
+        $this->newLine = $eol;
+
+        return $this;
+    }
+
     /**
      * Toggle the 'bold' format flag.
-     * 
+     *
      * @return self
      */
     public function bold()
@@ -87,10 +102,10 @@ class Message
 
         return $this;
     }
-    
+
     /**
      * Toggle the 'dim' format flag.
-     * 
+     *
      * @return self
      */
     public function dim()
@@ -100,10 +115,10 @@ class Message
 
         return $this;
     }
-    
+
     /**
      * Toggle the 'underline' format flag.
-     * 
+     *
      * @return self
      */
     public function underline()
@@ -113,10 +128,10 @@ class Message
 
         return $this;
     }
-    
+
     /**
      * Toggle the 'blink' format flag.
-     * 
+     *
      * @return self
      */
     public function blink()
@@ -126,10 +141,10 @@ class Message
 
         return $this;
     }
-    
+
     /**
      * Toggle the 'invert' format flag.
-     * 
+     *
      * @return self
      */
     public function invert()
@@ -139,10 +154,10 @@ class Message
 
         return $this;
     }
-    
+
     /**
      * Toggle the 'hidden' format flag.
-     * 
+     *
      * @return self
      */
     public function hidden()
@@ -155,7 +170,7 @@ class Message
 
     /**
      * Set the width of the text.
-     * 
+     *
      * @param int $width
      * @return self
      */
@@ -168,7 +183,7 @@ class Message
 
     /**
      * Format a line of text.
-     * 
+     *
      * @param string $text
      * @return string
      */
@@ -178,15 +193,17 @@ class Message
         $unset = join(';', $this->unsetCodes);
 
         $text = $text ?? $this->text;
-
         $width = $this->width ?? strlen($text);
-        
-        return "\033[{$set}m" . str_pad($text, $width, ' ', STR_PAD_RIGHT) . "\033[{$unset}m";
+        $eol = $this->newLine ? PHP_EOL : '';
+
+        $text = str_pad($text, $width, ' ', STR_PAD_RIGHT);
+
+        return "\033[{$set}m{$text}\033[{$unset}m{$eol}";
     }
 
     public function __toString()
     {
-        return $this->format() . PHP_EOL;
+        return $this->format();
     }
 
     public function print()

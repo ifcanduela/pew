@@ -7,6 +7,7 @@ class MessageBox extends Message
     public $width = 80;
     public $margin = 0;
     public $padding = 1;
+    public $newLine = true;
 
     public function __construct(...$lines)
     {
@@ -15,7 +16,7 @@ class MessageBox extends Message
 
     /**
      * Set a left margin for the message box.
-     * 
+     *
      * @param int $margin
      * @return self
      */
@@ -25,10 +26,10 @@ class MessageBox extends Message
 
         return $this;
     }
-    
+
     /**
      * Set a padding for the text.
-     * 
+     *
      * @param int $padding
      * @return self
      */
@@ -41,14 +42,17 @@ class MessageBox extends Message
 
     /**
      * Format a text into several lines.
-     * 
+     *
      * @param string $text
      * @return string
      */
     public function format(string $text = null): string
     {
         $text = $text ?? $this->text;
-        
+        $newLine = $this->newLine;
+        $eol = $this->newLine ? PHP_EOL : "";
+        $this->newLine = false;
+
         if (!is_array($text)) {
             $text = [$text];
         }
@@ -71,6 +75,8 @@ class MessageBox extends Message
             $formattedLines[] = str_repeat(' ', $this->margin) . parent::format($str);
         }
 
-        return join(PHP_EOL, $formattedLines);
+        $this->newLine = $newLine;
+
+        return join(PHP_EOL, $formattedLines) . $eol;
     }
 }

@@ -15,7 +15,7 @@ abstract class Command implements CommandInterface
 {
     /**
      * Setup the command before running.
-     * 
+     *
      * @return mixed
      */
     public function init()
@@ -25,7 +25,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Clean up after the command runs.
-     * 
+     *
      * @return mixed
      */
     public function finish()
@@ -35,7 +35,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create a command-line message to be printed.
-     * 
+     *
      * @param string $text
      * @return Message
      */
@@ -46,7 +46,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create an info message with light blue text.
-     * 
+     *
      * @param string $text
      * @return Message
      */
@@ -57,7 +57,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create an success message with green text.
-     * 
+     *
      * @param string $text
      * @return Message
      */
@@ -68,7 +68,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create a warning message with yellow text.
-     * 
+     *
      * @param string $text
      * @return Message
      */
@@ -79,7 +79,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create a warning message with black text on red background.
-     * 
+     *
      * @param string $text
      * @return Message
      */
@@ -90,7 +90,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create a block of text to be printed.
-     * 
+     *
      * @param text $text
      * @return MessageBox
      */
@@ -101,7 +101,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create an infomessage box with light blue background and white text.
-     * 
+     *
      * @param string $text
      * @return MessageBox
      */
@@ -112,7 +112,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create an infomessage box with green background and white text.
-     * 
+     *
      * @param string $text
      * @return MessageBox
      */
@@ -123,7 +123,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create a warning message box with yellow background and black text.
-     * 
+     *
      * @param string $text
      * @return MessageBox
      */
@@ -134,7 +134,7 @@ abstract class Command implements CommandInterface
 
     /**
      * Create an error message box with red background and black text.
-     * 
+     *
      * @param string $text
      * @return MessageBox
      */
