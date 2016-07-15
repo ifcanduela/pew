@@ -93,12 +93,12 @@ class App
 
         try {
             if (is_callable($handler)) {
-                $response = $this->handleCallback($handler, $injector);
+                $actionResult = $this->handleCallback($handler, $injector);
             } else {
-                $response = $this->handleAction($handler, $injector);
+                $actionResult = $this->handleAction($handler, $injector);
             }
 
-            $response = $this->transformResponse($response);
+            $response = $this->transformActionResult($actionResult);
         } catch (\Exception $e) {
             if ($this->container['debug']) {
                 throw $e;
@@ -152,24 +152,37 @@ class App
         return $response;
     }
 
-    public function transformResponse($response)
+    public function transformActionResult($actionResult)
     {
-        if (is_a($response, Response::class)) {
-            return $response;
+        # if $actionResult is false, return an empty response
+        if ($actionResult === false) {
+            return new Response();
         }
 
+        # if it's already a response, return it
+        if (is_a($actionResult, Response::class)) {
+            return $actionResult;
+        }
+
+        # check if the request is JSON and return an appropriate response
         $request = $this->container['request'];
-        
         if ($request->isJson()) {
-            return new JsonResponse($response);
+            return new JsonResponse($actionResult);
         }
 
-        if (is_object($response) || is_array($response)) {
-            $view = $this->container['view'];
-            $output = $view->render($response);
-        } else {
-            $output = $reponse;
+        # if the action result is a string, use as the content of the response
+        if (is_string($actionResult)) {
+            return new Reponse($actionResult);
         }
+
+        # if the action result is not an array, make it into one
+        if (!is_array($actionResult)) {
+            $actionResult = ['data' => $actionResult];
+        }
+
+        # use the action result to render the view
+        $view = $this->container['view'];
+        $output = $view->render($actionResult);
 
         return new Response($output);
     }
