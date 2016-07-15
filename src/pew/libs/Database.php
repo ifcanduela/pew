@@ -542,8 +542,14 @@ class Database
                     if (is_array($v)) {
                         # The comparison operator is provided
                         if (strtoupper($v[0]) == 'IN') {
+                            $l = [];
+                            foreach ($v[1] as $i => $val) {
+                                $t = "{$tag}_in_{$i}";
+                                $l[] = $t;
+                                $tags[$t] = $val;
+                            }
                             # Tags are not supported for IN lists
-                            $atoms[] = "$k IN ({$v[1]})";
+                            $atoms[] = "$k IN (" . join(', ', $l) . ")";
                         } elseif (strtoupper($v[0]) == 'BETWEEN') {
                             # For BETWEEN, two tags must be used:
                             # :PREFIX_fieldname_TAGCOUNT_a and
