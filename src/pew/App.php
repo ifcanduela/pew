@@ -116,9 +116,7 @@ class App
 
     protected function handleCallback(callable $handler, Injector $injector)
     {
-        $injector = $this->container['injector'];
-
-        $response = $injector->callFunction($handler);
+        return $injector->callFunction($handler);
     }
 
     protected function handleAction(string $handler, Injector $injector)
@@ -172,7 +170,7 @@ class App
 
         # if the action result is a string, use as the content of the response
         if (is_string($actionResult)) {
-            return new Reponse($actionResult);
+            return new Response($actionResult);
         }
 
         # if the action result is not an array, make it into one

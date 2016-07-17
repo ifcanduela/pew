@@ -31,7 +31,7 @@ class View implements \ArrayAccess
     /**
      * @var string Layout name
      */
-    protected $layout = '';
+    protected $layout = false;
 
     /**
      * @var string View title
@@ -99,7 +99,6 @@ class View implements \ArrayAccess
 
         # Get the view file
         $template_file = $this->resolve($template . $this->extension());
-
         if ($template_file === false) {
             throw new \RuntimeException("Template {$template} not found");
         }
@@ -107,7 +106,7 @@ class View implements \ArrayAccess
         $view_data = array_merge($this->variables, $data);
         $this->output = $output = $view_data['output'] = $this->_render($template_file, $view_data);
 
-        if ($this->layout && $this->layout !== 'none') {
+        if ($this->layout) {
             $layout_file = $this->resolve($this->layout . $this->extension());
 
             if ($layout_file === false) {
