@@ -14,7 +14,7 @@ use pew\libs\FileCache;
 class View implements \ArrayAccess
 {
     /**
-     * @var boolean Render the view or not
+     * @var bool Render the view or not
      */
     public $render = true;
 
@@ -357,6 +357,17 @@ class View implements \ArrayAccess
     }
 
     /**
+     * Checks whether or not a block has been defined.
+     * 
+     * @param string $name
+     * @return bool
+     */
+    public function hasBlock(string $name): bool
+    {
+        return array_key_exists($name, $this->blocks);
+    }
+
+    /**
      * Inserts a previously-rendered block.
      *
      * @param string $name
@@ -375,10 +386,11 @@ class View implements \ArrayAccess
      * Starts a block.
      *
      * @param string $block_name
+     * @param bool $replace
      */
-    public function beginBlock(string $block_name)
+    public function beginBlock(string $block_name, bool $replace = false)
     {
-        $this->blockStack->push($block_name);
+        $this->blockStack->push([$block_name, $replace]);
         ob_start();
     }
 
@@ -389,13 +401,17 @@ class View implements \ArrayAccess
     {
         $output = ob_get_clean();
 
-        $block_name = $this->blockStack->pop();
+        list($block_name, $replace) = $this->blockStack->pop();
 
         if (!array_key_exists($block_name, $this->blocks)) {
             $this->blocks[$block_name] = [];
         }
 
-        $this->blocks[$block_name][] = $output;
+        if ($replace) {
+            $this->blocks[$block_name] = [$output];
+        } else {
+            $this->blocks[$block_name][] = $output;
+        }
     }
 
     /**
