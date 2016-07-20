@@ -23,6 +23,8 @@ $container['cache_path'] = function ($c) {
     return $c['root_path'] . DIRECTORY_SEPARATOR . 'cache';
 };
 
+$container['cache_duration'] = 15 * 60;
+
 //
 // FACTORIES
 //
@@ -82,12 +84,13 @@ $container['db'] = function ($c) {
 
 $container['file_cache'] = function ($c) {
     $cache_path = $c['cache_path'];
+    $cache_duration = $c['cache_duration'];
 
-    return new \pew\libs\FileCache($cache_path);
+    return new \pew\libs\FileCache($cache_duration, $cache_path);
 };
 
 $container['injector'] = function ($c) {
-    return new \pew\Injector(
+    return new \pew\libs\Injector(
         $c['request']->request->all(),
         $c['request']->query->all(),
         $c['route'],
