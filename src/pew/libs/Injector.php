@@ -1,6 +1,6 @@
 <?php
 
-namespace pew;
+namespace pew\libs;
 
 class Injector
 {
