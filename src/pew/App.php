@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 use Stringy\Stringy as Str;
 
+use pew\libs\Injector;
+
 /**
  * The App class is a simple interface between the front controller and the
  * rest of the controllers.

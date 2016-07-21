@@ -39,6 +39,7 @@ class FileCache
      * Create a cache manager.
      * 
      * @param integer $seconds Defaults to 12 hours
+     * @param string $folder Cache files location
      */
     public function __construct($seconds = 43200, $folder = 'cache')
     {
