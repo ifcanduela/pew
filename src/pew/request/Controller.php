@@ -63,7 +63,7 @@ class Controller
     public function render($template, $data = []): Response
     {
         if (is_string($template)) {
-            $this->view->tempalte($template);
+            $this->view->template($template);
         } else {
             $data = $template;
         }
