@@ -141,62 +141,61 @@ $container['routes'] = function ($c) {
 
     $routes = [];
 
-    foreach ($definitions as $path => $controller) {
-        if (!is_array($controller) ) {
+    foreach ($definitions as $path => $handler) {
+        if (is_a($handler, \pew\router\Route::class)) {
+            $routes[] = $handler;
+        } elseif (is_string($handler) || is_callable($handler)) {
             // convert simple route to array route
-            $controller = [
-                'path' => $path,
-                'controller' => $controller,
-                'methods' => 'GET POST',
-            ];
-
-            $routes[] = $controller;
-        } elseif (isset($controller['resource'])) {
+            $handler = \pew\router\Route::from($path)->handler($handler)->methods('GET', 'POST');
+            $routes[] = $handler;
+        } elseif (is_array($handler) && isset($handler['resource'])) {
             // create CRUD routes from resource route
-            $controller_class = $controller['resource'];
+            $controller_class = $handler['resource'];
             $slug = \Stringy\Stringy::create($controller_class)->humanize()->slugify();
             $underscored = $slug->underscored();
 
             $routes[] = [
                     'path' => "/{$slug}/{id}/edit",
-                    'controller' => "{$controller_class}@edit",
+                    'handler' => "{$controller_class}@edit",
                     'methods' => 'GET POST',
                     'name'=> "{$underscored}_edit",
-                    'defaults' => $controller['defaults'] ?? [],
-                    'conditions' => $controller['conditions'] ?? [],
+                    'defaults' => $handler['defaults'] ?? [],
+                    'conditions' => $handler['conditions'] ?? [],
                 ];
             $routes[] = [
                     'path' => "/{$slug}/{id}/delete",
-                    'controller' => "{$controller_class}@delete",
+                    'handler' => "{$controller_class}@delete",
                     'methods' => 'GET POST',
                     'name'=> "{$underscored}_delete",
-                    'defaults' => $controller['defaults'] ?? [],
-                    'conditions' => $controller['conditions'] ?? [],
+                    'defaults' => $handler['defaults'] ?? [],
+                    'conditions' => $handler['conditions'] ?? [],
                 ];
             $routes[] = [
                     'path' => "/{$slug}/add",
-                    'controller' => "{$controller_class}@add",
+                    'handler' => "{$controller_class}@add",
                     'methods' => 'GET POST',
                     'name'=> "{$underscored}_add",
-                    'defaults' => $controller['defaults'] ?? [],
-                    'conditions' => $controller['conditions'] ?? [],
+                    'defaults' => $handler['defaults'] ?? [],
+                    'conditions' => $handler['conditions'] ?? [],
                 ];
             $routes[] = [
                     'path' => "/{$slug}/{id}",
-                    'controller' => "{$controller_class}@view",
+                    'handler' => "{$controller_class}@view",
                     'name'=> "{$underscored}_view",
-                    'defaults' => $controller['defaults'] ?? [],
-                    'conditions' => $controller['conditions'] ?? [],
+                    'defaults' => $handler['defaults'] ?? [],
+                    'conditions' => $handler['conditions'] ?? [],
                 ];
             $routes[] = [
                     'path' => "/{$slug}",
-                    'controller' => "{$controller_class}@index",
+                    'handler' => "{$controller_class}@index",
                     'name'=> "{$underscored}_index",
-                    'defaults' => $controller['defaults'] ?? [],
-                    'conditions' => $controller['conditions'] ?? [],
+                    'defaults' => $handler['defaults'] ?? [],
+                    'conditions' => $handler['conditions'] ?? [],
                 ];
+        } elseif (isset($handler['handler'], $handler['path'])) {
+            $routes[] = $handler;
         } else {
-            $routes[] = $controller;
+            throw new \InvalidArgumentException("Invalid route: missing path or handler");
         }
     }
 

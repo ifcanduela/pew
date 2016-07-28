@@ -14,6 +14,9 @@ class Route implements \ArrayAccess
     protected $handler;
 
     /** @var array */
+    protected $methods = ['*'];
+
+    /** @var array */
     protected $defaults = [];
 
     /** @var array */
@@ -25,12 +28,51 @@ class Route implements \ArrayAccess
     /**
      * @param array $routeInfo
      */
-    public function __construct(array $routeInfo)
+    public function __construct()
     {
-        $this->handler = $routeInfo[1]['controller'];
-        $this->defaults = $routeInfo[1]['defaults'] ?? [];
-        $this->params = $routeInfo[2];
-        $this->conditions = $routeInfo[1]['conditions'] ?? [];
+    }
+
+    /**
+     * Create a Route from an array.
+     * 
+     * @param array $data
+     * @return Route
+     */
+    public static function fromArray(array $data): self
+    {
+        $methods = ['*'];
+
+        if (isset($data['methods'])) {
+            $methods = preg_split('/\W+/', strtoupper($data['methods']));
+        }
+
+        $path = '/' . ltrim($data['path'], '/');
+
+        $route = new Route();
+        $route
+            ->path($path)
+            ->methods(...$methods)
+            ->handler($data['handler']);
+
+        if (isset($data['defaults'])) {
+            $route->defaults($data['defaults']);
+        }
+
+        if (isset($dat['filters'])) {
+            $route->filters(...$data['filters']);
+        }
+
+        return $route;
+    }
+
+    /**
+     * Get the path matched by the route.
+     *
+     * @return string
+     */
+    public function getPath()
+    {
+        return $this->path;
     }
 
     /**
@@ -43,9 +85,34 @@ class Route implements \ArrayAccess
         return $this->handler;
     }
 
+    /**
+     * Get the route conditions.
+     * 
+     * @return array
+     */
     public function getConditions()
     {
         return $this->conditions ?? [];
+    }
+
+    /**
+     * Get the applicable methods for the route.
+     * 
+     * @return array
+     */
+    public function getMethods()
+    {
+        return $this->methods;
+    }
+
+    /**
+     * Get the defauls values for path placeholders.
+     *
+     * @return array
+     */
+    public function getDefaults()
+    {
+        return $this->defaults;
     }
 
     /**
@@ -73,6 +140,8 @@ class Route implements \ArrayAccess
     }
 
     /**
+     * Check if a route placeholder param exists.
+     * 
      * @param mixed $key
      * @return bool
      */
@@ -99,5 +168,102 @@ class Route implements \ArrayAccess
     public function offsetUnset($key)
     {
         throw new \BadMethodCallException("Route is read-only: cannot unset value {$key}");
+    }
+
+    /**
+     * Set the route path.
+     * 
+     * @param string $path
+     * @return Route
+     */
+    public function path(string $path): self
+    {
+        $this->path = $path;
+
+        return $this;
+    }
+
+    /**
+     * Set the route handler.
+     * 
+     * @param string|callable $handler
+     * @return Route
+     */
+    public function handler($handler): self
+    {
+        if (!$handler) {
+            throw new \Exception('Route handler cannot be empty');
+        }
+
+        $this->handler = $handler;
+
+        return $this;
+    }
+
+    /**
+     * Set the route methods.
+     * 
+     * @param string $methods
+     * @return Route
+     */
+    public function methods(string ...$methods): self
+    {
+        $this->methods = array_map('strtoupper', $methods);
+
+        return $this;
+    }
+
+    /**
+     * Set the route filters.
+     * 
+     * @param string $filters
+     * @return Route
+     */
+    public function filters(string ...$filters): self
+    {
+        $this->filters = $filters;
+
+        return $this;
+    }
+
+    /**
+     * Set the route placeholder default values.
+     * 
+     * @param array $defaults
+     * @return Route
+     */
+    public function defaults(array $defaults): self
+    {
+        $this->defaults = $defaults;
+
+        return $this;
+    }
+
+    /**
+     * Set a default value for a route placeholder.
+     * 
+     * @param string $placeholderName
+     * @param mixed $value
+     * @return Route
+     */
+    public function default($placeholderName, $value = null): self
+    {
+        $this->defaults[$placeholderName] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Create a route for a path.
+     * 
+     * @param string $path
+     * @return Route
+     */
+    public static function from(string $path): self
+    {
+        $r = new static;
+        $r->path('/' . ltrim($path, '/'));
+
+        return $r;
     }
 }

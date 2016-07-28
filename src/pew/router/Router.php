@@ -28,15 +28,11 @@ class Router
     {
         $this->dispatcher = simpleDispatcher(function($r) use ($routeData) {
             foreach ($routeData as $data) {
-                $methods = '*';
-
-                if (isset($data['methods'])) {
-                    $methods = preg_split('/\W+/', strtoupper($data['methods']));
+                if (is_array($data)) {
+                    $data = Route::fromArray($data);
                 }
 
-                $path = '/' . ltrim($data['path'], '/');
-
-                $r->addRoute($methods, $path, $data);
+                $r->addRoute($data->getMethods(), $data->getPath(), $data);
             }
         });
     }
@@ -73,7 +69,7 @@ class Router
 		if ($matchedRoute[0] === Dispatcher::METHOD_NOT_ALLOWED) {
             throw new \RuntimeException("Method not allowed");
         }
-
-        return new Route($matchedRoute);
+        
+        return $matchedRoute[1];
     }
 }
