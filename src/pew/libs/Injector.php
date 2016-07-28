@@ -152,13 +152,19 @@ class Injector
      * Invokes a function.
      *
      * @param object $object An object on which to invoke the method
-     * @param string $methodName Method name
+     * @param object $boundObject Optional object to bind the closure to
      * @return mixed Result of calling the method on the object
      */
-    public function callFunction(callable $callable)
+    public function callFunction(callable $callable, $boundObject = null)
     {
         $function = new \ReflectionFunction($callable);
         $injections = $this->getInjections($function);
+
+        if (is_object($boundObject)) {
+            $callable = \Closure::bind($callable, $boundObject, $boundObject);
+
+            return call_user_func_array($callable, $injections);
+        }
 
         return $function->invokeArgs($injections);
     }
