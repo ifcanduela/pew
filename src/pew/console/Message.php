@@ -79,13 +79,25 @@ class Message
     }
 
     /**
-     * Append a new line to the message.
+     * Append a line break to the message.
      *
      * @return self
      */
     public function eol($eol = true)
     {
         $this->newLine = $eol;
+
+        return $this;
+    }
+
+    /**
+     * Do not append a line break to the message.
+     *
+     * @return self
+     */
+    public function inline($inline = true)
+    {
+        $this->newLine = ! $inline;
 
         return $this;
     }
