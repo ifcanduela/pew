@@ -10,17 +10,29 @@ use Stringy\Stringy as Str;
 use pew\libs\Injector;
 
 /**
- * The App class is a simple interface between the front controller and the
- * rest of the controllers.
+ * The App class is a request/response processor.
+ *
+ * Its purpose is to route the request into a response.
  *
  * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class App
 {
+    /** @var \Pimple\Container */
     protected $container;
 
-    public function __construct($app_folder = 'app', $config_file_name = 'config')
+    /**
+     * Bootstrap a web app.
+     *
+     * The App Folder provided must be relative to the current working directory, or 
+     * absolute. The Config File Name is a base name (e.g. `config`) located in the 
+     * `config` folder inside the App Folder (e.g. `app/config/config.php`).
+     * 
+     * @param string $app_folder The path to the app folder
+     * @param string $config_file_name Base name of the file to use for configuration.
+     */
+    public function __construct($app_folder, $config_file_name = 'config')
     {
         $this->container = require __DIR__ . '/config/bootstrap.php';
 
@@ -34,13 +46,11 @@ class App
         $this->container['app_path'] = $app_path;
         $this->container['config_folder'] = $config_file_name;
 
-
         # init the pew() helper
         pew(null, $this->container);
 
         # import app config and services
         $this->loadAppConfig("{$app_path}/config/{$config_file_name}.php");
-
         $this->loadAppBootstrap();
     }
 
@@ -92,35 +102,43 @@ class App
         $request = $this->container['request'];
         $injector = $this->container['injector'];
         $handler = $this->container['controller'];
+        $result = false;
 
         try {
             if (is_callable($handler)) {
-                $actionResult = $this->handleCallback($handler, $injector);
+                $result = $this->handleCallback($handler, $injector);
             } else {
-                $actionResult = $this->handleAction($handler, $injector);
+                $result = $this->handleAction($handler, $injector);
             }
-
-            $response = $this->transformActionResult($actionResult);
         } catch (\Exception $e) {
-            if ($this->container['debug']) {
-                throw $e;
-            } else {
-                $view = $this->container['view'];
-                $view->template('errors/404');
-                $view->layout(false);
-                $output = $view->render(['exception' => $e]);
-                $response = new Response($output);
-            }
+            $result = $this->handleError($e);
         }
 
+        $response = $this->transformActionResult($result);
         $response->send();
     }
 
+    /**
+     * Process the request through a callback.
+     * 
+     * @param callable $handler
+     * @param Injector $injector
+     * @return mixed
+     */
     protected function handleCallback(callable $handler, Injector $injector)
     {
-        return $injector->callFunction($handler);
+        $controller = $injector->createinstance(Controller::class);
+        
+        return $injector->callFunction($handler, $controller);
     }
 
+    /**
+     * Process the request through a controller action.
+     * 
+     * @param string $handler
+     * @param Injector $injector
+     * @return mixed
+     */
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
@@ -152,7 +170,34 @@ class App
         return $response;
     }
 
-    public function transformActionResult($actionResult)
+    /**
+     * Generate an error response.
+     * 
+     * @param \Exception $e
+     * @return Response
+     */
+    protected function handleError(\Exception $e): Response
+    {
+        if ($this->container['debug']) {
+                throw $e;
+        }
+
+        $view = $this->container['view'];
+        $view->template('errors/404');
+        $view->layout(false);
+
+        $output = $view->render(['exception' => $e]);
+
+        return new Response($output, 404);
+    }
+
+    /**
+     * Convert the result of an action into a Response object.
+     * 
+     * @param mixed $actionResult
+     * @return Response
+     */
+    protected function transformActionResult($actionResult): Response
     {
         # if $actionResult is false, return an empty response
         if ($actionResult === false) {
@@ -187,6 +232,12 @@ class App
         return new Response($output);
     }
 
+    /**
+     * Get a value from the container.
+     * 
+     * @param string $key
+     * @return mixed
+     */
     public function get($key)
     {
         return $this->container[$key];
