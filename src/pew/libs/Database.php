@@ -548,7 +548,7 @@ class Database
                                 $l[] = $t;
                                 $tags[$t] = $val;
                             }
-                            # Tags are not supported for IN lists
+
                             $atoms[] = "$k IN (" . join(', ', $l) . ")";
                         } elseif (strtoupper($v[0]) == 'BETWEEN') {
                             # For BETWEEN, two tags must be used:
