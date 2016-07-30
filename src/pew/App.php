@@ -25,10 +25,10 @@ class App
     /**
      * Bootstrap a web app.
      *
-     * The App Folder provided must be relative to the current working directory, or 
-     * absolute. The Config File Name is a base name (e.g. `config`) located in the 
+     * The App Folder provided must be relative to the current working directory, or
+     * absolute. The Config File Name is a base name (e.g. `config`) located in the
      * `config` folder inside the App Folder (e.g. `app/config/config.php`).
-     * 
+     *
      * @param string $app_folder The path to the app folder
      * @param string $config_file_name Base name of the file to use for configuration.
      */
@@ -120,7 +120,7 @@ class App
 
     /**
      * Process the request through a callback.
-     * 
+     *
      * @param callable $handler
      * @param Injector $injector
      * @return mixed
@@ -128,13 +128,13 @@ class App
     protected function handleCallback(callable $handler, Injector $injector)
     {
         $controller = $injector->createinstance(Controller::class);
-        
+
         return $injector->callFunction($handler, $controller);
     }
 
     /**
      * Process the request through a controller action.
-     * 
+     *
      * @param string $handler
      * @param Injector $injector
      * @return mixed
@@ -172,7 +172,7 @@ class App
 
     /**
      * Generate an error response.
-     * 
+     *
      * @param \Exception $e
      * @return Response
      */
@@ -193,7 +193,7 @@ class App
 
     /**
      * Convert the result of an action into a Response object.
-     * 
+     *
      * @param mixed $actionResult
      * @return Response
      */
@@ -234,7 +234,7 @@ class App
 
     /**
      * Get a value from the container.
-     * 
+     *
      * @param string $key
      * @return mixed
      */

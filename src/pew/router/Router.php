@@ -69,7 +69,10 @@ class Router
 		if ($matchedRoute[0] === Dispatcher::METHOD_NOT_ALLOWED) {
             throw new \RuntimeException("Method not allowed");
         }
-        
-        return $matchedRoute[1];
+
+        $route = $matchedRoute[1];
+        $route->setParams($matchedRoute[2]);
+
+        return $route;
     }
 }

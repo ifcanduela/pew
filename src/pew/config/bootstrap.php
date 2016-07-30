@@ -223,7 +223,7 @@ $container['view'] = function ($c) {
 
 $container['whoops_handler'] = function ($c) {
     $request = $c['request'];
-    
+
     if (php_sapi_name() === 'cli' || $request->isJson()) {
         return new \Whoops\Handler\PlainTextHandler();
     }

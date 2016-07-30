@@ -34,7 +34,7 @@ class Route implements \ArrayAccess
 
     /**
      * Create a Route from an array.
-     * 
+     *
      * @param array $data
      * @return Route
      */
@@ -87,7 +87,7 @@ class Route implements \ArrayAccess
 
     /**
      * Get the route conditions.
-     * 
+     *
      * @return array
      */
     public function getConditions()
@@ -97,7 +97,7 @@ class Route implements \ArrayAccess
 
     /**
      * Get the applicable methods for the route.
-     * 
+     *
      * @return array
      */
     public function getMethods()
@@ -106,13 +106,23 @@ class Route implements \ArrayAccess
     }
 
     /**
-     * Get the defauls values for path placeholders.
+     * Get the default values for path placeholders.
      *
      * @return array
      */
     public function getDefaults()
     {
         return $this->defaults;
+    }
+
+    /**
+     * Set the route params.
+     *
+     * @param array $params
+     */
+    public function setParams(array $params)
+    {
+        $this->params = $params;
     }
 
     /**
@@ -141,7 +151,7 @@ class Route implements \ArrayAccess
 
     /**
      * Check if a route placeholder param exists.
-     * 
+     *
      * @param mixed $key
      * @return bool
      */
@@ -172,7 +182,7 @@ class Route implements \ArrayAccess
 
     /**
      * Set the route path.
-     * 
+     *
      * @param string $path
      * @return Route
      */
@@ -185,7 +195,7 @@ class Route implements \ArrayAccess
 
     /**
      * Set the route handler.
-     * 
+     *
      * @param string|callable $handler
      * @return Route
      */
@@ -202,7 +212,7 @@ class Route implements \ArrayAccess
 
     /**
      * Set the route methods.
-     * 
+     *
      * @param string $methods
      * @return Route
      */
@@ -215,7 +225,7 @@ class Route implements \ArrayAccess
 
     /**
      * Set the route filters.
-     * 
+     *
      * @param string $filters
      * @return Route
      */
@@ -228,7 +238,7 @@ class Route implements \ArrayAccess
 
     /**
      * Set the route placeholder default values.
-     * 
+     *
      * @param array $defaults
      * @return Route
      */
@@ -241,7 +251,7 @@ class Route implements \ArrayAccess
 
     /**
      * Set a default value for a route placeholder.
-     * 
+     *
      * @param string $placeholderName
      * @param mixed $value
      * @return Route
@@ -255,7 +265,7 @@ class Route implements \ArrayAccess
 
     /**
      * Create a route for a path.
-     * 
+     *
      * @param string $path
      * @return Route
      */
