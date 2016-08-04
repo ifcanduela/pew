@@ -20,7 +20,6 @@ abstract class Command implements CommandInterface
      */
     public function init()
     {
-
     }
 
     /**
@@ -30,7 +29,6 @@ abstract class Command implements CommandInterface
      */
     public function finish()
     {
-
     }
 
     /**

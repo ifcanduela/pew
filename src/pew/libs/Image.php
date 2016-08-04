@@ -5,7 +5,6 @@ namespace pew\libs;
 /**
  * A class to facilitate the creation of thumbnails.
  *
- * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Image
@@ -565,22 +564,22 @@ class Image
 
         ob_start();
 
-            switch ($image_type) {
-                case IMAGETYPE_JPEG:
-                    imageJPEG($this->resource, null, $quality);
-                    break;
+        switch ($image_type) {
+            case IMAGETYPE_JPEG:
+                imageJPEG($this->resource, null, $quality);
+                break;
 
-                case IMAGETYPE_PNG:
-                    imagePNG($this->resource, null, $quality * 9 / 100);
-                    break;
+            case IMAGETYPE_PNG:
+                imagePNG($this->resource, null, $quality * 9 / 100);
+                break;
 
-                case IMAGETYPE_GIF:
-                    imageGIF($this->resource);
-                    break;
+            case IMAGETYPE_GIF:
+                imageGIF($this->resource);
+                break;
 
-                default:
-                    throw new \Exception("The image type supplied to Image::serve() is not supported");
-            }
+            default:
+                throw new \Exception("The image type supplied to Image::serve() is not supported");
+        }
 
         $stream = ob_get_clean();
         header("Content-type:" . image_type_to_mime_type($image_type));
@@ -594,7 +593,7 @@ class Image
      * @param int $y Vertical coordinate
      * @return array Red, green and blue values, from 0 to 255
      */
-    public function color_at($x, $y)
+    public function colorAt($x, $y)
     {
         if (!$this->resource) {
             throw new \Exception("Image not loaded");

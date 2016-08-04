@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * The basic controller class, with some common methods and fields.
  *
- * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Controller
@@ -22,7 +21,7 @@ class Controller
      * @var pew\request\Request
      */
     public $request;
-    
+
     /**
      * @var pew\libs\Session
      */
@@ -42,7 +41,7 @@ class Controller
 
     /**
      * Redirect to another app path.
-     * 
+     *
      * @param string $uri
      * @return RedirectResponse
      */
@@ -55,7 +54,7 @@ class Controller
      * Render a template.
      *
      * The $template argument can be skipped
-     * 
+     *
      * @param string $template
      * @param array $data
      * @return Response
@@ -73,7 +72,7 @@ class Controller
 
     /**
      * Render a JSON response
-     * 
+     *
      * @param array $data
      * @return JsonResponse
      */

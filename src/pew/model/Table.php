@@ -11,7 +11,6 @@ use Stringy\StaticStringy;
 /**
  * Table gateway class.
  *
- * @package pew\db
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Table
@@ -111,7 +110,7 @@ class Table
 
     /**
      * SQL query clauses.
-     * 
+     *
      * @var array
      */
     protected $clauses = [
@@ -139,7 +138,7 @@ class Table
 
     /**
      * Initialize a model binding it to a database table.
-     * 
+     *
      * @param string $table Name of the table
      * @param Database $db Database instance to use
      */
@@ -147,7 +146,7 @@ class Table
     {
         # get the Database class instance
         $this->db = is_null($db) ? pew('db') : $db;
-        $this->table = $table ?: $this->table_name();
+        $this->table = $table ?: $this->tableName();
 
         if (!$this->db->table_exists($this->table)) {
             throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
@@ -164,10 +163,10 @@ class Table
 
     /**
      * Auto-resolve the table name for the current model.
-     * 
+     *
      * @return string
      */
-    public function table_name()
+    public function tableName()
     {
         if (!is_null($this->table)) {
             return $this->table;
@@ -185,7 +184,7 @@ class Table
 
     /**
      * Get the name of the primary key column.
-     * 
+     *
      * @return string
      */
     public function primaryKey()
@@ -196,22 +195,22 @@ class Table
     /**
      * Get the list of column names.
      *
-     * If $as_keys is false, the column names will be returned as values in an 
+     * If $as_keys is false, the column names will be returned as values in an
      * array, otherwise they will be key names in an associative array.
      *
      * @param boolean $as_keys Return the column names as keys in an associative array.
      * @return array
      */
-    public function column_names($as_keys = true)
+    public function columnNames($as_keys = true)
     {
-        return $as_keys 
-            ? $this->tableData['column_names'] 
+        return $as_keys
+            ? $this->tableData['column_names']
             : array_keys($this->tableData['column_names']);
     }
 
     /**
      * Get or set the table name for the model.
-     * 
+     *
      * @param string $table Table name
      * @return string Table name
      */
@@ -225,113 +224,15 @@ class Table
     }
 
     /**
-     * Adds a has-many relationship to the model.
-     *
-     * @param type $alias The related table name or an alias if $foreign_key is an array
-     * @param string|array $info The foreign key in this model's table,  or an 
-     *     array with [table_name, FK_name]
-     * @return Model The model object ($this)
-     */
-    public function add_child($alias, $info)
-    {
-        $this->attach(new HasMany($alias, $info));
-
-        return $this;
-    }
-
-    /**
-     * Adds a belongs-to relationship to the model.
-     *
-     * @param type $alias The related table name or an alias if $foreign_key is an array
-     * @param string|array $info The foreign key in this model's table,  or an 
-     *     array with [table_name, FK_name]
-     * @return Model The model object ($this)
-     */
-    public function add_parent($alias, $info)
-    {
-        $this->attach(new BelongsTo($alias, $info));
-
-        return $this;
-    }
-
-    /**
-     * Adds a has-and-belongs-to-many relationship to the model.
-     *
-     * @param type $alias The related table name or an alias if $foreign_key is an array
-     * @param string|array $info An array with [start_table_name, start_fk_name, end_fk_name, end_table_name]
-     * @return Model The model object ($this)
-     */
-    public function add_sibling($alias, $info)
-    {
-        $this->attach(new HasAndBelongsToMany($alias, $info));
-
-        return $this;
-    }
-
-    /**
-     * Adds a ona-one relationship to the model.
-     *
-     * @param type $alias The related table name or an alias if $foreign_key is an array
-     * @param string|array $info The foreign key in this model's table,  or an 
-     *     array with [table_name, FK_name]
-     * @return Model The model object ($this)
-     */
-    public function add_twin($alias, $info)
-    {
-        $this->attach(new HasOne($alias, $info));
-
-        return $this;
-    }
-
-    /**
-     * Configures related models.
-     *
-     * @param string $relationship_type Either 'child' or 'parent'
-     * @param RelationshipInterface $alias Name of the relationship
-     * @param string|array $fk The name of the FK or a array with [table_name, FK_name]
-     * @return boolean false if the table does not exist, true otherwise
-     */
-    public function attach(RelationshipInterface $relationship)
-    {
-        $this->relationships[$relationship->alias()] = $relationship;
-    }
-
-    /**
-     * Removes a has-many relationship from the model.
-     *
-     * @param string $alias The relationship alias
-     * @return Model The model object
-     */
-    public function detach($alias)
-    {
-        if ($this->has_related($alias)) {
-            unset($this->relationships[$alias]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Checks if a relationship has been defined.
-     * 
-     * @param string $alias
-     * @return boolean
-     */
-    public function has_related($alias)
-    {
-        return array_key_exists($alias, $this->relationships);
-    }
-
-    /**
      * Get an empty record.
-     * 
+     *
      * @return Table A new record
      */
     public function create(array $attributes = [])
     {
         $class = '\\' . get_class($this);
         $blank = new $class($this->table, $this->db);
-        $blank->attributes(array_merge($this->column_names(), $attributes));
+        $blank->attributes(array_merge($this->columnNames(), $attributes));
 
         return $blank;
     }
@@ -362,7 +263,7 @@ class Table
         $stm = $this->db->pdo()->prepare($query);
         # run the prepared statement with the received keys and values
         $success = $stm->execute($data);
-        
+
         if ($success) {
             if ($clause == 'SELECT') {
                 # return an array of Models
@@ -470,7 +371,7 @@ class Table
         $attributes = $model->attributes();
         $record = [];
 
-        foreach ($this->tableData['columns'] as  $key) {
+        foreach ($this->tableData['columns'] as $key) {
             if (array_key_exists($key, $attributes)) {
                 $record[$key] = $attributes[$key];
             }
@@ -481,7 +382,7 @@ class Table
         }
 
         $primary_key = $this->tableData['primary_key'];
-        
+
         if (isset($record[$primary_key])) {
             # set modification timestamp
             if ($this->hasColumn('modified')) {
@@ -520,7 +421,7 @@ class Table
             $model->afterSave();
         }
 
-        return array_merge($this->tableData['column_names'], $result);;
+        return array_merge($this->tableData['column_names'], $result);
     }
 
     /**
@@ -694,7 +595,7 @@ class Table
 
     /**
      * Start a PDO transaction.
-     * 
+     *
      * @return bool True on success, false on failure
      */
     public function begin()
@@ -704,7 +605,7 @@ class Table
 
     /**
      * Commit a PDO transaction.
-     * 
+     *
      * @return bool True on success, false on failure
      */
     public function commit()
@@ -714,7 +615,7 @@ class Table
 
     /**
      * Roll back a PDO transaction.
-     * 
+     *
      * @return bool True on success, false on failure
      */
     public function rollback()
@@ -724,7 +625,7 @@ class Table
 
     /**
      * Reset the SQL clauses.
-     * 
+     *
      * @return Model The model instance
      */
     protected function reset()
@@ -767,7 +668,7 @@ class Table
 
     /**
      * Check if the field exists in the table.
-     * 
+     *
      * @param string $column_name
      * @return boolean
      */

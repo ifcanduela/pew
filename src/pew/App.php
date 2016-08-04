@@ -14,7 +14,6 @@ use pew\libs\Injector;
  *
  * Its purpose is to route the request into a response.
  *
- * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class App

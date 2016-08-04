@@ -1,11 +1,8 @@
 <?php
-
 /**
  ******************************************************************************
  *     P E W - P E W - P E W   D E F A U L T   C O N F I G U R A T I O N      *
  *******************************IT**BEGINS**NAO********************************
- *
- * @package pew
  */
 
 /**
@@ -16,8 +13,8 @@ $cfg = [];
 /**
  * @var string Server string. This goes before URL to assemble a full server URL.
  */
-if (isSet($_SERVER['SERVER_NAME'])) {
-    $cfg['host'] = (empty($_SERVER['HTTPS']) ? 'http://' : 'https://') 
+if (isset($_SERVER['SERVER_NAME'])) {
+    $cfg['host'] = (empty($_SERVER['HTTPS']) ? 'http://' : 'https://')
                  . $_SERVER['SERVER_NAME']
                  . ($_SERVER['SERVER_PORT'] != 80 ? ':' . $_SERVER['SERVER_PORT'] : '');
 } else {
@@ -67,14 +64,14 @@ $cfg['app_namespace'] = 'app';
 /**
  * @var boolean Whether the App is running on the localhost space.
  */
-$cfg['localhost'] = isSet($_SERVER['REMOTE_ADDR']) 
-                  ? in_array($_SERVER['REMOTE_ADDR'], array('localhost', '127.0.0.1', '::1')) 
+$cfg['localhost'] = isset($_SERVER['REMOTE_ADDR'])
+                  ? in_array($_SERVER['REMOTE_ADDR'], array('localhost', '127.0.0.1', '::1'))
                   : php_sapi_name() == 'cli';
 
 /**
  * @var boolean Autodetect if the source of the request was an XmlHttpRequest
  */
-$cfg['request_is_ajax'] = isSet($_SERVER['HTTP_X_REQUESTED_WITH'])
+$cfg['request_is_ajax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
                         ? strToLower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
                         : false;
 
@@ -94,7 +91,7 @@ $cfg['session_group'] = basename($cfg['root_folder']);
 $cfg['action_prefix'] = '';
 
 /**
- * @var boolean Define DEBUG if it's not defined in app/config 
+ * @var boolean Define DEBUG if it's not defined in app/config
  */
 $cfg['debug'] = false;
 
@@ -121,7 +118,7 @@ $cfg['libraries_folder'] = 'libs';
 
 /**
  * @var string Default file extensions for files.
- * 
+ *
  * The values must include the first period (i.e., '.php')
  */
 $cfg['view_ext'] = '.php';
@@ -162,20 +159,5 @@ $cfg['router_token_prefix'] = '!';
  * @var array Route capturing group indicator for remainder arguments.
  */
 $cfg['router_sequence_prefix'] = '*';
-
-/**
- * Base URL of the application (the location of index.php).
- */
-defined('APP_URL') or define('APP_URL', $cfg['app_url']);
-
-/**
- * Path to the Pew-Pew-Pew files.
- */
-defined('PEW_PATH') or define('PEW_PATH', $cfg['system_folder']);
-
-/**
- * Full path to the base folder (filesystem).
- */
-defined('BASE_PATH') or define('BASE_PATH', $cfg['root_folder']);
 
 return $cfg;

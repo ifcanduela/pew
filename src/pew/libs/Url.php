@@ -256,7 +256,6 @@ class Url
             return $this->port;
         }
 
-
         if ($this->port && $this->port != 80) {
             return ':' . $this->port;
         }
@@ -279,9 +278,9 @@ class Url
 
         foreach ($path as $value) {
             $url->path = array_values(array_merge(
-                    $url->path,
-                    array_filter(explode('/', $value. '/'))
-                ));
+                $url->path,
+                array_filter(explode('/', $value . '/'))
+            ));
         }
 
         return $url;
@@ -381,11 +380,7 @@ class Url
      */
     public function getQuery(array $keys = null): array
     {
-        if (!$keys) {
-            return $this->query;
-        }
-
-        return array_intersect_key($query, array_flip($keys));
+        return $keys ? array_intersect_key($query, array_flip($keys)) : $this->query;
     }
 
     /**
@@ -397,25 +392,19 @@ class Url
      */
     public function getQueryParam(string $param, $default = null)
     {
-        if (array_key_exists($param, $this->query)) {
-            return $this->query[$param];
-        }
-
-        return $default;
+        return $this->query[$param] ?? $default;
     }
 
     /**
      * Get the query string.
      *
+     * The return value will include a '?' if there are query params.
+     *
      * @return string
      */
     public function getQueryString(): string
     {
-        if ($this->query) {
-            return '?' . http_build_query($this->query);
-        }
-
-        return '';
+        return $this->query ? '?' . http_build_query($this->query) : '';
     }
 
     /**
@@ -439,15 +428,11 @@ class Url
      */
     public function getFragment(): string
     {
-        if ($this->fragment) {
-            return '#' . $this->fragment;
-        }
-
-        return '';
+        return $this->fragment ? '#' . $this->fragment : '';
     }
 
     /**
-     * Convert the Url objecto to a Url string.
+     * Convert the Url object to a Url string.
      *
      * @return string
      */

@@ -32,13 +32,13 @@ class Session extends SymfonySession implements ArrayAccess
         if (!$this->has($first_index)) {
             return null;
         }
-        
+
         $value = $sessionData[$first_index];
 
         while (!empty($indexes)) {
             $index = array_shift($indexes);
-            
-            if (!isSet($value[$index])) {
+
+            if (!isset($value[$index])) {
                 return $default;
             }
 

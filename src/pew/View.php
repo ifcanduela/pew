@@ -8,7 +8,6 @@ use pew\libs\FileCache;
 /**
  * This class encapsulates the template rendering functionality.
  *
- * @package pew
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class View implements \ArrayAccess
@@ -82,7 +81,7 @@ class View implements \ArrayAccess
     }
 
     /**
-     * Renders a view according to the request info
+     * Renders a view according to the request info.
      *
      * @param type $data Template data
      * @param type $view View to render
@@ -105,9 +104,9 @@ class View implements \ArrayAccess
         }
 
         $view_data = array_merge($this->variables, $data);
-        $this->output 
-            = $output 
-            = $view_data['output'] 
+        $this->output
+            = $output
+            = $view_data['output']
             = $this->_render($template_file, $view_data);
 
         if ($this->layout) {
@@ -184,6 +183,7 @@ class View implements \ArrayAccess
     {
         if (!is_null($folder)) {
             $this->folderStack->push($folder);
+
             return $this;
         }
 
@@ -194,12 +194,14 @@ class View implements \ArrayAccess
      * Set and get the template to render.
      *
      * @param string $template Name of the template
+     *
      * @return self|string Name of the template
      */
     public function template(string $template = null)
     {
         if (!is_null($template)) {
             $this->template = $template;
+
             return $this;
         }
 
@@ -232,6 +234,7 @@ class View implements \ArrayAccess
     {
         if (!is_null($layout)) {
             $this->layout = $layout;
+
             return $this;
         }
 
@@ -248,6 +251,7 @@ class View implements \ArrayAccess
     {
         if (!is_null($title)) {
             $this->title = $title;
+
             return $this;
         }
 
@@ -319,7 +323,7 @@ class View implements \ArrayAccess
      * @param string $key Name key of the cached fragment to load
      * @param int $duration Time to live of the cache fragment, in seconds
      * @param string $open_buffer Set to false to prevent the opening of a buffer
-     * @return bool True if the cached fragment could be inserted, false otherwise.
+     * @return bool True if the cached fragment could be inserted, false otherwise
      */
     public function load(string $key, int $duration, bool $open_buffer = true)
     {
@@ -327,6 +331,7 @@ class View implements \ArrayAccess
             if ($this->fileCache->cached($key, $duration)) {
                 $fragment = $this->fileCache->load($key);
                 echo $fragment;
+
                 return true;
             }
 
@@ -358,7 +363,7 @@ class View implements \ArrayAccess
 
     /**
      * Checks whether or not a block has been defined.
-     * 
+     *
      * @param string $name
      * @return bool
      */
@@ -419,7 +424,7 @@ class View implements \ArrayAccess
      *
      * The value is escaped using htmlspecialchars with ENT_QUOTES enabled
      * and UTF8 encoding.
-     * 
+     *
      * @param string $value
      * @return string
      */
@@ -430,7 +435,7 @@ class View implements \ArrayAccess
 
     /**
      * Get the value of a template variable.
-     * 
+     *
      * @param string $key
      * @return mixed
      */
@@ -441,7 +446,7 @@ class View implements \ArrayAccess
 
     /**
      * Set the value of a template variable.
-     * 
+     *
      * @param string $key
      * @param mixed $value
      * @return mixed
@@ -453,7 +458,7 @@ class View implements \ArrayAccess
 
     /**
      * Check if a template variable was set.
-     * 
+     *
      * @param string $key
      * @return bool
      */
@@ -464,7 +469,7 @@ class View implements \ArrayAccess
 
     /**
      * Unset a template variable.
-     * 
+     *
      * @param string $key
      */
     public function offsetUnset($key)

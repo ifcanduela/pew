@@ -7,7 +7,6 @@ use Stringy\Stringy as Str;
 /**
  * Active Record-like class.
  *
- * @package pew\model
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Record implements \JsonSerializable
@@ -81,17 +80,28 @@ class Record implements \JsonSerializable
         return $table;
     }
 
+    /**
+     * Get the list of columnnames.
+     *
+     * @return array
+     */
     public function columns()
     {
         static $columns;
 
         if (!$columns) {
-            $columns = $this->tableManager->column_names();
+            $columns = $this->tableManager->columnNames();
         }
 
         return $columns;
     }
 
+    /**
+     * Create a record from a array of keys and values.
+     *
+     * @param array $data
+     * @return Record
+     */
     public static function fromArray(array $data)
     {
         $record = new static;
@@ -101,6 +111,13 @@ class Record implements \JsonSerializable
         return $record;
     }
 
+    /**
+     * Create a collection of records from a SQL query.
+     *
+     * @param string $query
+     * @param array $parameters
+     * @return array
+     */
     public static function fromQuery($query, $parameters)
     {
         $record = new static;
@@ -130,7 +147,7 @@ class Record implements \JsonSerializable
                 }
             }
         }
-        
+
         return $this->record;
     }
 
@@ -320,7 +337,7 @@ class Record implements \JsonSerializable
         }
 
         # the offset is a table field
-        if (isSet($this->record[$key])) {
+        if (isset($this->record[$key])) {
             return $this->record[$key];
         }
 

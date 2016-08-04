@@ -3,11 +3,7 @@
 namespace pew\model;
 
 use Stringy\StaticStringy as Str;
-
 use pew\libs\Database;
-
-class TableClassNotFoundException extends \Exception {}
-class InvalidTableClassException extends \Exception {}
 
 class TableFactory
 {
@@ -19,15 +15,16 @@ class TableFactory
     /**
      * @var array
      */
-    // protected $namespaces = [];
-
     protected static $connections = [];
 
+    /**
+     * @var array
+     */
     protected static $connectionCallbacks = [];
 
     /**
      * Creates a new TableFactory.
-     * 
+     *
      * @param Database $db
      * @param array $namespaces Array of namespace and suffix
      */
@@ -40,6 +37,13 @@ class TableFactory
         }
     }
 
+    /**
+     * Set a database connection.
+     *
+     * @param string $connectionName
+     * @param Database|null $databaseConnection
+     * @param \Closure|null $databaseConnectionCallback
+     */
     public static function setConnection(string $connectionName, Database $databaseConnection = null, \Closure $databaseConnectionCallback = null)
     {
         if (!$databaseConnection && !$databaseConnectionCallback) {
@@ -55,6 +59,12 @@ class TableFactory
         }
     }
 
+    /**
+     * Get one of the configured database connections.
+     *
+     * @param string $connectionName
+     * @return Database
+     */
     public static function getConnection(string $connectionName): Database
     {
         if (isset(static::$connections[$connectionName])) {
@@ -71,6 +81,8 @@ class TableFactory
     }
 
     /**
+     * Create a table factory for a specific database table.
+     *
      * @param string  $tableName
      * @param string  $connectionName
      * @return TableInterface
@@ -81,15 +93,4 @@ class TableFactory
 
         return new Table($tableName, $db, $recordClass);
     }
-
-    // /**
-    //  * Registers a new namespace for model search.
-    //  * 
-    //  * @param string $namespace
-    //  * @param string $class_suffix
-    //  */
-    // public function register_namespace($namespace, $class_suffix)
-    // {
-    //     $this->namespaces[] = [rtrim($namespace, '\\') . '\\', $class_suffix];
-    // }
 }

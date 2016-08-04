@@ -8,7 +8,8 @@ use FastRoute\Dispatcher;
 use Stringy\Stringy;
 
 /**
- * The Router class wraps the nikic\FastRoute library for slightly taylor-made functionality.
+ * The Router class wraps the nikic\FastRoute library for slightly
+ * taylor-made functionality.
  */
 class Router
 {
@@ -26,7 +27,7 @@ class Router
      */
     public function __construct(array $routeData)
     {
-        $this->dispatcher = simpleDispatcher(function($r) use ($routeData) {
+        $this->dispatcher = simpleDispatcher(function ($r) use ($routeData) {
             foreach ($routeData as $data) {
                 if (is_array($data)) {
                     $data = Route::fromArray($data);
@@ -66,7 +67,7 @@ class Router
             throw new \RuntimeException("Route not found");
         }
 
-		if ($matchedRoute[0] === Dispatcher::METHOD_NOT_ALLOWED) {
+        if ($matchedRoute[0] === Dispatcher::METHOD_NOT_ALLOWED) {
             throw new \RuntimeException("Method not allowed");
         }
 

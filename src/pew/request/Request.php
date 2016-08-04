@@ -8,7 +8,6 @@ use pew\router\Route;
 /**
  * A shell class that centralizes information about the current request.
  *
- * @package pew\libs
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Request extends \Symfony\Component\HttpFoundation\Request

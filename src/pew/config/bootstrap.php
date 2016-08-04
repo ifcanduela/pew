@@ -61,9 +61,11 @@ $container['controller_slug'] = function ($c) {
 };
 
 $container['db'] = function ($c) {
-    $db_config = require $c['app_path'] . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'database.php';
+    $db_config = require $c['app_path'] . DIRECTORY_SEPARATOR
+               . $c['config_folder'] . DIRECTORY_SEPARATOR
+               . 'database.php';
 
-    if (isSet($c['use_db'])) {
+    if (isset($c['use_db'])) {
         $use_db = $c['use_db'];
     } else {
         $use_db = 'default';
@@ -75,7 +77,7 @@ $container['db'] = function ($c) {
 
     $config = $db_config[$use_db];
 
-    if (!isSet($config)) {
+    if (!isset($config)) {
         throw new \RuntimeException("Database is disabled.");
     }
 

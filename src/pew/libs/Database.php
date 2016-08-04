@@ -17,7 +17,6 @@ use PDOException;
  * The methods contained within this class are aimed to simplify basic database
  * operations, such as simple selects, inserts and updates.
  *
- * @package pew\db
  * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Database
@@ -150,7 +149,7 @@ class Database
     public function __construct($config = null)
     {
         if (is_array($config)) {
-            if (!isSet($config['engine'])) {
+            if (!isset($config['engine'])) {
                 throw new \InvalidArgumentException('Database engine was not selected');
             }
 
@@ -179,13 +178,19 @@ class Database
 
                         # check if file and containing folder are writable
                         $this->is_writable = is_writable(dirname($file)) && is_writable($file);
-                    break;
+
+                        break;
 
                     case self::MYSQL:
                     default:
+                        $dsn = $engine . ':dbname=' . $name . ';host=' . $host;
+                        $options = [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"];
+
                         $this->pdo = new PDO(
-                            $engine . ':dbname=' . $name . ';host=' . $host,
-                            $user, $pass, [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"]
+                            $sn,
+                            $user,
+                            $pass,
+                            $options
                         );
                 }
 
@@ -196,7 +201,7 @@ class Database
             }
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-         }
+        }
 
         return $this->is_connected;
     }
@@ -368,7 +373,7 @@ class Database
     public function values($values)
     {
         list($this->insert_tags) = $this->build_tags($values, 'i_', 'VALUES');
-        
+
         $this->fields = join(', ', array_keys($values));
         $this->values = ' VALUES (' . join(', ', array_keys($this->insert_tags)) . ') ';
 
@@ -604,7 +609,7 @@ class Database
         # Execute the prepared statement
         try {
             $stm->execute($this->tags);
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
             throw new PDOException("Query could not be prepared: $query -- Original message is " . $e->getMessage());
         }
 
@@ -849,7 +854,6 @@ class Database
         }
 
         $sql = trim(preg_replace('/\s+/', ' ', $sql));
-
         $this->last_query = $sql;
 
         return $sql;

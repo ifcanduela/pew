@@ -15,7 +15,7 @@ class App extends \pew\App
         foreach ($command_files as $command_file) {
             $class_name = '\\app\\commands\\' . pathinfo($command_file, PATHINFO_FILENAME);
             $command = $injector->createInstance($class_name);
-            
+
             $this->availableCommands[$command->name()] = $command;
         }
 

@@ -46,7 +46,7 @@ class CommandArguments
                 if ($keyName) {
                     $this->namedArguments[$keyName] = true;
                 }
-                
+
                 $keyName = trim($value, '-');
             }
         }
@@ -134,8 +134,8 @@ class CommandArguments
     public static function dashesToCamel($dashes)
     {
         $camel = preg_replace_callback('/\-(.)/', function ($match) {
-                return strtoupper($match[1]);
-            }, $dashes);
+            return strtoupper($match[1]);
+        }, $dashes);
 
         return str_replace('-', '', $camel);
     }
@@ -149,8 +149,8 @@ class CommandArguments
     public static function camelToDashes($camel)
     {
         $dashes = preg_replace_callback('/([a-z])([A-Z0-9])/', function ($match) {
-                return $match[1] . '-' . $match[2];
-            }, $camel);
+            return $match[1] . '-' . $match[2];
+        }, $camel);
 
         return strtolower(trim($dashes, '-'));
     }
