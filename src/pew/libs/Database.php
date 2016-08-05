@@ -187,7 +187,7 @@ class Database
                         $options = [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"];
 
                         $this->pdo = new PDO(
-                            $sn,
+                            $dsn,
                             $user,
                             $pass,
                             $options

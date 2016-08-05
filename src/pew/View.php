@@ -194,7 +194,6 @@ class View implements \ArrayAccess
      * Set and get the template to render.
      *
      * @param string $template Name of the template
-     *
      * @return self|string Name of the template
      */
     public function template(string $template = null)

@@ -2,6 +2,6 @@
 
 namespace pew\model\exception;
 
-class TableNotSpecifiedException extends \LogicException {
-
+class TableNotSpecifiedException extends \LogicException
+{
 }

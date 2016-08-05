@@ -2,6 +2,6 @@
 
 namespace pew\model\exception;
 
-class TableNotFoundException extends \RuntimeException {
-    
+class TableNotFoundException extends \RuntimeException
+{
 }
