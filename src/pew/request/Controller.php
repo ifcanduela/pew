@@ -73,10 +73,10 @@ class Controller
     /**
      * Render a JSON response
      *
-     * @param array $data
+     * @param mixed $data
      * @return JsonResponse
      */
-    public function renderJson(array $data): JsonResponse
+    public function renderJson($data): JsonResponse
     {
         return new JsonResponse($data);
     }
