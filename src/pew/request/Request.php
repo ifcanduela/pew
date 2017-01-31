@@ -2,9 +2,6 @@
 
 namespace pew\request;
 
-use pew\libs\Env;
-use pew\router\Route;
-
 /**
  * A shell class that centralizes information about the current request.
  *

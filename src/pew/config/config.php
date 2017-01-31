@@ -57,7 +57,7 @@ $cfg['www_folder'] = getcwd();
 $cfg['www_url'] = $cfg['app_url'];
 
 /**
- * @var default namespace for application classes
+ * @var string Default namespace for application classes
  */
 $cfg['app_namespace'] = 'app';
 

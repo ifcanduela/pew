@@ -63,9 +63,17 @@ class View implements \ArrayAccess
     protected $variables = [];
 
     /**
+     * @var FileCache
+     */
+    protected $fileCache;
+
+    /**
      * Creates a View object based on a folder.
      *
      * If no folder is provided, the current working directory is used.
+     *
+     * @param string $templates_folder
+     * @param FileCache $file_cache
      */
     public function __construct(string $templates_folder = null, FileCache $file_cache = null)
     {
@@ -80,12 +88,13 @@ class View implements \ArrayAccess
         $this->addFolder($templates_folder);
     }
 
-    /**
-     * Renders a view according to the request info.
-     *
-     * @param type $data Template data
-     * @param type $view View to render
-     */
+  /**
+   * Renders a view according to the request info.
+   *
+   * @param array $data Template data
+   * @param string $template
+   * @return string
+   */
     public function render(array $data = [], string $template = null): string
     {
         if (!$template) {
@@ -274,7 +283,7 @@ class View implements \ArrayAccess
      *
      * @param string $template The snippet to be loaded, relative to the templates folder
      * @param array $data Additional variables for use in the partial tempalte
-     * @return void
+     * @return string
      */
     public function insert(string $template, array $data = []): string
     {
@@ -297,6 +306,7 @@ class View implements \ArrayAccess
      * @param string $filename Template file name
      * @param array $data Template data
      * @return string
+     * @throws \Exception
      */
     protected function _render()
     {
@@ -321,7 +331,7 @@ class View implements \ArrayAccess
      *
      * @param string $key Name key of the cached fragment to load
      * @param int $duration Time to live of the cache fragment, in seconds
-     * @param string $open_buffer Set to false to prevent the opening of a buffer
+     * @param bool $open_buffer Set to false to prevent the opening of a buffer
      * @return bool True if the cached fragment could be inserted, false otherwise
      */
     public function load(string $key, int $duration, bool $open_buffer = true)
@@ -346,6 +356,7 @@ class View implements \ArrayAccess
      * Save a fragment to the cache.
      *
      * @param string $key Name key for the cached fragment
+     * @return string
      */
     public function save(string $key)
     {

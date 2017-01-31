@@ -5,8 +5,7 @@ namespace pew\model;
 use pew\libs\Database;
 use pew\model\exception\TableNotSpecifiedException;
 use pew\model\exception\TableNotFoundException;
-
-use Stringy\StaticStringy;
+use Stringy\StaticStringy as Str;
 
 /**
  * Table gateway class.
@@ -54,17 +53,6 @@ class Table
      * @var array
      */
     protected $record = [];
-
-    /**
-     * An associative array of twin tables.
-     *
-     * The way of defining a twin relationship is as follows:
-     *
-     *     <code>public $has_one = ['profile' => ['profiles', 'profile_id']];</code>
-     *
-     * @var array
-     */
-    protected $has_one = [];
 
     /**
      * Fields to retrieve in SELECT statements.
@@ -129,6 +117,7 @@ class Table
      *
      * @param string $table Name of the table
      * @param Database $db Database instance to use
+     * @param string|null $recordClass
      */
     public function __construct($table = null, Database $db = null, $recordClass = null)
     {
@@ -226,6 +215,7 @@ class Table
     /**
      * Get an empty record.
      *
+     * @param array $attributes
      * @return Table A new record
      */
     public function create(array $attributes = [])
@@ -270,15 +260,12 @@ class Table
                 $result = $stm->fetchAll();
 
                 return $result;
-            } else {
-                # return number of affected rows
-                return $stm->rowCount($query);
             }
-        } else {
-            throw new \RuntimeException("The $clause operation failed");
+
+            return $stm->rowCount();
         }
 
-        return false;
+        throw new \RuntimeException("The $clause operation failed");
     }
 
     public function one()
@@ -359,7 +346,7 @@ class Table
      * If the $primary_key field is set, it performs an UPDATE. If not, it
      * INSERTs the data.
      *
-     * @param array $data An associative array with database fields and values
+     * @param Record|array $model An array or array-like object with column names and values
      * @return Model The saved item on success, false otherwise
      */
     public function save(Record $model)
@@ -369,7 +356,7 @@ class Table
         }
 
         $attributes = $model->attributes();
-        $record = [];
+        $record = $result = [];
 
         foreach ($this->tableData['columns'] as $key) {
             if (array_key_exists($key, $attributes)) {
@@ -383,7 +370,7 @@ class Table
 
         $primary_key = $this->tableData['primary_key'];
 
-        if (isset($record[$primary_key])) {
+        if (!empty($record[$primary_key])) {
             # set modification timestamp
             if ($this->hasColumn('modified')) {
                 $record['modified'] = time();
@@ -395,9 +382,12 @@ class Table
 
             # if $id is set, perform an UPDATE
             $where = [$primary_key => $record[$primary_key]];
-            $result = $this->db->set($record)->where($where)->update($this->table);
+            $this->db->set($record)->where($where)->update($this->table);
             $result = $this->db->where($where)->single($this->table);
         } else {
+            # unset the primary key, just in case
+            unset($record[$primary_key]);
+
             # set creation timestamp
             if ($this->hasColumn('created')) {
                 $record['created'] = time();
@@ -413,7 +403,7 @@ class Table
             }
 
             # if $id is not set, perform an INSERT
-            $result = $this->db->values($record)->insert($this->table);
+            $this->db->values($record)->insert($this->table);
             $result = $this->db->where([$primary_key => $result])->single($this->table);
         }
 
@@ -470,7 +460,7 @@ class Table
      * State which fields to retrieve with find() and find_all().
      *
      * @param string $fields A comma-separated list of table columns
-     * @return Model a reference to the same object, for method chaining
+     * @return Table A reference to the same object, for method chaining
      */
     public function select($fields)
     {
@@ -484,7 +474,7 @@ class Table
      * State the conditions of the records to fetch with find() and find_all().
      *
      * @param array $conditions Field and value pairs
-     * @return Model a reference to the same object, for method chaining
+     * @return Table|array a reference to the same object, for method chaining
      */
     public function where($conditions = null)
     {
@@ -508,7 +498,7 @@ class Table
      *
      * @param int $count Number of items to return
      * @param int $start First item to return
-     * @return Model a reference to the same object, for method chaining
+     * @return Table a reference to the same object, for method chaining
      */
     public function limit($count = null, $start = 0)
     {
@@ -533,7 +523,7 @@ class Table
      * Set the record sorting for results.
      *
      * @param mixed $order_by Order-by SQL clauses[multiple]
-     * @return Model a reference to the same object, for method chaining
+     * @return Table A reference to the same object, for method chaining
      */
     public function orderBy($order_by = null)
     {
@@ -553,8 +543,8 @@ class Table
      * This function is a shortcut to enable method chaining with the Group By
      * SQL clause.
      *
-     * @param string $groups Grouping column names
-     * @return Model a reference to the same object, for method chaining
+     * @param string $group_by Grouping column names
+     * @return Table A reference to the same object, for method chaining
      * @todo: Make this work
      */
     public function groupBy($group_by = null)
@@ -566,7 +556,7 @@ class Table
             if (isset($this->clauses['group_by'])) {
                 return $this->clauses['group_by'];
             } else {
-                $this->group_by;
+                return $this->group_by;
             }
         }
     }
@@ -575,8 +565,8 @@ class Table
      * This function is a shortcut to enable method chaining with the Having SQL
      * clause.
      *
-     * @param string $conditions SQL conditions for the groups
-     * @return Model a reference to the same object, for method chaining
+     * @param string $having SQL conditions for the groups
+     * @return Table A reference to the same object, for method chaining
      * @todo: Make this work
      */
     public function having($having = null)
@@ -588,7 +578,7 @@ class Table
             if (isset($this->clauses['having'])) {
                 return $this->clauses['having'];
             } else {
-                $this->having;
+                return $this->having;
             }
         }
     }
@@ -626,7 +616,7 @@ class Table
     /**
      * Reset the SQL clauses.
      *
-     * @return Model The model instance
+     * @return Table The model instance
      */
     protected function reset()
     {
@@ -652,6 +642,7 @@ class Table
      *     - limit: count, offset
      *
      * @param array $clauses
+     * @return array
      */
     public function clauses(array $clauses = null)
     {

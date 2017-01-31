@@ -4,9 +4,7 @@ namespace pew;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 use Stringy\Stringy as Str;
-
 use pew\libs\Injector;
 
 /**
@@ -57,7 +55,7 @@ class App
      * Import the application configuration.
      *
      * @param string $config_filename The file name, relative to the base path
-     * @return null
+     * @return bool TRUE when the file exists, FALSE otherwise
      */
     protected function loadAppConfig($config_filename)
     {
@@ -71,20 +69,28 @@ class App
             foreach ($app_config as $key => $value) {
                 $this->container[$key] = $value;
             }
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * Load the user bootstrap file.
      *
-     * @return null
+     * @return bool TRUE when the file exists, FALSE otherwise
      */
     protected function loadAppBootstrap()
     {
         # load app/config/bootstrap.php
         if (file_exists($this->container['app_path'] . '/config/bootstrap.php')) {
             require $this->container['app_path'] . '/config/bootstrap.php';
+
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -93,15 +99,13 @@ class App
      * This function is responsible of creating an instance of the appropriate
      * Controller class and calling its action() method, which will handle
      * the controller call.
+     *
+     * @return null
      */
     public function run()
     {
-        $skip_action = false;
-        $view_data = [];
-        $request = $this->container['request'];
         $injector = $this->container['injector'];
         $handler = $this->container['controller'];
-        $result = false;
 
         try {
             if (is_callable($handler)) {
@@ -174,11 +178,12 @@ class App
      *
      * @param \Exception $e
      * @return Response
+     * @throws \Exception
      */
     protected function handleError(\Exception $e): Response
     {
         if ($this->container['debug']) {
-                throw $e;
+            throw $e;
         }
 
         $view = $this->container['view'];

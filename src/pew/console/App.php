@@ -6,6 +6,11 @@ class App extends \pew\App
 {
     public $availableCommands = [];
 
+    /**
+     * Run a command.
+     *
+     * @return mixed
+     */
     public function run()
     {
         $injector = $this->container['injector'];
@@ -37,9 +42,14 @@ class App extends \pew\App
             throw new \InvalidArgumentException("Command not found: {$arguments['command']}");
         }
 
-        $result = $injector->callMethod($command, 'run');
+        return $injector->callMethod($command, 'run');
     }
 
+    /**
+     * Retrieve all arguments of a command call.
+     *
+     * @return array
+     */
     public function getArguments(): array
     {
         $argv = $_SERVER['argv'];
@@ -57,7 +67,13 @@ class App extends \pew\App
         return [];
     }
 
-    public function findCommand($commandName)
+    /**
+     * Find a command in the list of available commands.
+     *
+     * @param string $commandName
+     * @return Command|bool
+     */
+    public function findCommand(string $commandName)
     {
         return $this->availableCommands[$commandName] ?? false;
     }

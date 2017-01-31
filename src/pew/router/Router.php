@@ -3,9 +3,7 @@
 namespace pew\router;
 
 use function FastRoute\simpleDispatcher;
-use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
-use Stringy\Stringy;
 
 /**
  * The Router class wraps the nikic\FastRoute library for slightly

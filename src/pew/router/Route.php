@@ -25,8 +25,11 @@ class Route implements \ArrayAccess
     /** @var array */
     protected $conditions = [];
 
+    /** @var array */
+    protected $filters = [];
+
     /**
-     * @param array $routeInfo
+     * Create an empty route object.
      */
     public function __construct()
     {
@@ -198,6 +201,7 @@ class Route implements \ArrayAccess
      *
      * @param string|callable $handler
      * @return Route
+     * @throws \Exception
      */
     public function handler($handler): self
     {
@@ -213,7 +217,7 @@ class Route implements \ArrayAccess
     /**
      * Set the route methods.
      *
-     * @param string $methods
+     * @param string|string[] ...$methods
      * @return Route
      */
     public function methods(string ...$methods): self
@@ -226,7 +230,7 @@ class Route implements \ArrayAccess
     /**
      * Set the route filters.
      *
-     * @param string $filters
+     * @param string|string[] ...$filters
      * @return Route
      */
     public function filters(string ...$filters): self

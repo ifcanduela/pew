@@ -7,6 +7,7 @@
  * Pew config read-only shortcut.
  *
  * @param string $key Key to read
+ * @param array $app Setup the app array-like object
  * @return mixed The value for the key
  */
 function pew($key = null, $app = null)
@@ -216,6 +217,7 @@ function pew_clean_string($evil_string)
  * @param mixed $index The integer or string index to retrieve
  * @param bool $strict Whether or not to throw an InvalidArgumenException
  *                     if the index does not exist
+ * @return mixed|null
  * @throws InvalidArgumentException When $index is not found and $strict is true
  */
 function deref(array $array, $index, $strict = false)
@@ -312,7 +314,7 @@ function array_reindex(array $array, $key_name, $value_name = null)
  * * any other atom is taken as a literal value and will match indexes that
  *   equal the atom; this matching is not strict: atom '1' will match index 1.
  *
- * @param array $data The array to be filtered
+ * @param array|object $data The array to be filtered
  * @param mixed $filter A string or array with the filtering atoms
  * @return array The array with the matching elements
  */
@@ -416,15 +418,19 @@ function array_flatten($data)
     return $flat;
 }
 
+
 /**
  * Convert an array into an XML structure.
  *
+ * @param array $data
+ * @param \SimpleXMLElement|string $xml
+ * @param string $root_name
  * @see http://stackoverflow.com/a/5965940/1007072
  */
 function array_to_xml(array $data, &$xml, $root_name = 'root')
 {
     if (is_string($xml)) {
-        $xml = new SimpleXMLElement('<' . $root_name . '></' . $root_name . '>');
+        $xml = new \SimpleXMLElement('<' . $root_name . '></' . $root_name . '>');
     }
 
     foreach ($data as $k => $v) {
@@ -441,7 +447,6 @@ function array_to_xml(array $data, &$xml, $root_name = 'root')
         }
     }
 }
-
 /**
  * Makes sure the folders in a slash-delimited path exist.
  *
@@ -555,8 +560,8 @@ function transliterate($str)
  * and '-' (minus sign) with '_' (underscore).
  *
  * @param string $str The string to transform
- * @param array|string $chars Array of substrings to remove
  * @param array|string $chars Array of substrings to insert
+ * @param string $replacements List of equivalences for the characters to replace
  * @return string The modified string
  */
 function to_underscores($str, $chars = [' ', '-'], $replacements = '_')
@@ -572,7 +577,7 @@ function to_underscores($str, $chars = [' ', '-'], $replacements = '_')
  * will print
  *     C:\htdocs\pewexample\app\libs\my_lib.php
  *
- * @param string $path A path to include in the output
+ * @param string|string[] ...$path A path to include in the output
  * @return string The resulting path
  */
 function root(...$path)
@@ -599,7 +604,7 @@ function root(...$path)
  * will print
  *     http://www.example.com/pewexample/www/css/styles.css.
  *
- * @param string $path One or more path segments
+ * @param string|string[] ...$path One or more path segments
  * @return string The resulting url
  */
 function url(...$path): string
@@ -625,7 +630,7 @@ function url(...$path): string
  * will print
  *     http://www.example.com/pewexample/www/css/styles.css.
  *
- * @param string $url A string to print after the server, path and www location.
+ * @param string|string[] $path A string to print after the server, path and www location.
  * @return string The resulting url
  */
 function www(...$path)

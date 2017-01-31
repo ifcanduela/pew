@@ -23,12 +23,10 @@ class CommandArguments
     /**
      * Populate the CommandArguments object with data.
      *
-     * @params array $commandLineArguments The list of command-line arguments
-     * @return null
+     * @param array $commandLineArguments The list of command-line arguments
      */
     public function loadConsoleArguments(array $commandLineArguments)
     {
-        $this->values = [];
         $argCount = count($commandLineArguments);
         $keyName = null;
 
@@ -59,7 +57,7 @@ class CommandArguments
     /**
      * Check if an argument key (named or positional) exists.
      *
-     * @params string|int $key The argument key to check
+     * @param string|int $key The argument key to check
      * @return bool TRUE if the key exists, false otherwise.
      */
     public function has($key)
@@ -77,7 +75,7 @@ class CommandArguments
      * All named arguments are ignored when calculating the position. if the
      * argument position is empty, NULL is returned.
      *
-     * @param int $key Argument position
+     * @param int $position Argument position
      * @return string|bool|null The value of the argument, or NULL if it does not exist.
      */
 

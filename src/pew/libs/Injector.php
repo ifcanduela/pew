@@ -4,6 +4,7 @@ namespace pew\libs;
 
 class Injector
 {
+    /** @var array */
     protected $containers = [];
 
     /**
@@ -151,7 +152,7 @@ class Injector
     /**
      * Invokes a function.
      *
-     * @param object $object An object on which to invoke the method
+     * @param callable $callable An object on which to invoke the method
      * @param object $boundObject Optional object to bind the closure to
      * @return mixed Result of calling the method on the object
      */

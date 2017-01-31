@@ -100,15 +100,6 @@ $container['injector'] = function ($c) {
     );
 };
 
-$container['model_factory'] = function ($c) {
-    $f = new \pew\db\TableFactory($c['db']);
-
-    $f->register_namespace($c['app_namespace'] . 'models', 'Model');
-    $f->register_namespace('pew\models', 'Model');
-
-    return $f;
-};
-
 $container['path'] = function ($c) {
     $request = $c['request'];
     $pathInfo = $request->getPathInfo();
@@ -116,7 +107,7 @@ $container['path'] = function ($c) {
     return '/' . trim($pathInfo, '/');
 };
 
-$container['request'] = function ($c) {
+$container['request'] = function () {
     return pew\request\Request::createFromGlobals();
 };
 
@@ -129,7 +120,6 @@ $container['route'] = function ($c) {
 };
 
 $container['router'] = function ($c) {
-    $app_path = $c['app_path'];
     $routes = $c['routes'];
 
     return new \pew\router\Router($routes);
@@ -139,7 +129,7 @@ $container['routes'] = function ($c) {
     $app_folder = $c['app_path'];
     $routes_path = $app_folder . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'routes.php';
 
-    $definitions = require($routes_path);
+    $definitions = require $routes_path;
 
     $routes = [];
 
@@ -153,7 +143,13 @@ $container['routes'] = function ($c) {
         } elseif (is_array($handler) && isset($handler['resource'])) {
             // create CRUD routes from resource route
             $controller_class = $handler['resource'];
-            $slug = \Stringy\Stringy::create($controller_class)->humanize()->slugify();
+
+            if (isset($handler['path'])) {
+                $slug = \Stringy\Stringy::create($handler['path']);
+            } else {
+                $slug = \Stringy\Stringy::create($controller_class)->humanize()->slugify();
+            }
+
             $underscored = $slug->underscored();
 
             $routes[] = [
@@ -204,7 +200,7 @@ $container['routes'] = function ($c) {
     return $routes;
 };
 
-$container['session'] = function ($c) {
+$container['session'] = function () {
     return new \pew\libs\Session();
 };
 

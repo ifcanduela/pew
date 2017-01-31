@@ -76,7 +76,7 @@ class FileCache
     /**
      * Set or get the suffix for Gzipped cache files.
      *
-     * @param string $gzip Either true, false or null
+     * @param string $suffix A suffix for gzip-archived files
      * @return string The current suffix
      */
     public function gzipSuffix($suffix = null)
@@ -185,7 +185,7 @@ class FileCache
      *
      * @param string $key Cache key to read
      * @return mixed The cached data
-     * @throws RuntimeException If the cache file does not exit
+     * @throws \RuntimeException If the cache file does not exit
      */
     public function load($key)
     {

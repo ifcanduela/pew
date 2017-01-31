@@ -15,8 +15,6 @@ abstract class Command implements CommandInterface
 {
     /**
      * Setup the command before running.
-     *
-     * @return mixed
      */
     public function init()
     {
@@ -24,8 +22,6 @@ abstract class Command implements CommandInterface
 
     /**
      * Clean up after the command runs.
-     *
-     * @return mixed
      */
     public function finish()
     {
@@ -89,7 +85,7 @@ abstract class Command implements CommandInterface
     /**
      * Create a block of text to be printed.
      *
-     * @param text $text
+     * @param string|string[] ...$text
      * @return MessageBox
      */
     public function messageBox(string ...$text): MessageBox
@@ -100,7 +96,7 @@ abstract class Command implements CommandInterface
     /**
      * Create an infomessage box with light blue background and white text.
      *
-     * @param string $text
+     * @param string|string[] ...$text
      * @return MessageBox
      */
     public function infoBox(string ...$text): MessageBox
@@ -111,7 +107,7 @@ abstract class Command implements CommandInterface
     /**
      * Create an infomessage box with green background and white text.
      *
-     * @param string $text
+     * @param string|string[] ...$text
      * @return MessageBox
      */
     public function successBox(string ...$text): MessageBox
@@ -122,7 +118,7 @@ abstract class Command implements CommandInterface
     /**
      * Create a warning message box with yellow background and black text.
      *
-     * @param string $text
+     * @param string|string[] ...$text
      * @return MessageBox
      */
     public function warningBox(string ...$text): MessageBox
@@ -133,7 +129,7 @@ abstract class Command implements CommandInterface
     /**
      * Create an error message box with red background and black text.
      *
-     * @param string $text
+     * @param string|string[] ...$text
      * @return MessageBox
      */
     public function errorBox(string ...$text): MEssageBox

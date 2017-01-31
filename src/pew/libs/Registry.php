@@ -99,7 +99,7 @@ class Registry implements \ArrayAccess
      * @param $path
      * @param string $collection
      * @return mixed Value, if exists
-     * @throws RuntimeException If the key does not exist.
+     * @throws \RuntimeException If the key does not exist.
      */
     protected function getPath($path, $collection = 'data')
     {
@@ -163,7 +163,9 @@ class Registry implements \ArrayAccess
             }
         }
 
-        unset($data[$k]);
+        if (isset($k)) {
+            unset($data[$k]);
+        }
     }
 
     /**
@@ -180,7 +182,7 @@ class Registry implements \ArrayAccess
     /**
      * Checks if a key is present in the registry.
      *
-     * @param string $key
+     * @param string $offset
      * @return bool True if the key exists, false otherwise
      */
     public function offsetExists($offset)
@@ -202,7 +204,7 @@ class Registry implements \ArrayAccess
     /**
      * Retrieves a value from the registry.
      *
-     * @param string $key
+     * @param string $offset
      * @param mixed $default Value to return id the key is not found
      * @return mixed
      */

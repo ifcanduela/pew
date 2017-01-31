@@ -9,7 +9,7 @@ use PDOException;
 /**
  * The Database class encapsulates database access.
  *
- * PewDatabase implements PHP Data Objects (PDO) to provide a homogeneous
+ * Database implements PHP Data Objects (PDO) to provide a homogeneous
  * interface for multiple Relational Database Management Systems. Currently
  * available are SQLite and MySQL. Configuration is defined via a simple
  * associative array passed into the constructor.
@@ -144,7 +144,7 @@ class Database
      * ERRMODE_EXCEPTION.
      *
      * @param mixed $config A PDO object or an array
-     * @throws InvalidArgumentException If the DB engine is not selected
+     * @throws \InvalidArgumentException If the DB engine is not selected
      */
     public function __construct($config = null)
     {
@@ -164,16 +164,17 @@ class Database
     /**
      * Connects to the configured database provider.
      *
+     * @param array $config
      * @return bool True if the connection was successful, false otherwise
      */
     protected function connect($config)
     {
         if (!$this->is_connected) {
-            extract($config);
-
             try {
+                $engine = $config['engine'];
                 switch ($engine) {
                     case self::SQLITE:
+                        $file = $config['file'];
                         $this->pdo = new PDO($engine . ':' . $file);
 
                         # check if file and containing folder are writable
@@ -183,15 +184,15 @@ class Database
 
                     case self::MYSQL:
                     default:
+                        $name = $config['name'];
+                        $host = $config['host'];
+                        $user = $config['user'];
+                        $pass = $config['pass'];
+
                         $dsn = $engine . ':dbname=' . $name . ';host=' . $host;
                         $options = [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"];
 
-                        $this->pdo = new PDO(
-                            $dsn,
-                            $user,
-                            $pass,
-                            $options
-                        );
+                        $this->pdo = new PDO($dsn, $user, $pass, $options);
                 }
 
                 $this->is_connected = true;
@@ -237,7 +238,7 @@ class Database
      * Sets the FROM field for subsequent queries.
      *
      * @param string $from The list of tables against which to perform the query
-     * @return \pew\libs\Database The Database object
+     * @return Database The Database object
      */
     public function from($from)
     {
@@ -248,10 +249,10 @@ class Database
     /**
      * Sets the INTO field for INSERT queries.
      *
-     * This function is an alias for PewDatabase::from()
+     * This function is an alias for Database::from()
      *
-     * @param string $from The list of tables against which to perform the query
-     * @return \pew\libs\Database The Database object
+     * @param string $into Table name
+     * @return Database The Database object
      */
     public function into($into)
     {
@@ -263,7 +264,7 @@ class Database
      * Sets the fields to return in SELECT queries.
      *
      * @param string $fields A SQl-formatted field list
-     * @return PewDataabse The PewDatabase object
+     * @return Database The Database object
      */
     public function fields($fields)
     {
@@ -274,10 +275,10 @@ class Database
     /**
      * Sets the WHERE field and its values for prepared statements.
      *
-     * @param string $from The list of tables against which to perform the query
-     * @return \pew\libs\Database The Database object
+     * @param array $conditions The list of comparisons
+     * @return Database The Database object
      */
-    public function where($conditions)
+    public function where(array $conditions)
     {
         list($this->where_tags, $this->where) = $this->build_tags($conditions, 'w_');
 
@@ -291,7 +292,7 @@ class Database
      * Don't add 'GROUP BY' to the $order_by parameter.
      *
      * @param string $group_by SQL-formatted list of grouping fields
-     * @return \pew\libs\Database The Database object
+     * @return Database The Database object
      */
     public function group_by($group_by)
     {
@@ -305,10 +306,10 @@ class Database
     /**
      * Sets the HAVING field and its values for prepared statements.
      *
-     * @param string $conditions An array of field/value pairs
-     * @return \pew\libs\Database The Database object
+     * @param array $conditions An array of field/value pairs
+     * @return Database The Database object
      */
-    public function having($conditions)
+    public function having(array $conditions)
     {
         list($this->having_tags, $this->having) = $this->build_tags($conditions, 'h_', ' HAVING ');
 
@@ -322,7 +323,7 @@ class Database
      * Don't add 'ORDER BY' to the $order_by parameter.
      *
      * @param string $order_by A SQL-formatted list of sorting fields
-     * @return \pew\libs\Database The Database object
+     * @return Database The Database object
      */
     public function order_by($order_by)
     {
@@ -339,7 +340,7 @@ class Database
      * E.g.: Use "1" to return one row or "4,1" to return the fourth row.
      *
      * @param string $limit Either "row_count", or "offset, row_count"
-     * @return \pew\libs\Database The Database object
+     * @return Database The Database object
      */
     public function limit($limit)
     {
@@ -353,10 +354,10 @@ class Database
     /**
      * Sets the SET field and its values for UPDATE prepared statements.
      *
-     * @param string $set An array of field/value pairs
-     * @return \pew\libs\Database The Database object
+     * @param array $set An array of field/value pairs
+     * @return Database The Database object
      */
-    public function set($set)
+    public function set(array $set)
     {
         list($this->set_tags, $this->set) = $this->build_tags($set, 's_', ' SET ', ', ');
 
@@ -367,10 +368,10 @@ class Database
      * Sets the INTO and VALUES fields and their values for an INSERT prepared
      * statement.
      *
-     * @param string $values An array of field/value pairs
-     * @return \pew\libs\Database The Database object
+     * @param array $values An array of field/value pairs
+     * @return Database The Database object
      */
-    public function values($values)
+    public function values(array $values)
     {
         list($this->insert_tags) = $this->build_tags($values, 'i_', 'VALUES');
 
@@ -389,7 +390,7 @@ class Database
      * if the second parameter is specified as true, in which case the return
      * will be an array.
      *
-     * @param string $table_name Name of the table in the database
+     * @param string $table Name of the table in the database
      * @param bool $as_array Return multiple keys as an array (default is true)
      * @return mixed A comma-separated string with the primary key fields or an
      *               array if $as_array is true
@@ -486,16 +487,12 @@ class Database
      */
     public function table_exists($table)
     {
-        $exists = false;
-
         try {
             $this->pdo->prepare("SELECT 1 FROM $table");
-            $exists = true;
-        } catch (PDOException $e) {
-            $exists = false;
-        }
+            return true;
+        } catch (PDOException $e) {}
 
-        return $exists;
+        return false;
     }
 
     /**
@@ -525,7 +522,7 @@ class Database
             return [[], ''];
         }
 
-        $where = '';
+        $where_string = '';
         $atoms = [];
         $tags = [];
 
@@ -620,10 +617,9 @@ class Database
     /**
      * Selects the first column from the first row in a query.
      *
-     * @param string $table_name The table name
-     * @param array $conditions Conditions
+     * @param string $fields
+     * @param string $table
      * @return int Number of rows deleted
-     * @throws Exception Exception thrown if no table is set
      */
     public function cell($fields = null, $table = null)
     {
@@ -631,7 +627,7 @@ class Database
             $this->from = $table;
         } else {
             if (!isset($this->from)) {
-                throw new \InvalidArgumentException("No table provided for method PewDatabase::cell()");
+                throw new \InvalidArgumentException("No table provided for method Database::cell()");
             }
         }
 
@@ -653,10 +649,9 @@ class Database
     /**
      * Selects a single row in a table.
      *
-     * @param string $table_name The table name
-     * @param array $conditions Conditions
+     * @param string $table
+     * @param string $fields
      * @return int Number of rows deleted
-     * @throws InvalidArgumentException Exception thrown if no table is set
      */
     public function single($table = null, $fields = null)
     {
@@ -664,7 +659,7 @@ class Database
             $this->from = $table;
         } else {
             if (!isset($this->from)) {
-                throw new \InvalidArgumentException("No table provided for method PewDatabase::single()");
+                throw new \InvalidArgumentException("No table provided for method Database::single()");
             }
         }
 
@@ -692,10 +687,10 @@ class Database
     /**
      * Selects rows from a table.
      *
-     * @param string $table_name The table name
-     * @param array $conditions Conditions
+     * @param string $table The table name
+     * @param array $fields List of column names
      * @return array Indexed array with the resulting rows
-     * @throws InvalidArgumentException If no table is set
+     * @throws \InvalidArgumentException If no table is set
      */
     public function select($table = null, $fields = null)
     {
@@ -703,7 +698,7 @@ class Database
             $this->from = $table;
         } else {
             if (!isset($this->from)) {
-                throw new \InvalidArgumentException("No table provided for method PewDatabase::select()");
+                throw new \InvalidArgumentException("No table provided for method Database::select()");
             }
         }
 
@@ -727,11 +722,9 @@ class Database
     /**
      * Inserts a row in a table.
      *
-     * @param string $table_name The table name
-     * @param array $data Values to modify
-     * @param array $conditions Conditions
+     * @param string $table The table name
      * @return int Primary key value of the last inserted element
-     * @throws InvalidArgumentException If no table is set
+     * @throws \InvalidArgumentException If no table is set
      */
     public function insert($table = null)
     {
@@ -743,26 +736,23 @@ class Database
             $this->from = $table;
         } else {
             if (!isset($this->from)) {
-                throw new \InvalidArgumentException("No table provided for method PewDatabase::insert()");
+                throw new \InvalidArgumentException("No table provided for method Database::insert()");
             }
         }
 
         $query = $this->get_query('INSERT', $this->from);
-
-        $stm = $this->run_query($query);
-
+        $this->run_query($query);
         $this->reset();
+
         return $this->pdo->lastInsertId();
     }
 
     /**
      * Updates rows in a table.
      *
-     * @param string $table_name The table name
-     * @param array $data Values to modify
-     * @param array $conditions Conditions
+     * @param string $table The table name
      * @return int Number of rows affected
-     * @throws InvalidArgumentException If no table is set
+     * @throws \InvalidArgumentException If no table is set
      */
     public function update($table = null)
     {
@@ -774,7 +764,7 @@ class Database
             $this->from = $table;
         } else {
             if (!isset($this->from)) {
-                throw new \InvalidArgumentException("No table provided for method PewDatabase::update()");
+                throw new \InvalidArgumentException("No table provided for method Database::update()");
             }
         }
 
@@ -788,10 +778,9 @@ class Database
     /**
      * Deletes rows in a table.
      *
-     * @param string $table_name The table name
-     * @param array $conditions
+     * @param string $table The table name
      * @return int Number of rows deleted
-     * @throws InvalidArgumentException If no table is set
+     * @throws \InvalidArgumentException If no table is set
      */
     public function delete($table = null)
     {
@@ -803,7 +792,7 @@ class Database
             $this->from = $table;
         } else {
             if (!isset($this->from)) {
-                throw new \InvalidArgumentException("No table provided for method PewDatabase::delete()");
+                throw new \InvalidArgumentException("No table provided for method Database::delete()");
             }
         }
 
@@ -821,7 +810,7 @@ class Database
      *
      * @param string $type One of SELECT, UPDATE, INSERT or DELETE
      * @param string $table A table name list that overrides that of
-     *                      PewDatabase::from() and PewDatabase::into()
+     *                      Database::from() and Database::into()
      * @return string The sql statement
      */
     public function get_query($type, $table = null)
@@ -862,7 +851,7 @@ class Database
     /**
      * Resets the data in the SQL clauses.
      *
-     * @return PewDatabase Returns the PewDatabase object
+     * @return Database Returns the Database object
      */
     public function reset()
     {
@@ -901,6 +890,7 @@ class Database
      * @param string $sql SQL Statement to execute
      * @param array $params Placeholder and value pairs
      * @param boolean $return_stm Return the PDOStatement object
+     * @param int $fetch_mode One of the PDO fetch modes
      * @return mixed Number of affected rows or selected records
      */
     public function query($sql, array $params = [], $return_stm = false, $fetch_mode = PDO::FETCH_ASSOC)

@@ -39,7 +39,7 @@ class Session extends SymfonySession implements ArrayAccess
             $index = array_shift($indexes);
 
             if (!isset($value[$index])) {
-                return $default;
+                return null;
             }
 
             $value = $value[$index];

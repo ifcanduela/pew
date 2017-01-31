@@ -65,7 +65,7 @@ class Url
     /**
      * Get a URL to a path.
      *
-     * @param string $path
+     * @param string|string[] ...$path
      * @return string
      */
     public function to(string ...$path): string
@@ -82,6 +82,7 @@ class Url
      * @param string $routeName
      * @param array $params
      * @return string
+     * @throws \Exception
      */
     public function toRoute(string $routeName, array $params = []): string
     {
@@ -161,6 +162,7 @@ class Url
      *
      * @param string|null $user
      * @param string|null $password
+     * @return Url
      */
     public function setAuth(string $user = null, string $password = null): Url
     {
@@ -232,6 +234,7 @@ class Url
      * Set the port number.
      *
      * @param int $port
+     * @return Url
      */
     public function setPort(int $port): Url
     {
@@ -268,7 +271,8 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string $path
+     * @param string|string[] ...$path
+     * @return Url
      */
     public function setPath(string ...$path): Url
     {
@@ -291,7 +295,7 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string $segment
+     * @param string|string[] ...$segment
      * @return Url
      */
     public function addPath(string ...$segment): Url
@@ -335,7 +339,8 @@ class Url
      * Set a query param.
      *
      * @param string $param
-     * @param Url
+     * @param mixed $value
+     * @return Url
      */
     public function setQueryParam(string $param, $value): Url
     {
@@ -376,11 +381,12 @@ class Url
     /**
      * Get the query params.
      *
+     * @param array $keys
      * @return array
      */
     public function getQuery(array $keys = null): array
     {
-        return $keys ? array_intersect_key($query, array_flip($keys)) : $this->query;
+        return $keys ? array_intersect_key($this->query, array_flip($keys)) : $this->query;
     }
 
     /**

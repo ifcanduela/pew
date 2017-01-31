@@ -81,7 +81,8 @@ class Message
     /**
      * Append a line break to the message.
      *
-     * @return self
+     * @param bool $eol
+     * @return Message
      */
     public function eol($eol = true)
     {
@@ -93,7 +94,8 @@ class Message
     /**
      * Do not append a line break to the message.
      *
-     * @return self
+     * @param bool $inline
+     * @return Message
      */
     public function inline($inline = true)
     {

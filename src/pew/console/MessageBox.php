@@ -9,6 +9,10 @@ class MessageBox extends Message
     public $padding = 1;
     public $newLine = true;
 
+    /**
+     * MessageBox constructor.
+     * @param string|string[] ...$lines
+     */
     public function __construct(...$lines)
     {
         $this->text = $lines;

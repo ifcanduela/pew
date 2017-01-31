@@ -15,7 +15,7 @@ class Record implements \JsonSerializable
     protected $tableName;
 
     /** @var string Name of the primary key fields of the table the Model manages. */
-    protected $primaryKey;
+    protected $primaryKey = 'id';
 
     /** @var array List of class properties to serialize as JSON. */
     public $serialize = [];
@@ -35,23 +35,20 @@ class Record implements \JsonSerializable
     /** @var array Current record data. */
     protected $record = [];
 
-    /** @var Table data manager. */
+    /** @var Table Table data manager. */
     protected $tableManager;
 
-    /** @var Database connection name. */
+    /** @var string Database connection name. */
     protected $connectionName = 'default';
 
-    /** @var Flag for new records. */
+    /** @var bool Flag for new records. */
     public $isNew = false;
 
-    /** @var List of validation errors. */
+    /** @var array List of validation errors. */
     public $errors = [];
 
     /**
-     * The constructor builds the model!.
-     *
-     * @param string $table Name of the table
-     * @param Database $db Database instance to use
+     * Create an empty, new record.
      */
     public function __construct()
     {
@@ -122,7 +119,7 @@ class Record implements \JsonSerializable
     {
         $record = new static;
 
-        $result = $record->table()->query($query, $parameters);
+        $result = $record->tableManager->query($query, $parameters);
 
         return array_map(function ($r) {
             return static::fromArray($r);
@@ -220,7 +217,7 @@ class Record implements \JsonSerializable
     /**
      * Saves the record to the table.
      *
-     * @return null
+     * @return Record
      */
     public function save()
     {
@@ -228,6 +225,8 @@ class Record implements \JsonSerializable
         $this->record = array_merge($this->record, $result);
 
         $this->isNew = false;
+
+        return $this;
     }
 
     /**
@@ -235,13 +234,13 @@ class Record implements \JsonSerializable
      */
     public function delete()
     {
-        return $this->tableManager->delete($this->id);
+        return $this->tableManager->delete($this->record[$this->tableManager->primaryKey()]);
     }
 
     /**
      * Allow iteration over the current record fields.
      *
-     * @return ArrayIterator
+     * @return \ArrayIterator
      */
     public function getIterator()
     {
@@ -251,7 +250,7 @@ class Record implements \JsonSerializable
     /**
      * JSON representation of the model object.
      *
-     * @return array
+     * @return object
      */
     public function jsonSerialize()
     {
@@ -289,7 +288,8 @@ class Record implements \JsonSerializable
      * Set a value in the registry.
      *
      * @param string $key Key for the value
-     * @param mixed Value to store
+     * @param mixed $value Value to store
+     * @return $this
      */
     public function __set($key, $value)
     {
@@ -362,7 +362,7 @@ class Record implements \JsonSerializable
      */
     public function __unset($key)
     {
-        $this->offsetUnset($key);
+        unset($this->record[$key]);
     }
 
     /**

@@ -51,6 +51,16 @@ class Image
     protected $quality;
 
     /**
+     * @var int
+     */
+    protected $width;
+
+    /**
+     * @var int
+     */
+    protected $height;
+
+    /**
      * Build a new image object.
      *
      * @param string|array $file Image file to load
@@ -68,8 +78,6 @@ class Image
 
     /**
      * Remove the resource data.
-     *
-     * @return null
      */
     public function __destruct()
     {
@@ -85,6 +93,7 @@ class Image
      *
      * @param string $filename Location of the image file
      * @return Image The image object
+     * @throws \Exception
      */
     public function load(string $filename): self
     {
@@ -105,6 +114,7 @@ class Image
      *
      * @param array $file An uploaded file
      * @return Image The image resource
+     * @throws \Exception
      */
     public function upload(array $file): self
     {
@@ -127,6 +137,7 @@ class Image
      * @param string $filename The image file name
      * @param int $image_type One of the IMAGETYPE_* constants
      * @return int Return value from the imageCreateFrom* function
+     * @throws \Exception
      */
     protected function loadFile(string $filename, $image_type)
     {
@@ -158,18 +169,18 @@ class Image
     /**
      * Get the image resource.
      *
-     * @return resource The image data
+     * @param resource $resource
+     * @return resource|Image The image data
+     * @throws \Exception
      */
     public function image($resource = null)
     {
-        if (!is_null($resouce)) {
+        if (!is_null($resource)) {
             $this->resource = $resource;
             return $this;
         }
 
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         return $this->resource;
     }
@@ -194,6 +205,7 @@ class Image
      * This method undoes resizing and cropping.
      *
      * @return Image The image object
+     * @throws \Exception
      */
     public function reload()
     {
@@ -218,12 +230,11 @@ class Image
      * @param int $image_type One of the IMAGETYPE_* constants
      * @param int $quality Output quality (0 - 100)
      * @return int Result of the image* functions
+     * @throws \Exception
      */
     public function save($destination, $image_type = null, $quality = null)
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         if (!$destination) {
             $destination = getcwd();
@@ -254,8 +265,6 @@ class Image
             default:
                 throw new \Exception("The image format of file {$this->sourceFileName} ({$image_type}) is not supported");
         }
-
-        return false;
     }
 
     /**
@@ -263,12 +272,11 @@ class Image
      *
      * @param string $filename New file name
      * @return Image|string The image object, or the file name
+     * @throws \Exception
      */
     public function filename($filename = null)
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         if (!is_null($filename)) {
             $this->filename = $filename;
@@ -282,8 +290,9 @@ class Image
      * Get the extension for the image.
      *
      * @param boolean $dot Whether to include a dot before the extension or not
-     * @param int  $image_type One of the IMAGETYPE_* constants
+     * @param int $image_type One of the IMAGETYPE_* constants
      * @return string The extension corresponding to the image
+     * @throws \Exception
      */
     public function extension($dot = true, $image_type = null)
     {
@@ -304,12 +313,11 @@ class Image
      * Get the aspect ratio of the loaded image.
      *
      * @return float Aspect ratio of the loaded image
+     * @throws \Exception
      */
     public function ratio()
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         return $this->width / $this->height;
     }
@@ -319,12 +327,11 @@ class Image
      * Get the width nof the loaded image.
      *
      * @return int Width in pixels
+     * @throws \Exception
      */
     public function width()
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         return imageSX($this->resource);
     }
@@ -333,12 +340,11 @@ class Image
      * Get the height nof the loaded image.
      *
      * @return int Height in pixels
+     * @throws \Exception
      */
     public function height()
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         return imageSY($this->resource);
     }
@@ -347,12 +353,11 @@ class Image
      * Get the MIME type of the loaded image.
      *
      * @return string The MIME type
+     * @throws \Exception
      */
     public function mimeType()
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         return $this->mimeType;
     }
@@ -391,12 +396,11 @@ class Image
      * @param int|null $w The target width
      * @param int|null $h The target height
      * @return Image The image object
+     * @throws \Exception
      */
     public function resize($w, $h): self
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         if (!is_numeric($w) && !is_numeric($h)) {
             throw new \BadMethodCallException("Image::resize() requires its first or second argument to be integers");
@@ -425,8 +429,9 @@ class Image
     /**
      * Resize an image to a set width, keeping the aspect ratio.
      *
-     * @param int $w The target width
+     * @param int $width
      * @return Image The image object
+     * @internal param int $w The target width
      */
     public function resizeWidth(int $width): self
     {
@@ -436,8 +441,9 @@ class Image
     /**
      * Resize an image to a set height, keeping the aspect ratio.
      *
-     * @param int|null $h The target height
+     * @param int $height
      * @return Image The image object
+     * @internal param int|null $h The target height
      */
     public function resizeHeight(int $height): self
     {
@@ -451,12 +457,11 @@ class Image
      * @param int $h Cropped height
      * @param string $anchor One of the ANCHOR constants of the class.
      * @return Image The image object
+     * @throws \Exception
      */
     public function crop(int $w, int $h, $anchor = self::ANCHOR_CENTER): self
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         $valid_anchors = [
             self::ANCHOR_BOTTOM,
@@ -510,16 +515,15 @@ class Image
     /**
      * Resize and crop an image to create a thumbnail.
      *
-     * @param int $w Thumbnail width
-     * @param int $h Thumbnail height
+     * @param $width
+     * @param $height
      * @param string $anchor Anchor location for the resizing
      * @return Image The image object
+     * @throws \Exception
      */
     public function box($width, $height, $anchor = self::ANCHOR_CENTER)
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         $ratio = $width / $height;
 
@@ -555,12 +559,11 @@ class Image
      *
      * @param int $image_type One of the IMAGETYPE_* constants
      * @param int $quality Quality of the PNG or JPEG output, from 0 to 100
+     * @throws \Exception
      */
     public function serve($image_type = IMAGETYPE_JPEG, $quality = 75)
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         ob_start();
 
@@ -592,12 +595,12 @@ class Image
      * @param int $x Horizontal coordinate
      * @param int $y Vertical coordinate
      * @return array Red, green and blue values, from 0 to 255
+     * @throws \ErrorException
+     * @throws \Exception
      */
     public function colorAt($x, $y)
     {
-        if (!$this->resource) {
-            throw new \Exception("Image not loaded");
-        }
+        $this->checkResource();
 
         try {
             $rgb = imageColorAt($this->resource, $x, $y);
@@ -610,5 +613,13 @@ class Image
         $b =  $rgb        & 0xFF;
 
         return [$r, $g, $b];
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function checkResource()
+    {
+        $this->checkResource();
     }
 }

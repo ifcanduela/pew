@@ -83,11 +83,12 @@ class TableFactory
     /**
      * Create a table factory for a specific database table.
      *
-     * @param string  $tableName
-     * @param string  $connectionName
-     * @return TableInterface
+     * @param string $tableName
+     * @param string $recordClass
+     * @param string $connectionName
+     * @return Table
      */
-    public static function create($tableName, $recordClass, $connectionName = 'default')
+    public static function create($tableName, string $recordClass, $connectionName = 'default')
     {
         $db = static::getConnection($connectionName);
 
