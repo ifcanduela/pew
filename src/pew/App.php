@@ -6,6 +6,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Stringy\Stringy as Str;
 use pew\libs\Injector;
+use pew\router\Route;
+use pew\request\Request;
 
 /**
  * The App class is a request/response processor.
@@ -104,21 +106,70 @@ class App
      */
     public function run()
     {
+        $result = false;
         $injector = $this->container['injector'];
-        $handler = $this->container['controller'];
 
         try {
+            $route = $this->container['route'];
+            $request = $this->container['request'];
+
+            $response = $this->runBeforeMiddlewares($route, $request, $injector);
+
+            if (is_a($response, Response::class)) {
+                $result = $response;
+            } else {
+            $handler = $this->container['controller'];
+
             if (is_callable($handler)) {
                 $result = $this->handleCallback($handler, $injector);
             } else {
                 $result = $this->handleAction($handler, $injector);
+            }
             }
         } catch (\Exception $e) {
             $result = $this->handleError($e);
         }
 
         $response = $this->transformActionResult($result);
+        $this->container['response'] = $response;
+
+        try {
+            $response = $this->runAfterMiddleware($route, $response, $injector);
+        } catch (\Exception $e) {
+            $response = $this->handleError($e);
+        }
+
         $response->send();
+    }
+
+    protected function runBeforeMiddlewares(Route $route, Request $request, Injector $injector)
+    {
+        $middlewareClasses = $route->getBefore() ?: [];
+
+        foreach ($middlewareClasses as $middlewareClass) {
+            $mw = $injector->createInstance($middlewareClass);
+            $result = $injector->callMethod($mw, 'before');
+
+            if (is_a($result, Response::class)) {
+                return $result->send();
+            }
+        }
+    }
+
+    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
+    {
+        $middlewareClasses = $route->getAfter() ?: [];
+
+        foreach ($middlewareClasses as $middlewareClass) {
+            $mw = $injector->createInstance($middlewareClass);
+            $newResponse = $injector->callMethod($mw, 'after');
+
+            if (is_a($newResponse, Response::class)) {
+                $response = $newResponse;
+            }
+        }
+
+        return $response;
     }
 
     /**

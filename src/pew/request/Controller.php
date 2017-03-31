@@ -2,6 +2,7 @@
 
 namespace pew\request;
 
+use pew\request\Request;
 use pew\libs\Session;
 use pew\View;
 
@@ -17,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 class Controller
 {
     /**
-     * @var Request
+     * @var \pew\request\Request
      */
     public $request;
 

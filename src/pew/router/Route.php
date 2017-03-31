@@ -28,6 +28,12 @@ class Route implements \ArrayAccess
     /** @var array */
     protected $filters = [];
 
+    /** @ver array */
+    protected $before = [];
+
+    /** @ver array */
+    protected $after = [];
+
     /**
      * Create an empty route object.
      */
@@ -61,8 +67,16 @@ class Route implements \ArrayAccess
             $route->defaults($data['defaults']);
         }
 
-        if (isset($dat['filters'])) {
+        if (isset($data['filters'])) {
             $route->filters(...$data['filters']);
+        }
+
+        if (isset($data['before'])) {
+            $route->before($data['before']);
+        }
+
+        if (isset($data['after'])) {
+            $route->after($data['after']);
         }
 
         return $route;
@@ -119,13 +133,43 @@ class Route implements \ArrayAccess
     }
 
     /**
-     * Set the route params.
+     * Get the 'before' middleware class list.
      *
-     * @param array $params
+     * @return string[]
      */
-    public function setParams(array $params)
+    public function getBefore()
     {
-        $this->params = $params;
+        return $this->before;
+    }
+
+    /**
+     * Set the 'before' middleware class list.
+     *
+     * @param string[] $before
+     */
+    public function setBefore(array $before)
+    {
+        $this->before = $before;
+    }
+
+    /**
+     * Get the 'after' middleware class list.
+     *
+     * @return string[]
+     */
+    public function getAfter()
+    {
+        return $this->after;
+    }
+
+    /**
+     * Set the 'after' middleware class list.
+     *
+     * @param string[] $after
+     */
+    public function setAfter(array $after)
+    {
+        $this->after = $after;
     }
 
     /**
@@ -150,6 +194,16 @@ class Route implements \ArrayAccess
     public function getParams()
     {
         return array_merge($this->defaults, $this->params);
+    }
+
+    /**
+     * Set the route params.
+     *
+     * @param array $params
+     */
+    public function setParams(array $params)
+    {
+        $this->params = $params;
     }
 
     /**
@@ -252,6 +306,33 @@ class Route implements \ArrayAccess
 
         return $this;
     }
+
+    /**
+     * Set the 'before' middleware class list.
+     *
+     * @param string[] $before
+     * @return Route
+     */
+    public function before(array $before): self
+    {
+        $this->before = $before;
+
+        return $this;
+    }
+
+    /**
+     * Set the 'after' middleware class list.
+     *
+     * @param string[] $after
+     * @return Route
+     */
+    public function after(array $after): self
+    {
+        $this->after = $after;
+
+        return $this;
+    }
+
 
     /**
      * Set a default value for a route placeholder.
