@@ -82,7 +82,7 @@ class Image
     public function __destruct()
     {
         if ($this->resource) {
-            imageDestroy($this->resource);
+            imagedestroy($this->resource);
         }
     }
 
@@ -143,15 +143,15 @@ class Image
     {
         switch ($image_type) {
             case IMAGETYPE_JPEG:
-                $this->resource = @imageCreateFromJPEG($filename);
+                $this->resource = @imagecreatefromjpeg($filename);
                 break;
 
             case IMAGETYPE_PNG:
-                $this->resource = @imageCreateFromPNG($filename);
+                $this->resource = @imagecreatefrompng($filename);
                 break;
 
             case IMAGETYPE_GIF:
-                $this->resource = @imageCreateFromGIF($filename);
+                $this->resource = @imagecreatefromgif($filename);
                 break;
 
             default:
@@ -192,7 +192,7 @@ class Image
      */
     protected function init(): self
     {
-        $fileinfo = getImageSize($this->sourceFileName);
+        $fileinfo = getimagesize($this->sourceFileName);
         list($this->width, $this->height, $this->imageType) = $fileinfo;
         $this->mimeType = $fileinfo['mime'];
 
@@ -254,13 +254,13 @@ class Image
 
         switch ($image_type) {
             case IMAGETYPE_JPEG:
-                return imageJPEG($this->resource, $destination, $quality);
+                return imagejpeg($this->resource, $destination, $quality);
 
             case IMAGETYPE_PNG:
-                return imagePNG($this->resource, $destination, $quality * 9 / 100);
+                return imagepng($this->resource, $destination, $quality * 9 / 100);
 
             case IMAGETYPE_GIF:
-                return imageGIF($this->resource, $destination);
+                return imagegif($this->resource, $destination);
 
             default:
                 throw new \Exception("The image format of file {$this->sourceFileName} ({$image_type}) is not supported");
@@ -333,7 +333,7 @@ class Image
     {
         $this->checkResource();
 
-        return imageSX($this->resource);
+        return imagesx($this->resource);
     }
 
     /**
@@ -346,7 +346,7 @@ class Image
     {
         $this->checkResource();
 
-        return imageSY($this->resource);
+        return imagesy($this->resource);
     }
 
     /**
@@ -415,13 +415,13 @@ class Image
             $new_h = $new_w * $this->height / $this->width;
         }
 
-        $resized = imageCreateTrueColor($new_w, $new_h);
-        imageCopyResampled($resized, $this->resource, 0, 0, 0, 0, $new_w, $new_h, $this->width, $this->height);
+        $resized = imagecreatetruecolor($new_w, $new_h);
+        imagecopyresampled($resized, $this->resource, 0, 0, 0, 0, $new_w, $new_h, $this->width, $this->height);
 
-        imageDestroy($this->resource);
+        imagedestroy($this->resource);
         $this->resource = $resized;
-        $this->width = imageSX($resized);
-        $this->height = imageSY($resized);
+        $this->width = imagesx($resized);
+        $this->height = imagesy($resized);
 
         return $this;
     }
@@ -501,10 +501,10 @@ class Image
             $x_offset = $old_w - $w;
         }
 
-        $cropped = imageCreateTrueColor($w, $h);
+        $cropped = imagecreatetruecolor($w, $h);
         imagecopyresampled($cropped, $this->resource, 0, 0, $x_offset, $y_offset, $w, $h, $w, $h);
 
-        imageDestroy($this->resource);
+        imagedestroy($this->resource);
         $this->resource = $cropped;
         $this->width = $w;
         $this->height = $h;
@@ -569,15 +569,15 @@ class Image
 
         switch ($image_type) {
             case IMAGETYPE_JPEG:
-                imageJPEG($this->resource, null, $quality);
+                imagejpeg($this->resource, null, $quality);
                 break;
 
             case IMAGETYPE_PNG:
-                imagePNG($this->resource, null, $quality * 9 / 100);
+                imagepng($this->resource, null, $quality * 9 / 100);
                 break;
 
             case IMAGETYPE_GIF:
-                imageGIF($this->resource);
+                imagegif($this->resource);
                 break;
 
             default:
@@ -603,7 +603,7 @@ class Image
         $this->checkResource();
 
         try {
-            $rgb = imageColorAt($this->resource, $x, $y);
+            $rgb = imagecolorat($this->resource, $x, $y);
         } catch (\Exception $e) {
             throw new \ErrorException($e->getMessage());
         }

@@ -72,7 +72,7 @@ $cfg['localhost'] = isset($_SERVER['REMOTE_ADDR'])
  * @var boolean Autodetect if the source of the request was an XmlHttpRequest
  */
 $cfg['request_is_ajax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-                        ? strToLower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+                        ? strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
                         : false;
 
 /**
