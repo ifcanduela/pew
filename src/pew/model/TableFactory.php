@@ -8,7 +8,7 @@ use pew\libs\Database;
 class TableFactory
 {
     /**
-     * @var \pew\db\Database
+     * @var Database
      */
     protected $db;
 
@@ -26,15 +26,10 @@ class TableFactory
      * Creates a new TableFactory.
      *
      * @param Database $db
-     * @param array $namespaces Array of namespace and suffix
      */
-    public function __construct(Database $db, array $namespaces = [])
+    public function __construct(Database $db)
     {
         $this->db = $db;
-
-        foreach ($namespaces as $namespace) {
-            $this->register_namespace($namespace[0], $namespace[1]);
-        }
     }
 
     /**
