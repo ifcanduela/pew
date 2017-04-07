@@ -347,7 +347,7 @@ class Table
      * INSERTs the data.
      *
      * @param Record|array $model An array or array-like object with column names and values
-     * @return Model The saved item on success, false otherwise
+     * @return array The saved item on success, false otherwise
      */
     public function save(Record $model)
     {
@@ -370,21 +370,7 @@ class Table
 
         $primary_key = $this->tableData['primary_key'];
 
-        if (!empty($record[$primary_key])) {
-            # set modification timestamp
-            if ($this->hasColumn('modified')) {
-                $record['modified'] = time();
-            }
-
-            if ($this->hasColumn('updated')) {
-                $record['updated'] = time();
-            }
-
-            # if $id is set, perform an UPDATE
-            $where = [$primary_key => $record[$primary_key]];
-            $this->db->set($record)->where($where)->update($this->table);
-            $result = $this->db->where($where)->single($this->table);
-        } else {
+        if (empty($record[$primary_key])) {
             # unset the primary key, just in case
             unset($record[$primary_key]);
 
@@ -403,8 +389,22 @@ class Table
             }
 
             # if $id is not set, perform an INSERT
-            $this->db->values($record)->insert($this->table);
-            $result = $this->db->where([$primary_key => $result])->single($this->table);
+            $id = $this->db->values($record)->insert($this->table);
+            $result = $this->db->where([$primary_key => $id])->single($this->table);
+        } else {
+            # set modification timestamp
+            if ($this->hasColumn('modified')) {
+                $record['modified'] = time();
+            }
+
+            if ($this->hasColumn('updated')) {
+                $record['updated'] = time();
+            }
+
+            # if $id is set, perform an UPDATE
+            $where = [$primary_key => $record[$primary_key]];
+            $this->db->set($record)->where($where)->update($this->table);
+            $result = $this->db->where($where)->single($this->table);
         }
 
         if (method_exists($model, 'afterSave')) {
