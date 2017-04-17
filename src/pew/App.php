@@ -21,6 +21,9 @@ class App
     /** @var \Pimple\Container */
     protected $container;
 
+    /** @var array */
+    protected $middleware = [];
+
     /**
      * Bootstrap a web app.
      *
@@ -148,6 +151,7 @@ class App
 
         foreach ($middlewareClasses as $middlewareClass) {
             $mw = $injector->createInstance($middlewareClass);
+            $this->middleware[$middlewareClass] = $mw;
             $result = $injector->callMethod($mw, 'before');
 
             if (is_a($result, Response::class)) {
@@ -161,7 +165,11 @@ class App
         $middlewareClasses = $route->getAfter() ?: [];
 
         foreach ($middlewareClasses as $middlewareClass) {
-            $mw = $injector->createInstance($middlewareClass);
+            if (array_key_exists($middlewareClass, $this->middleware)) {
+                $mw = $this->middleware[$middlewareClass];
+            } else {
+                $mw = $injector->createInstance($middlewareClass);
+            }
             $newResponse = $injector->callMethod($mw, 'after');
 
             if (is_a($newResponse, Response::class)) {
