@@ -10,6 +10,16 @@ namespace pew\request;
 class Request extends \Symfony\Component\HttpFoundation\Request
 {
     /**
+     * Get the URL from which this request is executed, with scheme, server and base path.
+     *
+     * @return string
+     */
+    public function appUrl()
+    {
+        return $this->getSchemeAndHttpHost() . $this->getBaseUrl();
+    }
+
+    /**
      * Check if the current request uses the POST method.
      *
      * @return bool

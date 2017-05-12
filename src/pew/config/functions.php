@@ -612,7 +612,7 @@ function url(...$path): string
     static $base_url;
 
     if (!isset($base_url)) {
-        $base_url = pew('request')->getSchemeAndHttpHost();
+        $base_url = pew('request')->appUrl();
         $base_url = rtrim($base_url, '/') . '/';
     }
 
