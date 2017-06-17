@@ -25,6 +25,13 @@ $container['cache_path'] = function ($c) {
 
 $container['cache_duration'] = 15 * 60;
 
+$container['ignore_url_separator'] = '[\.|]';
+$container['ignore_url_suffixes'] = [
+    'json',
+    'html',
+    'php'
+];
+
 //
 // FACTORIES
 //
@@ -102,9 +109,15 @@ $container['injector'] = function ($c) {
 
 $container['path'] = function ($c) {
     $request = $c['request'];
-    $pathInfo = $request->getPathInfo();
+    $path_info = $request->getPathInfo();
 
-    return '/' . trim($pathInfo, '/');
+    $ignore_url_suffixes = $c['ignore_url_suffixes'];
+    $ignore = implode('|', $ignore_url_suffixes);
+    $suffix_separator = $c['ignore_url_separator'];
+
+    $path_info = preg_replace("/{$suffix_separator}({$ignore})$/", '', $path_info);
+
+    return '/' . trim($path_info, '/');
 };
 
 $container['request'] = function () {
@@ -114,9 +127,9 @@ $container['request'] = function () {
 $container['route'] = function ($c) {
     $request = $c['request'];
     $router = $c['router'];
-    $pathInfo = $c['path'];
+    $path_info = $c['path'];
 
-    return $router->route($pathInfo, $request->getMethod());
+    return $router->route($path_info, $request->getMethod());
 };
 
 $container['router'] = function ($c) {

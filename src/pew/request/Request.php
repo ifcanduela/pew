@@ -75,12 +75,18 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      * Check if the request demands a JSON response.
      *
      * The check is performed against the `Accepts` header of the
-     * HTTP request.
+     * HTTP request and the suffix of the URL.
      *
      * @return bool
      */
     public function isJson()
     {
+        # check if the requested URL end in '.json'
+        if (preg_match('/[^A-Za-z0-9]json$/', $this->getPathInfo())) {
+            return true;
+        }
+
+        # check if the 'Accept' header contains 'json'
         return false !== strpos($this->headers->get('Accept'), 'json');
     }
 }
