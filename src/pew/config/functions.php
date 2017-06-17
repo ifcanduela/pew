@@ -688,7 +688,32 @@ function session($path = null, $default = null)
         return $session->all();
     }
 
-    return $session[$path] ?? $default;
+    return array_path($session->all(), $path, '.') ?? $default;
+}
+
+/**
+ * Get an element from an array using a character-delimited list of indexes.
+ *
+ * @param array $array
+ * @param string $path
+ * @param string $separator
+ * @return mixed
+ */
+function array_path(array $array, string $path, string $separator = '.')
+{
+    $source = (array) $array;
+    $steps = explode($separator, $path);
+    $step = array_shift($steps);
+
+    if (array_key_exists($step, $source)) {
+        if (count($steps)) {
+            return array_path($source[$step], implode($separator, $steps), $separator);
+        } else {
+            return $source[$step];
+        }
+    }
+
+    return null;
 }
 
 /**
