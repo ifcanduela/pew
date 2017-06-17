@@ -115,7 +115,7 @@ class Record implements \JsonSerializable
      * @param array $parameters
      * @return array
      */
-    public static function fromQuery($query, $parameters)
+    public static function fromQuery(string $query, array $parameters = [])
     {
         $record = new static;
 
