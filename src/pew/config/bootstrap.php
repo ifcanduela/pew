@@ -68,9 +68,7 @@ $container['controller_slug'] = function ($c) {
 };
 
 $container['db'] = function ($c) {
-    $db_config = require $c['app_path'] . DIRECTORY_SEPARATOR
-               . $c['config_folder'] . DIRECTORY_SEPARATOR
-               . 'database.php';
+    $db_config = $c['db_config'];
 
     if (isset($c['use_db'])) {
         $use_db = $c['use_db'];
@@ -79,7 +77,7 @@ $container['db'] = function ($c) {
     }
 
     if (!array_key_exists($use_db, $db_config)) {
-        throw new \RuntimeException("Database configuration preset '$use_db' does not exist");
+        throw new \RuntimeException("Database configuration preset '{$use_db}' does not exist");
     }
 
     $config = $db_config[$use_db];
@@ -89,6 +87,10 @@ $container['db'] = function ($c) {
     }
 
     return new \pew\libs\Database($config);
+};
+
+$container['db_config'] = function ($c) {
+    return require $c['app_path'] . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'database.php';
 };
 
 $container['file_cache'] = function ($c) {

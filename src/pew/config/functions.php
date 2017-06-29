@@ -400,22 +400,9 @@ function array_reap($data, $filter)
  */
 function array_flatten($data)
 {
-    # store results here
-    $flat = [];
+    $it = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($data));
 
-    # loop through the $data array
-    foreach ($data as $key => $value) {
-        if (is_array($value)) {
-            $function_name = __FUNCTION__;
-            # if value's an array, merge current elements and value's flattened result
-            $flat = array_merge($flat, $function_name($value));
-        } else {
-            # if $value is a scalar value, append it to the results
-            $flat[] = $value;
-        }
-    }
-
-    return $flat;
+    return iterator_to_array($it, false);
 }
 
 

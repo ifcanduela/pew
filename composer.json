@@ -8,12 +8,13 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=7.0.0",
         "symfony/http-foundation": "*",
         "nikic/fast-route": "^1.0",
         "pimple/pimple": "^3.0",
         "filp/whoops": "^2.1",
-        "danielstjules/stringy": "^2.3"
+        "danielstjules/stringy": "^2.3",
+        "ifcanduela/abbrev": "~1.0"
     },
     "autoload": {
         "psr-0": {

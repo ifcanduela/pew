@@ -2,6 +2,8 @@
 
 namespace pew\console;
 
+use ifcanduela\abbrev\Abbrev;
+
 class App extends \pew\App
 {
     public $availableCommands = [];
@@ -36,13 +38,32 @@ class App extends \pew\App
         }
 
         $command = $this->findCommand($arguments['command']);
-        $this->container['arguments'] = new CommandArguments($arguments['arguments']);
 
-        if (!$command) {
-            throw new \InvalidArgumentException("Command not found: {$arguments['command']}");
+        if (!is_a($command, \pew\console\CommandInterface::class)) {
+            $this->commandMissing($command);
         }
 
+        $this->container['arguments'] = new CommandArguments($arguments['arguments']);
+
         return $injector->callMethod($command, 'run');
+    }
+
+    private function commandMissing($command)
+    {
+            echo "Command {$arguments['command']} not found" . PHP_EOL;
+            echo "Did you mean:" . PHP_EOL;
+
+            if ($command) {
+                $suggestions = $command;
+            } else {
+                $suggestions = array_keys($this->availableCommands);
+            }
+
+            foreach ($suggestions as $suggestion) {
+                echo "    {$suggestion}" . PHP_EOL;
+            }
+
+            die();
     }
 
     /**
@@ -50,7 +71,7 @@ class App extends \pew\App
      *
      * @return array
      */
-    public function getArguments(): array
+    private function getArguments(): array
     {
         $argv = $_SERVER['argv'];
         $script_name = $_SERVER['SCRIPT_NAME'];
@@ -73,8 +94,17 @@ class App extends \pew\App
      * @param string $commandName
      * @return Command|bool
      */
-    public function findCommand(string $commandName)
+    private function findCommand(string $commandName)
     {
-        return $this->availableCommands[$commandName] ?? false;
+        $names = array_keys($this->availableCommands);
+        $abbrev = new Abbrev($names);
+
+        $match = $abbrev->match($commandName);
+
+        if (!$match) {
+            return  $abbrev->suggest($commandName);
+        }
+
+        return $this->availableCommands[$match];
     }
 }
