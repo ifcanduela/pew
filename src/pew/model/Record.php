@@ -337,9 +337,11 @@ class Record implements \JsonSerializable
         }
 
         # the offset is a table field
-        if (isset($this->record[$key])) {
+        if (array_key_exists($key, $this->record)) {
             return $this->record[$key];
         }
+
+        throw new \Exception("Field '{$key}' not found in class '" . get_class($this) . "'");
 
         return null;
     }
