@@ -22,12 +22,6 @@ class Route implements \ArrayAccess
     /** @var array */
     protected $params = [];
 
-    /** @var array */
-    protected $conditions = [];
-
-    /** @var array */
-    protected $filters = [];
-
     /** @ver array */
     protected $before = [];
 
@@ -100,16 +94,6 @@ class Route implements \ArrayAccess
     public function getHandler()
     {
         return $this->handler;
-    }
-
-    /**
-     * Get the route conditions.
-     *
-     * @return array
-     */
-    public function getConditions()
-    {
-        return $this->conditions ?? [];
     }
 
     /**
@@ -245,7 +229,7 @@ class Route implements \ArrayAccess
      */
     public function path(string $path): self
     {
-        $this->path = $path;
+        $this->path = '/' . ltrim($path, '/');
 
         return $this;
     }
@@ -269,6 +253,20 @@ class Route implements \ArrayAccess
     }
 
     /**
+     * Set the route handler.
+     *
+     * This method is an alias for handler()
+     *
+     * @param string|callable $handler
+     * @return Route
+     * @throws \Exception
+     */
+    public function to($handler): self
+    {
+        return $this->handler($handler);
+    }
+
+    /**
      * Set the route methods.
      *
      * @param string|string[] ...$methods
@@ -277,19 +275,6 @@ class Route implements \ArrayAccess
     public function methods(string ...$methods): self
     {
         $this->methods = array_map('strtoupper', $methods);
-
-        return $this;
-    }
-
-    /**
-     * Set the route filters.
-     *
-     * @param string|string[] ...$filters
-     * @return Route
-     */
-    public function filters(string ...$filters): self
-    {
-        $this->filters = $filters;
 
         return $this;
     }
@@ -357,8 +342,13 @@ class Route implements \ArrayAccess
     public static function from(string $path): self
     {
         $r = new static;
-        $r->path('/' . ltrim($path, '/'));
+        $r->path($path);
 
         return $r;
+    }
+
+    public static function group()
+    {
+        return new Group();
     }
 }

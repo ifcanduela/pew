@@ -213,10 +213,6 @@ class App
         $view->template($controllerSlug . '/' . $actionName);
         $view->layout('default.layout');
 
-        foreach ($route->getConditions() as $callback) {
-            $injector->callFunction($callback);
-        }
-
         $controller = $injector->createinstance($controllerClass);
 
         $response = null;

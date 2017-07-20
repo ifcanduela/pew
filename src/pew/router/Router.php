@@ -25,15 +25,34 @@ class Router
      */
     public function __construct(array $routeData)
     {
-        $this->dispatcher = simpleDispatcher(function ($r) use ($routeData) {
-            foreach ($routeData as $data) {
-                if (is_array($data)) {
-                    $data = Route::fromArray($data);
-                }
+        $routes = $this->processRouteData($routeData);
 
+        $this->dispatcher = simpleDispatcher(function ($r) use ($routes) {
+            foreach ($routes as $data) {
                 $r->addRoute($data->getMethods(), $data->getPath(), $data);
             }
         });
+    }
+
+    protected function processRouteData(array $routeData)
+    {
+        $routes = [];
+
+        foreach ($routeData as $data) {
+            if (is_array($data)) {
+                $data = Route::fromArray($data);
+            }
+
+            if (is_a($data, \pew\router\Group::class)) {
+                foreach ($data->getRoutes() as $route) {
+                    $routes[] = $route;
+                }
+            } else {
+                $routes[] = $data;
+            }
+        }
+
+        return $routes;
     }
 
     /**
