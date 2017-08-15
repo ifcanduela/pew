@@ -178,7 +178,7 @@ class Database
                         $this->pdo = new PDO($engine . ':' . $file);
 
                         # check if file and containing folder are writable
-                        $this->is_writable = is_writable(dirname($file)) && is_writable($file);
+                        $this->is_writable = $file === ':memory:' || is_writable(dirname($file)) && is_writable($file);
 
                         break;
 
@@ -202,6 +202,7 @@ class Database
             }
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         }
 
         return $this->is_connected;
@@ -906,7 +907,7 @@ class Database
      *     $db->query("SELECT * FROM table1 LIMIT 100", [], true);
      *
      *     # get the count of affected rows
-     *     $db->query("INSERT INTO table3 () VALLUES (:alpha, :beta, :gamma)", [
+     *     $db->query("INSERT INTO table3 () VALUES (:alpha, :beta, :gamma)", [
      *         ':alpha' => $alpha,
      *         ':beta' => $beta,
      *         ':gamma' => $gamma,
