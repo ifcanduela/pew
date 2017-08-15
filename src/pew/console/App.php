@@ -3,6 +3,7 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
+use pew\console\CommandInterface;
 
 class App extends \pew\App
 {
@@ -26,6 +27,15 @@ class App extends \pew\App
             $this->availableCommands[$command->name()] = $command;
         }
 
+        $command_files = glob(dirname(__DIR__) . '/commands/*Command.php');
+
+        foreach ($command_files as $command_file) {
+            $class_name = '\\pew\\commands\\' . pathinfo($command_file, PATHINFO_FILENAME);
+            $command = $injector->createInstance($class_name);
+
+            $this->availableCommands[$command->name()] = $command;
+        }
+
         $arguments = $this->getArguments();
 
         if (empty($arguments)) {
@@ -37,20 +47,26 @@ class App extends \pew\App
             die();
         }
 
-        $command = $this->findCommand($arguments['command']);
+        if (strpos($arguments['command'], ':') !== false) {
+            list($commandName, $action) = explode(':', $arguments['command']);
+        } else {
+            list($commandName, $action) = [$arguments['command'], 'run'];
+        }
 
-        if (!is_a($command, \pew\console\CommandInterface::class)) {
+        $command = $this->findCommand($commandName);
+
+        if (!($command instanceof CommandInterface)) {
             $this->commandMissing($command);
         }
 
         $this->container['arguments'] = new CommandArguments($arguments['arguments']);
 
-        return $injector->callMethod($command, 'run');
+        return $injector->callMethod($command, $action);
     }
 
     private function commandMissing($command)
     {
-            echo "Command {$arguments['command']} not found" . PHP_EOL;
+            echo "Command {$command} not found" . PHP_EOL;
             echo "Did you mean:" . PHP_EOL;
 
             if ($command) {
