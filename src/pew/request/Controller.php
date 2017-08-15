@@ -21,19 +21,13 @@ class Controller
     public $request;
 
     /**
-     * @var \pew\libs\Session
-     */
-    public $session;
-
-    /**
      * @var \pew\View
      */
     public $view;
 
-    public function __construct(Request $request, Session $session, View $view)
+    public function __construct(Request $request, View $view)
     {
         $this->request = $request;
-        $this->session = $session;
         $this->view = $view;
     }
 
