@@ -21,7 +21,7 @@ class Injector
      * Add a value container to the end of the list.
      *
      * @param array $container An array or array-like object
-     * @return Injector
+     * @return self
      */
     public function appendContainer($container)
     {
@@ -34,7 +34,7 @@ class Injector
      * Add a value container to the beginning of the list.
      *
      * @param array $container An array or array-like object
-     * @return Injector
+     * @return self
      */
     public function prependContainer($container)
     {

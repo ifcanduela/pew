@@ -60,7 +60,7 @@ class TableFactory
      * @param string $connectionName
      * @return Database
      */
-    public static function getConnection(string $connectionName): Database
+    public static function getConnection(string $connectionName)
     {
         if (isset(static::$connections[$connectionName])) {
             return static::$connections[$connectionName];

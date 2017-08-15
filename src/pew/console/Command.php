@@ -33,7 +33,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function message(string $text): Message
+    public function message(string $text)
     {
         return new Message($text);
     }
@@ -44,7 +44,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function info(string $text): Message
+    public function info(string $text)
     {
         return $this->message($text)->fg('cyan');
     }
@@ -55,7 +55,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function success(string $text): Message
+    public function success(string $text)
     {
         return $this->message($text)->fg('green');
     }
@@ -66,7 +66,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function warning(string $text): Message
+    public function warning(string $text)
     {
         return $this->message($text)->fg('yellow');
     }
@@ -77,7 +77,7 @@ abstract class Command implements CommandInterface
      * @param string $text
      * @return Message
      */
-    public function error(string $text): Message
+    public function error(string $text)
     {
         return $this->message($text)->fg('black')->bg('red');
     }
@@ -88,29 +88,29 @@ abstract class Command implements CommandInterface
      * @param string|string[] ...$text
      * @return MessageBox
      */
-    public function messageBox(string ...$text): MessageBox
+    public function messageBox(string ...$text)
     {
         return new MessageBox(...$text);
     }
 
     /**
-     * Create an infomessage box with light blue background and white text.
+     * Create an info message box with light blue background and white text.
      *
      * @param string|string[] ...$text
-     * @return MessageBox
+     * @return Message
      */
-    public function infoBox(string ...$text): MessageBox
+    public function infoBox(string ...$text)
     {
         return $this->messageBox(...$text)->fg('white')->bg('cyan');
     }
 
     /**
-     * Create an infomessage box with green background and white text.
+     * Create an info message box with green background and white text.
      *
      * @param string|string[] ...$text
-     * @return MessageBox
+     * @return Message
      */
-    public function successBox(string ...$text): MessageBox
+    public function successBox(string ...$text)
     {
         return $this->messageBox(...$text)->fg('white')->bg('green');
     }
@@ -119,9 +119,9 @@ abstract class Command implements CommandInterface
      * Create a warning message box with yellow background and black text.
      *
      * @param string|string[] ...$text
-     * @return MessageBox
+     * @return Message
      */
-    public function warningBox(string ...$text): MessageBox
+    public function warningBox(string ...$text)
     {
         return $this->messageBox(...$text)->fg('black')->bg('yellow');
     }
@@ -130,9 +130,9 @@ abstract class Command implements CommandInterface
      * Create an error message box with red background and black text.
      *
      * @param string|string[] ...$text
-     * @return MessageBox
+     * @return Message
      */
-    public function errorBox(string ...$text): MEssageBox
+    public function errorBox(string ...$text)
     {
         return $this->messageBox(...$text)->fg('black')->bg('red');
     }

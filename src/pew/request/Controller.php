@@ -43,7 +43,7 @@ class Controller
      * @param string $uri
      * @return RedirectResponse
      */
-    public function redirect($uri): RedirectResponse
+    public function redirect($uri)
     {
         return new RedirectResponse($uri);
     }
@@ -57,7 +57,7 @@ class Controller
      * @param array $data
      * @return Response
      */
-    public function render($template, $data = []): Response
+    public function render($template, $data = [])
     {
         if (is_string($template)) {
             $this->view->template($template);
@@ -74,7 +74,7 @@ class Controller
      * @param mixed $data
      * @return JsonResponse
      */
-    public function renderJson($data): JsonResponse
+    public function renderJson($data)
     {
         return new JsonResponse($data);
     }

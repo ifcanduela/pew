@@ -7,13 +7,16 @@ namespace pew\router;
  */
 class Group extends Route
 {
+    /** @var array */
     protected $routes = [];
+
+    /** @var string */
     protected $prefix;
 
     /**
      *
      * @param  Route[] $routes
-     * @return static
+     * @return self
      */
     public function routes(array $routes)
     {
@@ -61,6 +64,12 @@ class Group extends Route
         return $processedRoutes;
     }
 
+    /**
+     * Set a prefix for all routes in the group.
+     *
+     * @param  string $prefix
+     * @return self
+     */
     public function prefix(string $prefix)
     {
         $this->prefix = $prefix;

@@ -82,7 +82,7 @@ class Message
      * Append a line break to the message.
      *
      * @param bool $eol
-     * @return Message
+     * @return self
      */
     public function eol($eol = true)
     {
@@ -95,7 +95,7 @@ class Message
      * Do not append a line break to the message.
      *
      * @param bool $inline
-     * @return Message
+     * @return self
      */
     public function inline($inline = true)
     {
@@ -188,7 +188,7 @@ class Message
      * @param int $width
      * @return self
      */
-    public function width(int $width): self
+    public function width(int $width)
     {
         $this->width = $width;
 
@@ -201,7 +201,7 @@ class Message
      * @param string $text
      * @return string
      */
-    public function format(string $text = null): string
+    public function format(string $text = null)
     {
         $set = join(';', $this->setCodes);
         $unset = join(';', $this->unsetCodes);

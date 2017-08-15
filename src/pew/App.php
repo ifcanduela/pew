@@ -233,7 +233,7 @@ class App
      * @return Response
      * @throws \Exception
      */
-    protected function handleError(\Exception $e): Response
+    protected function handleError(\Exception $e)
     {
         if ($this->container['debug']) {
             throw $e;
@@ -254,7 +254,7 @@ class App
      * @param mixed $actionResult
      * @return Response
      */
-    protected function transformActionResult($actionResult): Response
+    protected function transformActionResult($actionResult)
     {
         # if $actionResult is false, return an empty response
         if ($actionResult === false) {

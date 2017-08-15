@@ -238,7 +238,7 @@ class Database
      * Sets the FROM field for subsequent queries.
      *
      * @param string $from The list of tables against which to perform the query
-     * @return Database The Database object
+     * @return self
      */
     public function from($from)
     {
@@ -252,7 +252,7 @@ class Database
      * This function is an alias for Database::from()
      *
      * @param string $into Table name
-     * @return Database The Database object
+     * @return self
      */
     public function into($into)
     {
@@ -264,7 +264,7 @@ class Database
      * Sets the fields to return in SELECT queries.
      *
      * @param string $fields A SQl-formatted field list
-     * @return Database The Database object
+     * @return self
      */
     public function fields($fields)
     {
@@ -297,7 +297,7 @@ class Database
      * Sets the WHERE field and its values for prepared statements.
      *
      * @param array $conditions The list of comparisons
-     * @return Database The Database object
+     * @return self
      */
     public function where(array $conditions)
     {
@@ -313,7 +313,7 @@ class Database
      * Don't add 'GROUP BY' to the $order_by parameter.
      *
      * @param string $group_by SQL-formatted list of grouping fields
-     * @return Database The Database object
+     * @return self
      */
     public function group_by($group_by)
     {
@@ -328,7 +328,7 @@ class Database
      * Sets the HAVING field and its values for prepared statements.
      *
      * @param array $conditions An array of field/value pairs
-     * @return Database The Database object
+     * @return self
      */
     public function having(array $conditions)
     {
@@ -344,7 +344,7 @@ class Database
      * Don't add 'ORDER BY' to the $order_by parameter.
      *
      * @param string $order_by A SQL-formatted list of sorting fields
-     * @return Database The Database object
+     * @return self
      */
     public function order_by($order_by)
     {
@@ -361,7 +361,7 @@ class Database
      * E.g.: Use "1" to return one row or "4,1" to return the fourth row.
      *
      * @param string $limit Either "row_count", or "offset, row_count"
-     * @return Database The Database object
+     * @return self
      */
     public function limit($limit)
     {
@@ -376,7 +376,7 @@ class Database
      * Sets the SET field and its values for UPDATE prepared statements.
      *
      * @param array $set An array of field/value pairs
-     * @return Database The Database object
+     * @return self
      */
     public function set(array $set)
     {
@@ -390,7 +390,7 @@ class Database
      * statement.
      *
      * @param array $values An array of field/value pairs
-     * @return Database The Database object
+     * @return self
      */
     public function values(array $values)
     {
@@ -876,7 +876,7 @@ class Database
     /**
      * Resets the data in the SQL clauses.
      *
-     * @return Database Returns the Database object
+     * @return self
      */
     public function reset()
     {

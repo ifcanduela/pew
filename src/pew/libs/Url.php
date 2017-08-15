@@ -7,6 +7,7 @@ use pew\request\Request;
 
 class Url
 {
+    /** @var Request */
     public $request;
     public $routes = [];
     public $namedRoutes = [];
@@ -57,7 +58,7 @@ class Url
      *
      * @return string
      */
-    public function base(): string
+    public function base()
     {
         return $this->to();
     }
@@ -68,7 +69,7 @@ class Url
      * @param string|string[] ...$path
      * @return string
      */
-    public function to(string ...$path): string
+    public function to(string ...$path)
     {
         $path = rtrim('/' . join('/', $path), '/');
         $path = preg_replace('~\/+~', '/', $path);
@@ -84,7 +85,7 @@ class Url
      * @return string
      * @throws \Exception
      */
-    public function toRoute(string $routeName, array $params = []): string
+    public function toRoute(string $routeName, array $params = [])
     {
         # arrange all the named routes
         if (!$this->namedRoutes) {
@@ -135,7 +136,7 @@ class Url
      * @param string $scheme
      * @return Url
      */
-    public function setScheme(string $scheme): Url
+    public function setScheme(string $scheme)
     {
         $url = clone $this;
         $url->scheme = S::create($scheme)->removeRight('://');
@@ -150,7 +151,7 @@ class Url
      *
      * @return string
      */
-    public function getScheme(): string
+    public function getScheme()
     {
         return S::create($this->scheme ?: 'http')->ensureRight('://');
     }
@@ -164,7 +165,7 @@ class Url
      * @param string|null $password
      * @return Url
      */
-    public function setAuth(string $user = null, string $password = null): Url
+    public function setAuth(string $user = null, string $password = null)
     {
         $url = clone $this;
 
@@ -189,7 +190,7 @@ class Url
      *
      * @return string
      */
-    public function getAuth(): string
+    public function getAuth()
     {
         $auth = '';
 
@@ -212,7 +213,7 @@ class Url
      * @param string $host
      * @return Url
      */
-    public function setHost(string $host): Url
+    public function setHost(string $host)
     {
         $url = clone $this;
         $url->host = $host;
@@ -225,7 +226,7 @@ class Url
      *
      * @return string
      */
-    public function getHost(): string
+    public function getHost()
     {
         return $this->host;
     }
@@ -236,7 +237,7 @@ class Url
      * @param int $port
      * @return Url
      */
-    public function setPort(int $port): Url
+    public function setPort(int $port)
     {
         $url = clone $this;
         $url->port = $port;
@@ -253,7 +254,7 @@ class Url
      * @param boolean $asNumber Avoid prepending a : to the port number.
      * @return string
      */
-    public function getPort($asNumber = false): string
+    public function getPort($asNumber = false)
     {
         if ($asNumber) {
             return $this->port;
@@ -274,7 +275,7 @@ class Url
      * @param string|string[] ...$path
      * @return Url
      */
-    public function setPath(string ...$path): Url
+    public function setPath(string ...$path)
     {
         $url = clone $this;
 
@@ -298,7 +299,7 @@ class Url
      * @param string|string[] ...$segment
      * @return Url
      */
-    public function addPath(string ...$segment): Url
+    public function addPath(string ...$segment)
     {
         return $this->setPath($this->getPath(), ...$segment);
     }
@@ -309,7 +310,7 @@ class Url
      * @param string $segment
      * @return Url
      */
-    public function removePath(string $segment): Url
+    public function removePath(string $segment)
     {
         $url = clone $this;
         $path = $url->path;
@@ -330,7 +331,7 @@ class Url
      *
      * @return string
      */
-    public function getPath(): string
+    public function getPath()
     {
         return '/' . join('/', $this->path);
     }
@@ -342,7 +343,7 @@ class Url
      * @param mixed $value
      * @return Url
      */
-    public function setQueryParam(string $param, $value): Url
+    public function setQueryParam(string $param, $value)
     {
         $url = clone $this;
         $url->query[$param] = $value;
@@ -356,7 +357,7 @@ class Url
      * @param string $queryString
      * @return Url
      */
-    public function setQueryString(string $queryString): Url
+    public function setQueryString(string $queryString)
     {
         $url = clone $this;
         parse_str($queryString, $url->query);
@@ -370,7 +371,7 @@ class Url
      * @param array $query
      * @return Url
      */
-    public function setQuery(array $query): Url
+    public function setQuery(array $query)
     {
         $url = clone $this;
         $url->query = $query;
@@ -384,7 +385,7 @@ class Url
      * @param array $keys
      * @return array
      */
-    public function getQuery(array $keys = null): array
+    public function getQuery(array $keys = null)
     {
         return $keys ? array_intersect_key($this->query, array_flip($keys)) : $this->query;
     }
@@ -408,7 +409,7 @@ class Url
      *
      * @return string
      */
-    public function getQueryString(): string
+    public function getQueryString()
     {
         return $this->query ? '?' . http_build_query($this->query) : '';
     }
@@ -419,7 +420,7 @@ class Url
      * @param string $fragment
      * @return Url
      */
-    public function setFragment(string $fragment): Url
+    public function setFragment(string $fragment)
     {
         $url = clone $this;
         $url->fragment = (string) S::create($fragment)->substr(strpos($fragment, '#'))->removeLeft('#');
@@ -432,7 +433,7 @@ class Url
      *
      * @return string
      */
-    public function getFragment(): string
+    public function getFragment()
     {
         return $this->fragment ? '#' . $this->fragment : '';
     }
@@ -442,7 +443,7 @@ class Url
      *
      * @return string
      */
-    public function toString(): string
+    public function toString()
     {
         return $this->getScheme()
              . $this->getAuth()
@@ -454,7 +455,7 @@ class Url
     }
 
     /**
-     * Convert the Url objecto to a Url string.
+     * Convert the Url object to a Url string.
      *
      * @return string
      */

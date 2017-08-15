@@ -71,7 +71,7 @@ class App extends \pew\App
      *
      * @return array
      */
-    private function getArguments(): array
+    private function getArguments()
     {
         $argv = $_SERVER['argv'];
         $script_name = $_SERVER['SCRIPT_NAME'];
@@ -91,8 +91,10 @@ class App extends \pew\App
     /**
      * Find a command in the list of available commands.
      *
+     * If a command is not found, a list of suggestions is returned.
+     *
      * @param string $commandName
-     * @return Command|bool
+     * @return Command|array
      */
     private function findCommand(string $commandName)
     {

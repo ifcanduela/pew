@@ -5,7 +5,12 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class Middleware
 {
-    public function redirect($uri): RedirectResponse
+
+    /**
+     * @param $uri
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     */
+    public function redirect($uri)
     {
         return new RedirectResponse($uri);
     }

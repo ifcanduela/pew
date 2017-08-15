@@ -86,14 +86,14 @@ class View implements \ArrayAccess
         $this->addFolder($templates_folder);
     }
 
-  /**
-   * Renders a view according to the request info.
-   *
-   * @param array $data Template data
-   * @param string $template
-   * @return string
-   */
-    public function render(array $data = [], string $template = null): string
+    /**
+     * Renders a view according to the request info.
+     *
+     * @param array $data Template data
+     * @param string $template
+     * @return string
+    */
+    public function render(array $data = [], string $template = null)
     {
         if (!$template) {
             $template = $this->template;
@@ -135,7 +135,7 @@ class View implements \ArrayAccess
      * @param string $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
      */
-    public function exists(string $template = null): bool
+    public function exists(string $template = null)
     {
         if (is_null($template)) {
             $template = $this->template;
@@ -152,7 +152,7 @@ class View implements \ArrayAccess
      * @param string $folder Folder location
      * @return self
      */
-    protected function addFolder(string $folder): self
+    protected function addFolder(string $folder)
     {
         $this->folderStack->push(rtrim($folder, '\\/'));
 
@@ -269,7 +269,7 @@ class View implements \ArrayAccess
      *
      * @return string View output
      */
-    public function child(): string
+    public function child()
     {
         return $this->output;
     }
@@ -277,13 +277,13 @@ class View implements \ArrayAccess
     /**
      * Load and render another view into the current view.
      *
-     * Elements only inherit view data set with __set(), accesible via $this->{key}.
+     * Elements only inherit view data set with __set(), accessible via $this->{key}.
      *
      * @param string $template The snippet to be loaded, relative to the templates folder
-     * @param array $data Additional variables for use in the partial tempalte
+     * @param array $data Additional variables for use in the partial template
      * @return string
      */
-    public function insert(string $template, array $data = []): string
+    public function insert(string $template, array $data = [])
     {
         $element_file = $this->resolve($template);
 
@@ -375,7 +375,7 @@ class View implements \ArrayAccess
      * @param string $name
      * @return bool
      */
-    public function hasBlock(string $name): bool
+    public function hasBlock(string $name)
     {
         return array_key_exists($name, $this->blocks);
     }
@@ -386,7 +386,7 @@ class View implements \ArrayAccess
      * @param string $name
      * @return string
      */
-    public function block(string $name): string
+    public function block(string $name)
     {
         if (array_key_exists($name, $this->blocks)) {
             return join('', $this->blocks[$name]);
@@ -430,13 +430,13 @@ class View implements \ArrayAccess
     /**
      * Escape an input string.
      *
-     * The value is escaped using htmlspecialchars with ENT_QUOTES enabled
+     * The value is escaped using `htmlspecialchars` with ENT_QUOTES enabled
      * and UTF8 encoding.
      *
      * @param string $value
      * @return string
      */
-    public function escape($value): string
+    public function escape($value)
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }

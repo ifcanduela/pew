@@ -24,7 +24,7 @@ class MessageBox extends Message
      * @param int $margin
      * @return self
      */
-    public function margin($margin): self
+    public function margin($margin)
     {
         $this->margin = $margin;
 
@@ -37,7 +37,7 @@ class MessageBox extends Message
      * @param int $padding
      * @return self
      */
-    public function padding(int $padding): self
+    public function padding(int $padding)
     {
         $this->padding = $padding;
 
@@ -50,7 +50,7 @@ class MessageBox extends Message
      * @param string $text
      * @return string
      */
-    public function format(string $text = null): string
+    public function format(string $text = null)
     {
         $text = $text ?? $this->text;
         $newLine = $this->newLine;

@@ -90,10 +90,10 @@ class Image
      * Only JPEG, PNG and GIF images are supported.
      *
      * @param string $filename Location of the image file
-     * @return Image The image object
+     * @return self
      * @throws \Exception
      */
-    public function load(string $filename): self
+    public function load(string $filename)
     {
         if (!file_exists($filename)) {
             throw new \Exception("File {$filename} not found");
@@ -111,10 +111,10 @@ class Image
      * Load an image uploaded from the $_FILES array.
      *
      * @param array $file An uploaded file
-     * @return Image The image resource
+     * @return self
      * @throws \Exception
      */
-    public function upload(array $file): self
+    public function upload(array $file)
     {
         if (!file_exists($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
             throw new \Exception("Uploaded file {$file['filename']} not found [temp={$file['tmp_name']}]");
@@ -168,7 +168,7 @@ class Image
      * Get the image resource.
      *
      * @param resource $resource
-     * @return resource|Image The image data
+     * @return resource|self The image data or the Image object
      * @throws \Exception
      */
     public function image($resource = null)
@@ -186,9 +186,9 @@ class Image
     /**
      * Initialize some image properties.
      *
-     * @return Image Then image object
+     * @return self
      */
-    protected function init(): self
+    protected function init()
     {
         $fileinfo = getimagesize($this->sourceFileName);
         list($this->width, $this->height, $this->imageType) = $fileinfo;
@@ -202,7 +202,7 @@ class Image
      *
      * This method undoes resizing and cropping.
      *
-     * @return Image The image object
+     * @return self
      * @throws \Exception
      */
     public function reload()
@@ -224,7 +224,7 @@ class Image
      *
      * @see http://www.php.net/manual/en/function.image-type-to-mime-type.php
      *
-     * @param string $destination Destiantion folder or filename
+     * @param string $destination Destination folder or filename
      * @param int $image_type One of the IMAGETYPE_* constants
      * @param int $quality Output quality (0 - 100)
      * @return int Result of the image* functions
@@ -269,7 +269,7 @@ class Image
      * Set or get the file name.
      *
      * @param string $filename New file name
-     * @return Image|string The image object, or the file name
+     * @return string|self The image object, or the file name
      * @throws \Exception
      */
     public function filename($filename = null)
@@ -366,7 +366,7 @@ class Image
      * The value must be a percentage, even for PNG images.
      *
      * @param int $quality Output quality (0 - 100)
-     * @return Image|int The image object, or the current quality setting
+     * @return int|self The image object, or the current quality setting
      */
     public function quality($quality = null)
     {
@@ -393,10 +393,10 @@ class Image
      *
      * @param int|null $w The target width
      * @param int|null $h The target height
-     * @return Image The image object
+     * @return self
      * @throws \Exception
      */
-    public function resize($w, $h): self
+    public function resize($w, $h)
     {
         $this->checkResource();
 
@@ -428,10 +428,10 @@ class Image
      * Resize an image to a set width, keeping the aspect ratio.
      *
      * @param int $width
-     * @return Image The image object
+     * @return self
      * @internal param int $w The target width
      */
-    public function resizeWidth(int $width): self
+    public function resizeWidth(int $width)
     {
         return $this->resize($width, null);
     }
@@ -440,10 +440,10 @@ class Image
      * Resize an image to a set height, keeping the aspect ratio.
      *
      * @param int $height
-     * @return Image The image object
+     * @return self
      * @internal param int|null $h The target height
      */
-    public function resizeHeight(int $height): self
+    public function resizeHeight(int $height)
     {
         return $this->resize(null, $height);
     }
@@ -454,10 +454,10 @@ class Image
      * @param int $w Cropped width
      * @param int $h Cropped height
      * @param string $anchor One of the ANCHOR constants of the class.
-     * @return Image The image object
+     * @return self
      * @throws \Exception
      */
-    public function crop(int $w, int $h, $anchor = self::ANCHOR_CENTER): self
+    public function crop(int $w, int $h, $anchor = self::ANCHOR_CENTER)
     {
         $this->checkResource();
 
@@ -516,7 +516,7 @@ class Image
      * @param $width
      * @param $height
      * @param string $anchor Anchor location for the resizing
-     * @return Image The image object
+     * @return self
      * @throws \Exception
      */
     public function box($width, $height, $anchor = self::ANCHOR_CENTER)
@@ -541,9 +541,9 @@ class Image
      *
      * @param int $width Thumbnail width
      * @param int $height Thumbnail height
-     * @return Image The image object
+     * @return self
      */
-    public function fit(int $width, int $height): self
+    public function fit(int $width, int $height)
     {
         return $this->box($width, $height);
     }

@@ -34,6 +34,12 @@ class Router
         });
     }
 
+    /**
+     * Transform framework routes into Route objects.
+     *
+     * @param array $routeData
+     * @return array
+     */
     protected function processRouteData(array $routeData)
     {
         $routes = [];
@@ -56,27 +62,14 @@ class Router
     }
 
     /**
-     * Add a route definition.
-     *
-     * @param string $from Pathinfo pattern
-     * @param mixed $handler Route result
-     * @param string|array methods
-     * @return Router
-     */
-    public function addRoute(string $from, $handler, $methods)
-    {
-
-        return $this;
-    }
-
-    /**
      * Get a route matching the provided request information.
      *
      * @param string $pathInfo
      * @param string $httpMethod
      * @return Route
+     * @throws \RuntimeException
      */
-    public function route(string $pathInfo, string $httpMethod): Route
+    public function route(string $pathInfo, string $httpMethod)
     {
         $matchedRoute = $this->dispatcher->dispatch($httpMethod, $pathInfo);
 

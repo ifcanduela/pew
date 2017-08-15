@@ -6,10 +6,8 @@ use Stringy\Stringy as Str;
 
 /**
  * Active Record-like class.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
-class Record implements \JsonSerializable
+class Record implements \JsonSerializable, \IteratorAggregate
 {
     /** @var string Database table for the subject of the model. */
     protected $tableName;
@@ -78,7 +76,7 @@ class Record implements \JsonSerializable
     }
 
     /**
-     * Get the list of columnnames.
+     * Get the list of column names.
      *
      * @return array
      */
@@ -175,7 +173,7 @@ class Record implements \JsonSerializable
      *
      * @return boolean
      */
-    public function hasErrors(): bool
+    public function hasErrors()
     {
         return !empty($this->errors);
     }
@@ -186,7 +184,7 @@ class Record implements \JsonSerializable
      * @param string|null $field
      * @return array
      */
-    public function getErrors(string $field = null): array
+    public function getErrors(string $field = null)
     {
         if (isset($field)) {
             return $this->getErrorsForField($field);
@@ -201,7 +199,7 @@ class Record implements \JsonSerializable
      * @param string $field
      * @return array
      */
-    public function getErrorsForField(string $field): array
+    public function getErrorsForField(string $field)
     {
         $errors = [];
 
@@ -289,7 +287,7 @@ class Record implements \JsonSerializable
      *
      * @param string $key Key for the value
      * @param mixed $value Value to store
-     * @return $this
+     * @return self
      */
     public function __set($key, $value)
     {
@@ -317,10 +315,13 @@ class Record implements \JsonSerializable
      * Get a stored value from the registry.
      *
      * @param mixed $key Key for the value
+     *
      * @return mixed Stored value
+     * @throws \Exception
      */
     public function __get($key)
     {
+        # generate a getter method name if it does not yet exist
         if (!array_key_exists($key, static::$getterMethods)) {
             $methodName = 'get' . Str::create($key)->upperCamelize();
             static::$getterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;

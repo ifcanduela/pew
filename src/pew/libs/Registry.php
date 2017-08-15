@@ -31,7 +31,7 @@ class Registry implements \ArrayAccess
     protected $data = [];
 
     /**
-     * Creates a new ergistry with an optional set of starting values.
+     * Creates a new registry with an optional set of starting values.
      *
      * @param array $values
      */

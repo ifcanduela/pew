@@ -41,7 +41,7 @@ class Route implements \ArrayAccess
      * @param array $data
      * @return Route
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data)
     {
         $methods = ['*'];
 
@@ -196,7 +196,7 @@ class Route implements \ArrayAccess
      * @param mixed $key
      * @return bool
      */
-    public function checkParam($key): bool
+    public function checkParam($key)
     {
         return isset($this->params[$key]) || isset($this->defaults[$key]);
     }
@@ -225,9 +225,9 @@ class Route implements \ArrayAccess
      * Set the route path.
      *
      * @param string $path
-     * @return Route
+     * @return self
      */
-    public function path(string $path): self
+    public function path(string $path)
     {
         $this->path = '/' . ltrim($path, '/');
 
@@ -238,10 +238,10 @@ class Route implements \ArrayAccess
      * Set the route handler.
      *
      * @param string|callable $handler
-     * @return Route
+     * @return self
      * @throws \Exception
      */
-    public function handler($handler): self
+    public function handler($handler)
     {
         if (!$handler) {
             throw new \Exception('Route handler cannot be empty');
@@ -261,7 +261,7 @@ class Route implements \ArrayAccess
      * @return Route
      * @throws \Exception
      */
-    public function to($handler): self
+    public function to($handler)
     {
         return $this->handler($handler);
     }
@@ -270,9 +270,9 @@ class Route implements \ArrayAccess
      * Set the route methods.
      *
      * @param string|string[] ...$methods
-     * @return Route
+     * @return self
      */
-    public function methods(string ...$methods): self
+    public function methods(string ...$methods)
     {
         $this->methods = array_map('strtoupper', $methods);
 
@@ -283,9 +283,9 @@ class Route implements \ArrayAccess
      * Set the route placeholder default values.
      *
      * @param array $defaults
-     * @return Route
+     * @return self
      */
-    public function defaults(array $defaults): self
+    public function defaults(array $defaults)
     {
         $this->defaults = $defaults;
 
@@ -296,9 +296,9 @@ class Route implements \ArrayAccess
      * Set the 'before' middleware class list.
      *
      * @param string[] $before
-     * @return Route
+     * @return self
      */
-    public function before(array $before): self
+    public function before(array $before)
     {
         $this->before = $before;
 
@@ -309,9 +309,9 @@ class Route implements \ArrayAccess
      * Set the 'after' middleware class list.
      *
      * @param string[] $after
-     * @return Route
+     * @return self
      */
-    public function after(array $after): self
+    public function after(array $after)
     {
         $this->after = $after;
 
@@ -324,9 +324,9 @@ class Route implements \ArrayAccess
      *
      * @param string $placeholderName
      * @param mixed $value
-     * @return Route
+     * @return self
      */
-    public function default($placeholderName, $value = null): self
+    public function default($placeholderName, $value = null)
     {
         $this->defaults[$placeholderName] = $value;
 
@@ -339,7 +339,7 @@ class Route implements \ArrayAccess
      * @param string $path
      * @return Route
      */
-    public static function from(string $path): self
+    public static function from(string $path)
     {
         $r = new static;
         $r->path($path);

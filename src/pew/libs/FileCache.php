@@ -23,12 +23,12 @@ class FileCache
     private $gzip = true;
 
     /**
-     * @var boolean Whether Gzip funcionality is available
+     * @var boolean Whether Gzip functionality is available
      */
     private $gzipEnabled = true;
 
     /**
-     * @var string Suffix for Gziped cache files
+     * @var string Suffix for Gzipped cache files
      */
     private $gzipSuffix = '.gz';
 
@@ -48,7 +48,7 @@ class FileCache
             mkdir($this->folder, 0777, true);
         }
 
-        # The gzencode function exists in PHP 5.3, but gzdecode caould not exist
+        # The gzencode function exists in PHP 5.3, but gzdecode could not exist
         if (!function_exists('gzdecode')) {
             # If there is not gzdecode function, disable Gzip functionality
             $this->gzipEnabled = false;
