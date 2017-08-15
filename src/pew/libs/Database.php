@@ -70,6 +70,8 @@ class Database
      */
     private $fields = '*';
 
+    private $joins = '';
+
     /**
      * @var array SQL-formatted WHERE clause.
      */
@@ -271,6 +273,27 @@ class Database
     }
 
     /**
+     * Specify a join table.
+     *
+     * @param  array $joins
+     * @return self
+     */
+    public function join(array $joins)
+    {
+        foreach ($joins as $join) {
+            list($table, $on) = $join;
+            reset($on);
+            $from = key($on);
+            $to = $on[$from];
+            $joins[] = "JOIN {$table} ON {$from} = {$to}";
+        }
+
+        $this->joins = implode(' ', $joins);
+
+        return $this;
+    }
+
+    /**
      * Sets the WHERE field and its values for prepared statements.
      *
      * @param array $conditions The list of comparisons
@@ -373,8 +396,8 @@ class Database
     {
         list($this->insert_tags) = $this->build_tags($values, 'i_', 'VALUES');
 
-        $this->fields = join(', ', array_keys($values));
-        $this->values = ' VALUES (' . join(', ', array_keys($this->insert_tags)) . ') ';
+        $this->fields = implode(', ', array_keys($values));
+        $this->values = ' VALUES (' . implode(', ', array_keys($this->insert_tags)) . ') ';
 
         return $this;
     }
@@ -431,7 +454,7 @@ class Database
 
         # if the return value is preferred as string
         if (!$as_array) {
-            $pk = join(',', $pk);
+            $pk = implode(',', $pk);
         }
 
         return $pk;
@@ -549,7 +572,7 @@ class Database
                                 $tags[$t] = $val;
                             }
 
-                            $atoms[] = "$k IN (" . join(', ', $l) . ")";
+                            $atoms[] = "$k IN (" . implode(', ', $l) . ")";
                         } elseif (strtoupper($v[0]) == 'BETWEEN') {
                             # For BETWEEN, two tags must be used:
                             # :PREFIX_fieldname_TAGCOUNT_a and
@@ -575,7 +598,7 @@ class Database
                 }
             }
 
-            $where_string = " $clause " . join($separator, $atoms);
+            $where_string = " $clause " . implode($separator, $atoms);
         }
 
         return [$tags, $where_string, 'tags' => $tags, 'clause' => $where_string];
@@ -674,7 +697,7 @@ class Database
         $this->reset();
 
         if ($this->fetch_class) {
-            $stm->setFetchMode(\PDO::FETCH_CLASS, $this->fetch_class);
+            $stm->setFetchMode(\PDO::FETCH_CLASS, $this->fetch_class, []);
         } else {
             $stm->setFetchMode($this->fetch_mode);
         }
@@ -700,8 +723,12 @@ class Database
             }
         }
 
-        if (isset($fields)) {
+        if (isset($fields) && $fields !== '*') {
             $this->fields = $fields;
+        } elseif ($this->fields === '*') {
+            $this->fields = implode(', ', array_map(function ($t) {
+                return "{$t}.*";
+            }, preg_split('/,\s*/', $this->from)));
         }
 
         $query = $this->get_query('select', $this->from);
@@ -709,7 +736,7 @@ class Database
         $this->reset();
 
         if ($this->fetch_class) {
-            $stm->setFetchMode(PDO::FETCH_CLASS, $this->fetch_class);
+            $stm->setFetchMode(PDO::FETCH_CLASS, $this->fetch_class, []);
         } else {
             $stm->setFetchMode($this->fetch_mode);
         }
@@ -821,7 +848,7 @@ class Database
 
         switch (strtoupper($type)) {
             case 'SELECT':
-                $sql = "SELECT $this->fields FROM $table $this->where $this->group_by $this->having $this->order_by $this->limit";
+                $sql = "SELECT $this->fields FROM $table $this->joins $this->where $this->group_by $this->having $this->order_by $this->limit";
                 $this->tags = array_merge($this->where_tags, $this->having_tags);
                 break;
             case 'UPDATE':
@@ -858,7 +885,7 @@ class Database
         $this->where =      $this->set =         null;
 
         $this->tags =       $this->where_tags =  $this->having_tags =
-        $this->set_tags =   $this->insert_tags = [];
+        $this->set_tags =   $this->insert_tags = $this->joins = [];
 
         $this->fields = '*';
 
