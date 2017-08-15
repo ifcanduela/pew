@@ -103,6 +103,8 @@ class View implements \ArrayAccess
             $data = [$data];
         }
 
+        $this->variables = array_merge($this->variables, $data);
+
         # Get the view file
         $template_file = $this->resolve($template);
 
