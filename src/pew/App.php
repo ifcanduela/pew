@@ -118,7 +118,7 @@ class App
 
             $response = $this->runBeforeMiddlewares($route, $request, $injector);
 
-            if (is_a($response, Response::class)) {
+            if ($response instanceof Response) {
                 $result = $response;
             } else {
             $handler = $this->container['controller'];
@@ -154,7 +154,7 @@ class App
             $this->middleware[$middlewareClass] = $mw;
             $result = $injector->callMethod($mw, 'before');
 
-            if (is_a($result, Response::class)) {
+            if ($result instanceof Response) {
                 return $result->send();
             }
         }
@@ -172,7 +172,7 @@ class App
             }
             $newResponse = $injector->callMethod($mw, 'after');
 
-            if (is_a($newResponse, Response::class)) {
+            if ($newResponse instanceof Response) {
                 $response = $newResponse;
             }
         }
@@ -221,7 +221,7 @@ class App
             $response = $injector->callMethod($controller, 'beforeAction');
         }
 
-        if (!is_a($response, Response::class)) {
+        if (!($response instanceof Response)) {
             $response = $injector->callMethod($controller, $actionName);
         }
 
@@ -264,7 +264,7 @@ class App
         }
 
         # if it's already a response, return it
-        if (is_a($actionResult, Response::class)) {
+        if ($actionResult instanceof Response) {
             return $actionResult;
         }
 

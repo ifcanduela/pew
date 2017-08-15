@@ -28,14 +28,14 @@ class Url
      */
     public function __construct($request = null, array $routes = [])
     {
-        if (is_string($request) || is_a($request, static::class)) {
+        if (is_string($request) || ($request instanceof Url)) {
             $request = (string) $request;
             $this->request = Request::create($request);
 
             if (false !== strpos($request, '#')) {
                 $this->fragment = (string) S::create($request)->substr(strpos($request, '#'))->removeLeft('#');
             }
-        } elseif (is_a($request, Request::class)) {
+        } elseif ($request instanceof Request) {
             $this->request = $request;
         } else {
             $this->request = Request::createFromGlobals();

@@ -149,7 +149,7 @@ $container['routes'] = function ($c) {
     $routes = [];
 
     foreach ($definitions as $path => $handler) {
-        if (is_a($handler, \pew\router\Route::class)) {
+        if ($handler instanceof \pew\router\Route) {
             $routes[] = $handler;
         } elseif (is_string($handler) || is_callable($handler)) {
             // convert simple route to array route

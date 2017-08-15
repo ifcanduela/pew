@@ -43,7 +43,7 @@ class Router
                 $data = Route::fromArray($data);
             }
 
-            if (is_a($data, \pew\router\Group::class)) {
+            if ($data instanceof Group) {
                 foreach ($data->getRoutes() as $route) {
                     $routes[] = $route;
                 }
