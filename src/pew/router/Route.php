@@ -49,13 +49,13 @@ class Route implements \ArrayAccess
             $methods = preg_split('/\W+/', strtoupper($data['methods']));
         }
 
-        $path = '/' . ltrim($data['path'], '/');
+        $path = '/' . ltrim($data['path'] ?? $data['from'], '/');
 
         $route = new Route();
         $route
             ->path($path)
             ->methods(...$methods)
-            ->handler($data['handler']);
+            ->handler($data['handler'] ?? $data['to']);
 
         if (isset($data['defaults'])) {
             $route->defaults($data['defaults']);
