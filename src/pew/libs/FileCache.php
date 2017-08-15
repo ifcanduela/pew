@@ -4,8 +4,6 @@ namespace pew\libs;
 
 /**
  * This class can save and load serialized data to and from files.
- *
- * @author Igor F. Canduela <ifcanduela@gmail.com>
  */
 class FileCache
 {

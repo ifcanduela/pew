@@ -12,8 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The basic controller class, with some common methods and fields.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Controller
 {

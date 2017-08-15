@@ -7,8 +7,6 @@ use pew\libs\FileCache;
 
 /**
  * This class encapsulates the template rendering functionality.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class View implements \ArrayAccess
 {

@@ -13,8 +13,6 @@ namespace pew\libs;
  * Property access can use array syntax (['key']), object syntax (->key) or methods
  * (offsetGet/offsetSet). Array and method modes can use path-like strings (sys.request.basepath)
  * for nested keys.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Registry implements \ArrayAccess
 {

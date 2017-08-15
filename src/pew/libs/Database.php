@@ -16,8 +16,6 @@ use PDOException;
  *
  * The methods contained within this class are aimed to simplify basic database
  * operations, such as simple selects, inserts and updates.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Database
 {

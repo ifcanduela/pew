@@ -4,8 +4,6 @@ namespace pew\libs;
 
 /**
  * A class to facilitate the creation of thumbnails.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Image
 {

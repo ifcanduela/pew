@@ -13,8 +13,6 @@ use pew\request\Request;
  * The App class is a request/response processor.
  *
  * Its purpose is to route the request into a response.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class App
 {

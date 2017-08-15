@@ -4,8 +4,6 @@ namespace pew\request;
 
 /**
  * A shell class that centralizes information about the current request.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Request extends \Symfony\Component\HttpFoundation\Request
 {
