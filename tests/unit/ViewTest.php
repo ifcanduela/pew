@@ -2,71 +2,38 @@
 
 use pew\View;
 
-class TestView extends PHPUnit_Framework_TestCase
+class ViewTest extends PHPUnit\Framework\TestCase
 {
-    public function testConstruct()
+    protected function setUp()
     {
-        $view = new View;
-        $this->assertEquals(getcwd(), $view->folder());
+
     }
 
-    public function testAddFolders()
+    public function testBasics()
     {
-        $view = new View('tests/assets');
-        $this->assertEquals('tests/assets', $view->folder());
+        $v = new View(__DIR__ . '/../assets/views');
 
-        $view->folder('app/views');
-        $this->assertEquals('app/views', $view->folder());
-    }
+        $this->assertEmpty($v->title());
 
-    public function testTemplateResolution()
-    {
-        $view = new View('app/views');
+        $this->assertTrue($v->exists('view1'));
+        $this->assertFalse($v->exists('nope'));
 
-        $this->assertFalse($view->exists('view1'));
-        $this->assertFalse($view->exists('view8'));
+        $v->template('view1');
+        $result = $v->render(['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
 
-        $view->extension('.tpl');
-        $this->assertFalse($view->exists('view2'));
+        $this->assertEquals('<div>PARAMETER</div>
+<div>PROPERTY</div>
+<div>PROPERTY</div>
+', $result);
 
-        $view->folder('tests/assets');
-        $view->extension('.php');
+        $v->layout('layout');
+        $v->title('test');
+        $result = $v->render(['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
 
-        $this->assertTrue($view->exists('view1'));
-        $this->assertFalse($view->exists('view8'));
-
-        $view->extension('.tpl');
-        $this->assertTrue($view->exists('view2'));
-    }
-
-    public function testRender()
-    {
-        $view = new View('tests/assets');
-        $view['property'] = 'Property';
-        $view->template('view1');
-        $output = $view->render(['parameter' => 'Parameter']);
-
-        $result = '<div>Parameter</div>
-<div>Property</div>
-<div>Property</div>
-<div>Property</div>
-';
-
-        $this->assertEquals($result, $output);
-    }
-
-    public function testRenderLayout()
-    {
-        $view = new View('tests/assets');
-        $view['property'] = 'Property';
-        $view['title'] = 'Page Title';
-        $view->template('view1');
-        $view->layout('layout');
-        $output = $view->render(['parameter' => 'Parameter']);
-
-        $this->assertRegexp('/<!DOCTYPE/', $output);
-        $this->assertRegexp('/<title>Page Title<\/title>/', $output);
-        $this->assertRegexp('/<div>Parameter<\/div>/', $output);
-        $this->assertRegexp('/<div>Property<\/div>/', $output);
+        $this->assertEquals('<title>test</title>
+<div>PARAMETER</div>
+<div>PROPERTY</div>
+<div>PROPERTY</div>
+', $result);
     }
 }

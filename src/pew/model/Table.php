@@ -2,15 +2,15 @@
 
 namespace pew\model;
 
-use pew\libs\Database;
+use ifcanduela\db\Database;
 use pew\model\exception\TableNotSpecifiedException;
 use pew\model\exception\TableNotFoundException;
 use Stringy\StaticStringy as Str;
 
+use ifcanduela\db\Query;
+
 /**
  * Table gateway class.
- *
- * @author ifcanduela <ifcanduela@gmail.com>
  */
 class Table
 {
@@ -55,62 +55,28 @@ class Table
     protected $record = [];
 
     /**
-     * Fields to retrieve in SELECT statements.
+     * Class name for records in the table.
      *
      * @var string
      */
-    protected $fields = '*';
-
-    /**
-     * Conditions for the queries.
-     *
-     * @var string
-     */
-    protected $where = [];
-
-    /**
-     * Sorting order for the query results.
-     *
-     * @var string
-     */
-    protected $order_by = null;
-
-    /**
-     * Sorting order for the query results.
-     *
-     * @var string
-     */
-    protected $limit = null;
-
-    /**
-     * Grouping of fields for the query results.
-     *
-     * @var string
-     */
-    protected $group_by = null;
-
-    /**
-     * Conditions for the query result groups.
-     *
-     * @var string
-     */
-    protected $having = [];
-
-    /**
-     * SQL query clauses.
-     *
-     * @var array
-     */
-    protected $clauses = [
-        'fields' => '*',
-        'where' => [],
-        'group_by' => '',
-        'having' => [],
-        'limit' => '',
-        'order_by' => '',
-    ];
-
     protected $recordClass;
+
+    /**
+     * Method used to fetch related records.
+     *
+     * @var string
+     */
+    protected $fetchMethod = 'one';
+
+    /**
+     * Method used to fetch related records.
+     *
+     * @var string
+     */
+    protected $fetchCondition;
+
+    /** @var \ifcanduela\db\Query */
+    public $query;
 
     /**
      * The constructor builds the model!.
@@ -137,13 +103,13 @@ class Table
         $this->db = is_null($db) ? pew('db') : $db;
         $this->table = $table ?: $this->tableName();
 
-        if (!$this->db->table_exists($this->table)) {
+        if (!$this->db->tableExists($this->table)) {
             throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
         }
 
         # some metadata about the table
-        $primary_key = $this->db->get_pk($this->table);
-        $columns = $this->db->get_cols($this->table);
+        $primary_key = $this->db->getPrimaryKeys($this->table);
+        $columns = $this->db->getColumnNames($this->table);
         $this->tableData['name'] = $this->table;
         $this->tableData['primary_key'] = $primary_key;
         $this->tableData['columns'] = $columns;
@@ -228,6 +194,47 @@ class Table
     }
 
     /**
+     * @return self
+     */
+    public function createSelect() {
+        $this->query = Query::select();
+        $this->query->from($this->tableName());
+
+        return $this;
+    }
+
+    /**
+     * @return self
+     */
+    public function createUpdate() {
+        $this->query = Query::update();
+        $this->query->table($this->tableName());
+
+        return $this;
+    }
+
+    /**
+     * @return self
+     */
+    public function createInsert() {
+        $this->query = Query::insert();
+        $this->query->into($this->tableName());
+
+        return $this;
+    }
+
+    /**
+     * @return self
+     */
+    public function createDelete()
+    {
+        $this->query = Query::delete();
+        $this->query->table($this->tableName());
+
+        return $this;
+    }
+
+    /**
      * Simple transitional function to run a query directly.
      *
      * This function interacts directly with the PDO abstraction layer of the
@@ -250,7 +257,7 @@ class Table
         $clause = strtoupper(strtok($query, ' '));
 
         # prepare the SQL query
-        $stm = $this->db->pdo()->prepare($query);
+        $stm = $this->db->prepare($query);
         # run the prepared statement with the received keys and values
         $success = $stm->execute($data);
 
@@ -272,44 +279,30 @@ class Table
     {
         $this->limit(1);
         $className = $this->recordClass;
-
-        $record = $this->db
-            ->where($this->where())
-            ->group_by($this->groupBy())
-            ->having($this->having())
-            ->order_by($this->orderBy())
-            ->single($this->table, $this->clauses['fields']);
-        $this->reset();
-
         $model = null;
 
-        if ($record) {
-            $model = new $className();
-            $model->attributes($record);
+        $records = $this->db->run($this->query);
+
+        if (isset($records[0])) {
+            $model = $className::fromArray($records[0]);
         }
 
         return $model;
     }
 
-    public function all(): array
+    /**
+     * Fetch a list of records.
+     *
+     * @return array
+     */
+    public function all()
     {
         $className = $this->recordClass;
-
-        $records = $this->db
-            ->where($this->where())
-            ->group_by($this->groupBy())
-            ->having($this->having())
-            ->limit($this->limit())
-            ->order_by($this->orderBy())
-            ->select($this->table, $this->clauses['fields']);
-        $this->reset();
-
         $models = [];
+        $records = $this->db->run($this->query);
 
         foreach ($records as $record) {
-            $model = new $className();
-            $model->attributes($record);
-            $models[] = $model;
+            $models[] = $className::fromArray($record);
         }
 
         return $models;
@@ -318,26 +311,15 @@ class Table
     /**
      * Count the rows that fit the criteria.
      *
-     * @param array $where An associative array with field name/field value pairs for the WHERE clause.
      * @return int
      */
-    public function count($where = null)
+    public function count()
     {
-        # if conditions are provided, overwrite the previous model conditions
-        if (is_array($where)) {
-            $this->clauses['where'] = $where;
-        }
-
         # query the database
-        $result = $this->db
-                    ->from($this->table)
-                    ->where($this->clauses['where'])
-                    ->group_by($this->clauses['group_by'])
-                    ->having($this->clauses['having'])
-                    ->limit(1)
-                    ->cell('count(*)');
+        $this->query->columns('COUNT(*) as count');
+        $result = $this->db->run($this->query);
 
-        return $result;
+        return $result[0]['count'];
     }
 
     /**
@@ -364,15 +346,15 @@ class Table
             }
         }
 
-        if (!$this->db->is_writable) {
+        if (!$this->db->isWritable()) {
             throw new \RuntimeException("Database file is not writable.");
         }
 
-        $primary_key = $this->tableData['primary_key'];
+        $primaryKeyName = $this->primaryKey();
 
-        if (empty($record[$primary_key])) {
+        if (empty($record[$primaryKeyName])) {
             # unset the primary key, just in case
-            unset($record[$primary_key]);
+            unset($record[$primaryKeyName]);
 
             # set creation timestamp
             if ($this->hasColumn('created')) {
@@ -389,8 +371,9 @@ class Table
             }
 
             # if $id is not set, perform an INSERT
-            $id = $this->db->values($record)->insert($this->table);
-            $result = $this->db->where([$primary_key => $id])->single($this->table);
+            $query = Query::insert()->into($this->table)->values($record);
+            $this->db->run($query);
+            $id = $this->db->lastInsertId();
         } else {
             # set modification timestamp
             if ($this->hasColumn('modified')) {
@@ -402,16 +385,19 @@ class Table
             }
 
             # if $id is set, perform an UPDATE
-            $where = [$primary_key => $record[$primary_key]];
-            $this->db->set($record)->where($where)->update($this->table);
-            $result = $this->db->where($where)->single($this->table);
+            $where = [$primaryKeyName => $record[$primaryKeyName]];
+            $query = Query::update($this->tableName())->set($record)->where($where);
+            $this->db->run($query);
+            $id = $record[$primaryKeyName];
         }
+
+        $model = $this->createSelect()->from($this->tableName())->where([$primaryKeyName => $id])->one();
 
         if (method_exists($model, 'afterSave')) {
             $model->afterSave();
         }
 
-        return array_merge($this->tableData['column_names'], $result);
+        return $model->attributes();
     }
 
     /**
@@ -428,159 +414,30 @@ class Table
      */
     public function delete($id = null)
     {
+        $query = Query::delete($this->table());
+
         if (is_array($id)) {
             # use the $id as an array of conditions
-            return $this->db->where($id)->delete($this->table);
+            $query->where([$this->primaryKey() => $id]);
+            return $this->db->run($query);
         } elseif ($id === true) {
             # this deletes everything in $this->table
-            return $this->db->delete($this->table);
-        } elseif (!is_null($id) && !is_bool($id)) {
-            # delete the item as received, ignoring previous conditions
-            return $this->db->where([$this->tableData['primary_key'] => $id])->limit(1)->delete($this->table);
-        } elseif ($this->clauses['where']) {
-            # delete everything that matches the conditions
-            return $this->db->where($this->clauses['where'])->delete($this->table);
+            return $this->db->run($query);
         } else {
-            # no valid configuration
-            throw new \RuntimeException('Delete requires conditions or parameters');
+            return $this->db->run($this->query->where([$this->primaryKey() => $id]));
         }
+
+        throw new \RuntimeException('Delete requires conditions or parameters');
     }
 
     /**
      * Returns the primary key value created in the last INSERT statement.
      *
-     * @return mixed The primaary key value of the last inserted row
+     * @return mixed The primary key value of the last inserted row
      */
     public function lastInsertId()
     {
-        return $this->db->pdo()->LastInsertId();
-    }
-
-    /**
-     * State which fields to retrieve with find() and find_all().
-     *
-     * @param string $fields A comma-separated list of table columns
-     * @return Table A reference to the same object, for method chaining
-     */
-    public function select($fields)
-    {
-        $this->clauses['fields'] = $fields;
-        $this->db->fields($fields);
-
-        return $this;
-    }
-
-    /**
-     * State the conditions of the records to fetch with find() and find_all().
-     *
-     * @param array $conditions Field and value pairs
-     * @return Table|array a reference to the same object, for method chaining
-     */
-    public function where($conditions = null)
-    {
-        if (!is_null($conditions)) {
-            $this->clauses['where'] = $conditions;
-            $this->db->where($conditions);
-
-            return $this;
-        } else {
-            if (isset($this->clauses['where'])) {
-                return $this->clauses['where'];
-            } else {
-                return $this->where;
-            }
-        }
-    }
-
-    /**
-     * Specify the maximum amount of records to retrieve, and an optional
-     * starting offset.
-     *
-     * @param int $count Number of items to return
-     * @param int $start First item to return
-     * @return Table a reference to the same object, for method chaining
-     */
-    public function limit($count = null, $start = 0)
-    {
-        if (is_numeric($count)) {
-            if (isset($start) && is_numeric($start)) {
-                $this->clauses['limit'] = "$start, $count";
-            } else {
-                $this->clauses['limit'] = $count;
-            }
-
-            return $this;
-        } else {
-            if (isset($this->clauses['limit'])) {
-                return $this->clauses['limit'];
-            } else {
-                return $this->limit;
-            }
-        }
-    }
-
-    /**
-     * Set the record sorting for results.
-     *
-     * @param mixed $order_by Order-by SQL clauses[multiple]
-     * @return Table A reference to the same object, for method chaining
-     */
-    public function orderBy($order_by = null)
-    {
-        if (!is_null($order_by)) {
-            $this->clauses['order_by'] = $order_by;
-            return $this;
-        } else {
-            if (isset($this->clauses['order_by'])) {
-                return $this->clauses['order_by'];
-            } else {
-                return $this->order_by;
-            }
-        }
-    }
-
-    /**
-     * This function is a shortcut to enable method chaining with the Group By
-     * SQL clause.
-     *
-     * @param string $group_by Grouping column names
-     * @return Table A reference to the same object, for method chaining
-     * @todo: Make this work
-     */
-    public function groupBy($group_by = null)
-    {
-        if (!is_null($group_by)) {
-            $this->clauses['group_by']= $group_by;
-            return $this;
-        } else {
-            if (isset($this->clauses['group_by'])) {
-                return $this->clauses['group_by'];
-            } else {
-                return $this->group_by;
-            }
-        }
-    }
-
-    /**
-     * This function is a shortcut to enable method chaining with the Having SQL
-     * clause.
-     *
-     * @param string $having SQL conditions for the groups
-     * @return Table A reference to the same object, for method chaining
-     * @todo: Make this work
-     */
-    public function having($having = null)
-    {
-        if (!is_null($having)) {
-            $this->clauses['having']= $having;
-            return $this;
-        } else {
-            if (isset($this->clauses['having'])) {
-                return $this->clauses['having'];
-            } else {
-                return $this->having;
-            }
-        }
+        return $this->db->lastInsertId();
     }
 
     /**
@@ -590,7 +447,7 @@ class Table
      */
     public function begin()
     {
-        return $this->db->pdo()->beginTransaction();
+        return $this->db->beginTransaction();
     }
 
     /**
@@ -600,7 +457,7 @@ class Table
      */
     public function commit()
     {
-        return $this->db->pdo()->commit();
+        return $this->db->commit();
     }
 
     /**
@@ -610,51 +467,7 @@ class Table
      */
     public function rollback()
     {
-        return $this->db->pdo()->rollback();
-    }
-
-    /**
-     * Reset the SQL clauses.
-     *
-     * @return Table The model instance
-     */
-    protected function reset()
-    {
-        $this->clauses['fields'] = $this->fields;
-        $this->clauses['where'] = $this->where;
-        $this->clauses['order_by'] = $this->order_by;
-        $this->clauses['group_by'] = $this->group_by;
-        $this->clauses['having'] = $this->having;
-        $this->clauses['limit'] = $this->limit;
-
-        return $this;
-    }
-
-    /**
-     * Get or set several SQL clauses.
-     *
-     * Accepted clauses are:
-     *     - fields: comma-separated list of fields
-     *     - where: array of conditions
-     *     - group_by: comma-separated list of fields
-     *     - having: array of conditions
-     *     - order_by: comma-separated list of fields
-     *     - limit: count, offset
-     *
-     * @param array $clauses
-     * @return array
-     */
-    public function clauses(array $clauses = null)
-    {
-        if (!is_null($clauses)) {
-            foreach ($clauses as $key => $value) {
-                if (array_key_exists($key, $this->clauses)) {
-                    $this->clauses[$key] = $value;
-                }
-            }
-        }
-
-        return $this->clauses;
+        return $this->db->rollback();
     }
 
     /**
@@ -663,8 +476,101 @@ class Table
      * @param string $column_name
      * @return boolean
      */
-    public function hasColumn(string $column_name): bool
+    public function hasColumn(string $column_name)
     {
         return array_key_exists($column_name, $this->tableData['column_names']);
+    }
+
+    /**
+     * Run a query.
+     *
+     * This method should be used after creating a query with createSelect(), createUpdate(),
+     * createInsert() or createDelete().
+     *
+     * @return array
+     */
+    public function run()
+    {
+        return $this->db->run($this->query);
+    }
+
+    /**
+     * Redirect method calls to the child Query object.
+     *
+     * @param string $method
+     * @param array $arguments
+     *
+     * @return self
+     */
+    public function __call($method, $arguments)
+    {
+        if (!$this->query) {
+            throw new \RuntimeException("Method '{$method}' called before initializing a query");
+        }
+
+        if (method_exists($this->query, $method)) {
+            $this->query->$method(...$arguments);
+
+            return $this;
+        }
+
+        throw new \BadMethodCallException("Invalid method '{$method}'");
+    }
+
+    /**
+     * Set the fetch mode for related models.
+     *
+     * @return self
+     */
+    public function hasMany()
+    {
+        $this->fetchMethod = 'all';
+
+        return $this;
+    }
+
+    /**
+     * Set the fetch mode for related models.
+     *
+     * @return self
+     */
+    public function belongsTo()
+    {
+        $this->fetchMethod = 'one';
+
+        return $this;
+    }
+
+    /**
+     * Set a condition for fetching related models.
+     *
+     * This method is for internal use only.
+     *
+     * @param array $condition
+     * @return self
+     */
+    public function fetchCondition(array $condition)
+    {
+        $this->fetchCondition = $condition;
+
+        return $this;
+    }
+
+    /**
+     * Fetch record for a defined relationship.
+     *
+     * This method is for internal use only.
+     *
+     * @return array|\pew\Model|null
+     */
+    public function fetch()
+    {
+        $this->andWhere($this->fetchCondition);
+
+        if ($this->fetchMethod === 'all') {
+            return $this->all();
+        }
+
+        return $this->one();
     }
 }

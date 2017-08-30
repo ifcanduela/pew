@@ -17,6 +17,7 @@ if (!function_exists('pew')) {
 
         if (isset($app)) {
             $pew = $app;
+
             return;
         }
 

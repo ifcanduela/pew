@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Stringy\Stringy as Str;
 use pew\libs\Injector;
 use pew\router\Route;
-use pew\request\Request;
 
 /**
  * The App class is a request/response processor.
@@ -17,7 +16,7 @@ use pew\request\Request;
 class App
 {
     /** @var \Pimple\Container */
-    protected $container;
+    public $container;
 
     /** @var array */
     protected $middleware = [];
@@ -36,21 +35,27 @@ class App
     {
         $this->container = require __DIR__ . '/config/bootstrap.php';
 
-        $app_path_pre = getcwd() . DIRECTORY_SEPARATOR . $app_folder;
+        if (realpath($app_folder)) {
+            $app_path_pre = $app_folder;
+        } else {
+            $app_path_pre = getcwd() . DIRECTORY_SEPARATOR . $app_folder;
+        }
+
         $app_path = realpath($app_path_pre);
 
         if ($app_path === false) {
             throw new \InvalidArgumentException("The app path does not exist: {$app_path_pre}");
         }
 
+		$config_folder = $this->container['config_folder'];
         $this->container['app_path'] = $app_path;
-        $this->container['config_folder'] = $config_file_name;
+        $this->container['config_file_name'] = $config_file_name;
 
         # init the pew() helper
         pew(null, $this->container);
 
         # import app config and services
-        $this->loadAppConfig("{$app_path}/config/{$config_file_name}.php");
+        $this->loadAppConfig("{$app_path}/{$config_folder}/{$config_file_name}.php");
         $this->loadAppBootstrap();
     }
 
@@ -88,7 +93,7 @@ class App
     {
         # load app/config/bootstrap.php
         if (file_exists($this->container['app_path'] . '/config/bootstrap.php')) {
-            require $this->container['app_path'] . '/config/bootstrap.php';
+            require_once $this->container['app_path'] . '/config/bootstrap.php';
 
             return true;
         }
@@ -114,18 +119,18 @@ class App
             $route = $this->container['route'];
             $request = $this->container['request'];
 
-            $response = $this->runBeforeMiddlewares($route, $request, $injector);
+            $response = $this->runBeforeMiddlewares($route, $injector);
 
             if ($response instanceof Response) {
                 $result = $response;
             } else {
-            $handler = $this->container['controller'];
+                $handler = $this->container['controller'];
 
-            if (is_callable($handler)) {
-                $result = $this->handleCallback($handler, $injector);
-            } else {
-                $result = $this->handleAction($handler, $injector);
-            }
+                if (is_callable($handler)) {
+                    $result = $this->handleCallback($handler, $injector);
+                } else {
+                    $result = $this->handleAction($handler, $injector);
+                }
             }
         } catch (\Exception $e) {
             $result = $this->handleError($e);
@@ -143,7 +148,7 @@ class App
         $response->send();
     }
 
-    protected function runBeforeMiddlewares(Route $route, Request $request, Injector $injector)
+    protected function runBeforeMiddlewares(Route $route, Injector $injector)
     {
         $middlewareClasses = $route->getBefore() ?: [];
 
@@ -203,7 +208,6 @@ class App
     {
         $controllerClass = $handler;
         $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
-        $route = $this->container['route'];
         $actionName = $this->container['action'];
 
         $view = $this->container['view'];

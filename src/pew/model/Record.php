@@ -95,7 +95,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * Create a record from a array of keys and values.
      *
      * @param array $data
-     * @return Record
+     * @return static
      */
     public static function fromArray(array $data)
     {
@@ -220,11 +220,13 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function save()
     {
         $result = $this->tableManager->save($this);
-        $this->record = array_merge($this->record, $result);
 
-        $this->isNew = false;
+        if ($result) {
+            $this->attributes($result);
+            $this->isNew = false;
+        }
 
-        return $this;
+        return is_array($result);
     }
 
     /**
@@ -232,7 +234,57 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function delete()
     {
-        return $this->tableManager->delete($this->record[$this->tableManager->primaryKey()]);
+        $table = $this->tableManager->createDelete();
+
+        $table->where([
+            $table->primaryKey() => $this->record[$table->primaryKey()]
+        ]);
+
+        return $table->run();
+    }
+
+    /**
+     * Update all records that match a condition.
+     *
+     * @param  array      $values
+     * @param  array|null $condition
+     * @return int Number of affected rows.
+     */
+    public static function updateAll(array $values, array $condition = null)
+    {
+        $record = (new static);
+        $table = $record->tableManager;
+        $table->createUpdate();
+
+        $table->set($values);
+
+        if ($condition) {
+            $table->where($condition);
+        }
+
+        $result = $table->run();
+
+        return $result;
+    }
+
+    /**
+     * Delete all records that match a condition.
+     *
+     * @param  array|null $condition
+     * @return int Number of affected rows.
+     */
+    public static function deleteAll(array $condition = null)
+    {
+        $record = (new static);
+        $table = $record->tableManager->createDelete();
+
+        if ($condition) {
+            $table->where($condition);
+        }
+
+        $result = $table->run();
+
+        return  $result;
     }
 
     /**
@@ -267,19 +319,48 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Returns a Table object to perform queries against.
      *
-     * @param mixed $id A primary key value
      * @return Table
      */
-    public static function find($id = null)
+    public static function find()
     {
         $record = new static();
         $table = $record->tableManager;
 
-        if ($id) {
-            return $table->where([$table->primaryKey() => $id])->one();
-        }
+        $table->createSelect()
+            ->columns($record->tableName . '.*')
+            ->from($record->tableName);
 
         return $table;
+    }
+
+    /**
+     * Find one record by primary key.
+     *
+     * @param mixed $id A primary key value
+     * @return static
+     */
+    public static function findOne($id)
+    {
+        $record = new static();
+        $table = $record->tableManager;
+
+        $table->createSelect()
+            ->columns($record->tableName . '.*')
+            ->from($record->tableName);
+
+        return $table->where([$table->primaryKey() => $id])->one();
+    }
+
+    /**
+     * Returns a Table object to perform update queries against.
+     *
+     * @return Table
+     */
+    public static function update()
+    {
+        $record = new static();
+
+        return $record->tableManager->createUpdate();
     }
 
     /**
@@ -329,9 +410,17 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         $methodName = static::$getterMethods[$key];
 
+        # check if the getter method exists
         if (method_exists($this, $methodName)) {
+            # check if the getter method has been called before
             if (!array_key_exists($methodName, $this->getterResults)) {
-                $this->getterResults[$methodName] = $this->$methodName();
+                $fetch = $this->$methodName();
+
+                if ($fetch instanceof Table) {
+                    $fetch = $fetch->fetch();
+                }
+
+                $this->getterResults[$methodName] = $fetch;
             }
 
             return $this->getterResults[$methodName];
@@ -343,8 +432,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
         }
 
         throw new \Exception("Field '{$key}' not found in class '" . get_class($this) . "'");
-
-        return null;
     }
 
     /**
@@ -412,5 +499,32 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function __wakeup()
     {
         $this->tableManager = $this->table();
+    }
+
+    public function belongsTo(string $className, string $fkName = null)
+    {
+        if (!$fkName) {
+            $otherClass = basename($className);
+            $fkName = Str::create($otherClass)->underscored() . '_id';
+        }
+
+        return $className::find()
+            ->fetchCondition(['id' => $this->$fkName])
+            ->belongsTo();
+    }
+
+    public function hasMany(string $className, string $fkName = null)
+    {
+        if (!$fkName) {
+            $thisClass = basename(get_class($this));
+            $fkName = Str::create($thisClass)->underscored() . '_id';
+        }
+
+        $primaryKeyName = $this->tableManager->primaryKey();
+        $primaryKeyValue = $this->record[$primaryKeyName];
+
+        return $className::find()
+            ->fetchCondition([$fkName => $primaryKeyValue])
+            ->hasMany();
     }
 }

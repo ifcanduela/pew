@@ -15,7 +15,7 @@ class MessageBox extends Message
      */
     public function __construct(...$lines)
     {
-        $this->text = $lines;
+        parent::__construct($lines);
     }
 
     /**

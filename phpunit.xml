@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="tests/bootstrap.php" colors="true">
-    <testsuites>
-        <testsuite>
-            <directory>tests/unit</directory>
+<phpunit bootstrap="vendor/autoload.php" colors="true">
+<testsuites>
+        <testsuite name="Framework test suite">
+            <directory suffix="Test.php">./tests/unit</directory>
         </testsuite>
     </testsuites>
+
+    <!-- Whitelist for code coverage -->
+    <filter>
+        <whitelist>
+            <directory suffix=".php">./src/pew</directory>
+        </whitelist>
+    </filter>
 </phpunit>

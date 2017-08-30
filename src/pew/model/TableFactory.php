@@ -2,8 +2,7 @@
 
 namespace pew\model;
 
-use Stringy\StaticStringy as Str;
-use pew\libs\Database;
+use ifcanduela\db\Database;
 
 class TableFactory
 {

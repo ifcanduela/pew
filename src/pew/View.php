@@ -87,6 +87,41 @@ class View implements \ArrayAccess
     }
 
     /**
+     * Set the value of a template variable.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return mixed
+     */
+    public function set(string $key, $value)
+    {
+        $this->variables[$key] = $value;
+    }
+
+    /**
+     * Get the value of a template variable.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function get(string $key, $default = null)
+    {
+        return array_key_exists($key, $this->variables) ? $this->variables[$key] : $default;
+    }
+
+    /**
+     * Check if a template variable has been set.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key)
+    {
+        return array_key_exists($this->variables, $key);
+    }
+
+    /**
      * Renders a view according to the request info.
      *
      * @param array $data Template data
@@ -99,10 +134,7 @@ class View implements \ArrayAccess
             $template = $this->template;
         }
 
-        if (!is_array($data)) {
-            $data = [$data];
-        }
-
+        # make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
 
         # Get the view file
@@ -112,11 +144,10 @@ class View implements \ArrayAccess
             throw new \RuntimeException("Template {$template} not found");
         }
 
-        $view_data = array_merge($this->variables, $data);
         $this->output
             = $output
             = $view_data['output']
-            = $this->_render($template_file, $view_data);
+            = $this->_render($template_file, $this->variables);
 
         if ($this->layout) {
             $layout_file = $this->resolve($this->layout);
@@ -451,7 +482,7 @@ class View implements \ArrayAccess
      */
     public function offsetGet($key)
     {
-        return $this->variables[$key];
+        return $this->get($key);
     }
 
     /**
@@ -463,7 +494,7 @@ class View implements \ArrayAccess
      */
     public function offsetSet($key, $value)
     {
-        return $this->variables[$key] = $value;
+        return $this->set($key, $value);
     }
 
     /**

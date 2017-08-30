@@ -9,6 +9,7 @@ $container = new \Pimple\Container();
 //
 
 $container['app_namespace'] = "\\app\\";
+$container['config_folder'] = "config";
 $container['debug'] = false;
 $container['default_action'] = 'index';
 $container['env'] = 'dev';
@@ -40,7 +41,9 @@ $container['action'] = function ($c) {
     $route = $c['route'];
     $parts = preg_split('/[@\.]/', $route->getHandler());
 
-    return $parts[1] ?? $route['action'] ?? $c['default_action'];
+    $action = $parts[1] ?? $route['action'] ?? $c['default_action'];
+
+    return preg_replace('/[^a-zA-Z0-9_]/', '_', $action);
 };
 
 $container['controller'] = function ($c) {
@@ -86,7 +89,22 @@ $container['db'] = function ($c) {
         throw new \RuntimeException("Database is disabled.");
     }
 
-    return new \pew\libs\Database($config);
+    $db = \ifcanduela\db\Database::fromArray($config);
+
+    if (isset($db_config['log_queries'])) {
+        $logger = $c['logger'];
+        $db->setLogger($logger);
+    }
+
+    return $db;
+};
+
+$container['logger'] = function ($c) {
+    $logger = new Monolog\Logger('App log');
+    $logfile = $c['app_path'] . '/logs/app.log';
+    $logger->pushHandler(new Monolog\Handler\StreamHandler($logfile, Monolog\Logger::INFO));
+
+    return $logger;
 };
 
 $container['db_config'] = function ($c) {

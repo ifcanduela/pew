@@ -281,15 +281,17 @@ class Database
      */
     public function join(array $joins)
     {
+        $tables = [];
+
         foreach ($joins as $join) {
             list($table, $on) = $join;
             reset($on);
             $from = key($on);
             $to = $on[$from];
-            $joins[] = "JOIN {$table} ON {$from} = {$to}";
+            $tables[] = "JOIN {$table} ON {$from} = {$to}";
         }
 
-        $this->joins = implode(' ', $joins);
+        $this->joins = implode(' ', $tables);
 
         return $this;
     }
