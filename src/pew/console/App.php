@@ -56,7 +56,7 @@ class App extends \pew\App
         $command = $this->findCommand($commandName);
 
         if (!($command instanceof CommandInterface)) {
-            $this->commandMissing($command);
+            $this->commandMissing($commandName);
         }
 
         $this->container['arguments'] = new CommandArguments($arguments['arguments']);
@@ -66,20 +66,20 @@ class App extends \pew\App
 
     private function commandMissing($command)
     {
-            echo "Command {$command} not found" . PHP_EOL;
-            echo "Did you mean:" . PHP_EOL;
+        echo "Command {$command} not found" . PHP_EOL;
+        echo "Did you mean:" . PHP_EOL;
 
-            if ($command) {
-                $suggestions = $command;
-            } else {
-                $suggestions = array_keys($this->availableCommands);
-            }
+        if ($command) {
+            $suggestions = $command;
+        } else {
+            $suggestions = array_keys($this->availableCommands);
+        }
 
-            foreach ($suggestions as $suggestion) {
-                echo "    {$suggestion}" . PHP_EOL;
-            }
+        foreach ($suggestions as $suggestion) {
+            echo "    {$suggestion}" . PHP_EOL;
+        }
 
-            die();
+        die();
     }
 
     /**

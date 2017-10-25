@@ -40,6 +40,7 @@ class Route implements \ArrayAccess
      *
      * @param array $data
      * @return Route
+     * @throws \Exception
      */
     public static function fromArray(array $data)
     {

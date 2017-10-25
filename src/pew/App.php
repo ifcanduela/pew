@@ -2,6 +2,7 @@
 
 namespace pew;
 
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Stringy\Stringy as Str;
@@ -16,10 +17,13 @@ use pew\router\Route;
 class App
 {
     /** @var \Pimple\Container */
-    public $container;
+    private $container;
 
     /** @var array */
     protected $middleware = [];
+
+    /** @var static */
+    private static $instance;
 
     /**
      * Bootstrap a web app.
@@ -30,6 +34,8 @@ class App
      *
      * @param string $app_folder The path to the app folder
      * @param string $config_file_name Base name of the file to use for configuration.
+     * @throws \RuntimeException
+     * @throws \InvalidArgumentException
      */
     public function __construct($app_folder, $config_file_name = 'config')
     {
@@ -57,6 +63,20 @@ class App
         # import app config and services
         $this->loadAppConfig("{$app_path}/{$config_folder}/{$config_file_name}.php");
         $this->loadAppBootstrap();
+
+        static::$instance = $this;
+
+        App::log("App path set to {$app_path}", Logger::INFO);
+    }
+
+    /**
+     * Get the application instance.
+     *
+     * @return static
+     */
+    public static function instance()
+    {
+        return static::$instance;
     }
 
     /**
@@ -64,6 +84,7 @@ class App
      *
      * @param string $config_filename The file name, relative to the base path
      * @return bool TRUE when the file exists, FALSE otherwise
+     * @throws \RuntimeException
      */
     protected function loadAppConfig($config_filename)
     {
@@ -71,7 +92,7 @@ class App
             $app_config = require $config_filename;
 
             if (!is_array($app_config)) {
-                throw new \RuntimeException("Configuration file {$config_filename} does not return an array");
+                throw new \RuntimeException("Configuration file {$config_filename} must return an array");
             }
 
             foreach ($app_config as $key => $value) {
@@ -109,6 +130,7 @@ class App
      * the controller call.
      *
      * @return null
+     * @throws \Exception
      */
     public function run()
     {
@@ -117,7 +139,6 @@ class App
 
         try {
             $route = $this->container['route'];
-            $request = $this->container['request'];
 
             $response = $this->runBeforeMiddlewares($route, $injector);
 
@@ -125,6 +146,10 @@ class App
                 $result = $response;
             } else {
                 $handler = $this->container['controller'];
+
+                if (!$handler) {
+                    throw new \RuntimeException("No handler specified for route (" . $request->getPathInfo() . ")");
+                }
 
                 if (is_callable($handler)) {
                     $result = $this->handleCallback($handler, $injector);
@@ -192,7 +217,7 @@ class App
      */
     protected function handleCallback(callable $handler, Injector $injector)
     {
-        $controller = $injector->createinstance(Controller::class);
+        $controller = $injector->createInstance(Controller::class);
 
         return $injector->callFunction($handler, $controller);
     }
@@ -203,6 +228,7 @@ class App
      * @param string $handler
      * @param Injector $injector
      * @return mixed
+     * @throws \InvalidArgumentException
      */
     protected function handleAction(string $handler, Injector $injector)
     {
@@ -215,7 +241,7 @@ class App
         $view->template($controllerSlug . '/' . $actionName);
         $view->layout('default.layout');
 
-        $controller = $injector->createinstance($controllerClass);
+        $controller = $injector->createInstance($controllerClass);
 
         $response = null;
 
@@ -257,6 +283,7 @@ class App
      *
      * @param mixed $actionResult
      * @return Response
+     * @throws \InvalidArgumentException
      */
     protected function transformActionResult($actionResult)
     {
@@ -299,8 +326,32 @@ class App
      * @param string $key
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key)
     {
         return $this->container[$key];
+    }
+
+    /**
+     * Set a value in the container.
+     *
+     * @param string $key
+     * @param mixed $value
+     */
+    public function set(string $key, $value)
+    {
+        $this->container[$key] = $value;
+    }
+
+    /**
+     * Log a message to the application log file.
+     *
+     * @param string $message
+     * @param int $level
+     */
+    public static function log($message, $level = Logger::DEBUG)
+    {
+        /** @var Logger $logger */
+        $logger = static::$instance->container['app_log'];
+        $logger->log($level, $message);
     }
 }

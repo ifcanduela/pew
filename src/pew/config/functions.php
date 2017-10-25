@@ -8,20 +8,17 @@ if (!function_exists('pew')) {
      * Pew config read-only shortcut.
      *
      * @param string $key Key to read
-     * @param array $app Setup the app array-like object
      * @return mixed The value for the key
      */
-    function pew($key = null, $app = null)
+    function pew(string $key)
     {
-        static $pew;
+        $app = \pew\App::instance();
 
-        if (isset($app)) {
-            $pew = $app;
-
-            return;
+        if (!$app instanceof \pew\App) {
+            throw new \RuntimeException("The application has not been initialized");
         }
 
-        return isset($pew[$key]) ? $pew[$key] : null;
+        return $app->get($key);
     }
 }
 
@@ -368,7 +365,7 @@ if (!function_exists('array_path')) {
 
         if (array_key_exists($step, $source)) {
             if (count($steps)) {
-                return array_path($source[$step], implode($separator, $steps), $separator);
+                return array_path($source[$step], join($separator, $steps), $separator);
             } else {
                 return $source[$step];
             }

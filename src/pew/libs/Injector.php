@@ -83,7 +83,7 @@ class Injector
             }
 
             if (!$found) {
-                $paramName = $param->getName().' ('.$param->getType().')';
+                $paramName = $param->getName() . ' (' . $param->getType() . ')';
                 throw new \RuntimeException("Could not find a definition for $paramName.");
             }
 

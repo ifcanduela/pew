@@ -420,10 +420,10 @@ class Record implements \JsonSerializable, \IteratorAggregate
                     $fetch = $fetch->fetch();
                 }
 
-                $this->getterResults[$methodName] = $fetch;
+                $this->getterResults[$key] = $fetch;
             }
 
-            return $this->getterResults[$methodName];
+            return $this->getterResults[$key];
         }
 
         # the offset is a table field

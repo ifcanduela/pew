@@ -13,6 +13,7 @@ $container['config_folder'] = "config";
 $container['debug'] = false;
 $container['default_action'] = 'index';
 $container['env'] = 'dev';
+$container['log_level'] = \Monolog\Logger::WARNING;
 $container['use_db'] = $container['env'];
 $container['www_path'] = getcwd();
 
@@ -21,7 +22,7 @@ $container['root_path'] = function ($c) {
 };
 
 $container['cache_path'] = function ($c) {
-    return $c['root_path'] . DIRECTORY_SEPARATOR . 'cache';
+    return $c['root_path'] . '/cache';
 };
 
 $container['cache_duration'] = 15 * 60;
@@ -54,9 +55,15 @@ $container['controller'] = function ($c) {
         return $handler;
     }
 
-    $parts = explode('@', $handler);
+    if ($handler) {
+        $parts = explode('@', $handler);
+        return $c['controller_namespace'] . $parts[0];
+    } elseif ($route->checkParam('controller')) {
+        $handler = \Stringy\StaticStringy::upperCamelize($route->getParam('controller'));
+        return $c['controller_namespace'] . $handler . 'Controller';
+    }
 
-    return $c['controller_namespace'] . $parts[0];
+    return null;
 };
 
 $container['controller_namespace'] = function ($c) {
@@ -83,32 +90,40 @@ $container['db'] = function ($c) {
         throw new \RuntimeException("Database configuration preset '{$use_db}' does not exist");
     }
 
-    $config = $db_config[$use_db];
+    $connection_settings = $db_config[$use_db];
 
-    if (!isset($config)) {
+    if (!isset($connection_settings)) {
         throw new \RuntimeException("Database is disabled.");
     }
 
-    $db = \ifcanduela\db\Database::fromArray($config);
+    $db = \ifcanduela\db\Database::fromArray($connection_settings);
 
-    if (isset($db_config['log_queries'])) {
-        $logger = $c['logger'];
+    if (isset($db_config['log_queries']) && $db_config['log_queries']) {
+        $logger = $c['db_log'];
         $db->setLogger($logger);
     }
 
     return $db;
 };
 
-$container['logger'] = function ($c) {
+$container['app_log'] = function ($c) {
     $logger = new Monolog\Logger('App log');
     $logfile = $c['app_path'] . '/logs/app.log';
-    $logger->pushHandler(new Monolog\Handler\StreamHandler($logfile, Monolog\Logger::INFO));
+    $logger->pushHandler(new Monolog\Handler\StreamHandler($logfile, $c['log_level']));
+
+    return $logger;
+};
+
+$container['db_log'] = function ($c) {
+    $logger = new Monolog\Logger('DB log');
+    $logfile = $c['app_path'] . '/logs/db.log';
+    $logger->pushHandler(new Monolog\Handler\StreamHandler($logfile, Monolog\Logger::DEBUG));
 
     return $logger;
 };
 
 $container['db_config'] = function ($c) {
-    return require $c['app_path'] . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'database.php';
+    return require $c['app_path'] . '/' . $c['config_folder'] . '/database.php';
 };
 
 $container['file_cache'] = function ($c) {
@@ -132,7 +147,7 @@ $container['path'] = function ($c) {
     $path_info = $request->getPathInfo();
 
     $ignore_url_suffixes = $c['ignore_url_suffixes'];
-    $ignore = implode('|', $ignore_url_suffixes);
+    $ignore = join('|', $ignore_url_suffixes);
     $suffix_separator = $c['ignore_url_separator'];
 
     $path_info = preg_replace("/{$suffix_separator}({$ignore})$/", '', $path_info);
@@ -160,7 +175,7 @@ $container['router'] = function ($c) {
 
 $container['routes'] = function ($c) {
     $app_folder = $c['app_path'];
-    $routes_path = $app_folder . DIRECTORY_SEPARATOR . $c['config_folder'] . DIRECTORY_SEPARATOR . 'routes.php';
+    $routes_path = $app_folder . '/'. $c['config_folder'] . '/routes.php';
 
     $definitions = require $routes_path;
 
@@ -247,7 +262,7 @@ $container['url'] = function ($c) {
 $container['view'] = function ($c) {
     $app_path = $c['app_path'];
     $file_cache = $c['file_cache'];
-    $views_folder = $app_path . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
+    $views_folder = $app_path . '/views/';
 
     return new \pew\View($views_folder, $file_cache);
 };

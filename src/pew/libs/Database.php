@@ -291,7 +291,7 @@ class Database
             $tables[] = "JOIN {$table} ON {$from} = {$to}";
         }
 
-        $this->joins = implode(' ', $tables);
+        $this->joins = join(' ', $tables);
 
         return $this;
     }
@@ -399,8 +399,8 @@ class Database
     {
         list($this->insert_tags) = $this->build_tags($values, 'i_', 'VALUES');
 
-        $this->fields = implode(', ', array_keys($values));
-        $this->values = ' VALUES (' . implode(', ', array_keys($this->insert_tags)) . ') ';
+        $this->fields = join(', ', array_keys($values));
+        $this->values = ' VALUES (' . join(', ', array_keys($this->insert_tags)) . ') ';
 
         return $this;
     }
@@ -457,7 +457,7 @@ class Database
 
         # if the return value is preferred as string
         if (!$as_array) {
-            $pk = implode(',', $pk);
+            $pk = join(',', $pk);
         }
 
         return $pk;
@@ -575,7 +575,7 @@ class Database
                                 $tags[$t] = $val;
                             }
 
-                            $atoms[] = "$k IN (" . implode(', ', $l) . ")";
+                            $atoms[] = "$k IN (" . join(', ', $l) . ")";
                         } elseif (strtoupper($v[0]) == 'BETWEEN') {
                             # For BETWEEN, two tags must be used:
                             # :PREFIX_fieldname_TAGCOUNT_a and
@@ -601,7 +601,7 @@ class Database
                 }
             }
 
-            $where_string = " $clause " . implode($separator, $atoms);
+            $where_string = " $clause " . join($separator, $atoms);
         }
 
         return [$tags, $where_string, 'tags' => $tags, 'clause' => $where_string];
@@ -729,7 +729,7 @@ class Database
         if (isset($fields) && $fields !== '*') {
             $this->fields = $fields;
         } elseif ($this->fields === '*') {
-            $this->fields = implode(', ', array_map(function ($t) {
+            $this->fields = join(', ', array_map(function ($t) {
                 return "{$t}.*";
             }, preg_split('/,\s*/', $this->from)));
         }

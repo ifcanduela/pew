@@ -79,7 +79,7 @@ class View implements \ArrayAccess
         $this->folderStack = new SplStack();
         $this->fileCache = $file_cache;
 
-        if (is_null($templates_folder)) {
+        if ($templates_folder === null) {
             $templates_folder = getcwd();
         }
 
@@ -127,7 +127,9 @@ class View implements \ArrayAccess
      * @param array $data Template data
      * @param string $template
      * @return string
-    */
+     * @throws \Exception
+     * @throws \RuntimeException
+     */
     public function render(array $data = [], string $template = null)
     {
         if (!$template) {
@@ -170,7 +172,7 @@ class View implements \ArrayAccess
      */
     public function exists(string $template = null)
     {
-        if (is_null($template)) {
+        if ($template = null) {
             $template = $this->template;
         }
 
@@ -221,7 +223,7 @@ class View implements \ArrayAccess
      */
     public function folder(string $folder = null)
     {
-        if (!is_null($folder)) {
+        if ($folder !== null) {
             $this->folderStack->push($folder);
 
             return $this;
@@ -238,7 +240,7 @@ class View implements \ArrayAccess
      */
     public function template(string $template = null)
     {
-        if (!is_null($template)) {
+        if ($template !== null) {
             $this->template = $template;
 
             return $this;
@@ -255,7 +257,7 @@ class View implements \ArrayAccess
      */
     public function extension(string $extension = null)
     {
-        if (!is_null($extension)) {
+        if ($extension !== null) {
             $this->extension = '.' . ltrim($extension, '.');
             return $this;
         }
@@ -271,7 +273,7 @@ class View implements \ArrayAccess
      */
     public function layout(string $layout = null)
     {
-        if (!is_null($layout)) {
+        if ($layout !== null) {
             $this->layout = $layout;
 
             return $this;
@@ -288,7 +290,7 @@ class View implements \ArrayAccess
      */
     public function title(string $title = null)
     {
-        if (!is_null($title)) {
+        if ($title !== null) {
             $this->title = $title;
 
             return $this;
@@ -315,6 +317,8 @@ class View implements \ArrayAccess
      * @param string $template The snippet to be loaded, relative to the templates folder
      * @param array $data Additional variables for use in the partial template
      * @return string
+     * @throws \Exception
+     * @throws \RuntimeException
      */
     public function insert(string $template, array $data = [])
     {
@@ -341,7 +345,7 @@ class View implements \ArrayAccess
      */
     protected function _render()
     {
-        extract(func_get_arg(1));
+        extract(func_get_arg(1), EXTR_PREFIX_SAME | EXTR_PREFIX_INVALID | EXTR_PREFIX_IF_EXISTS, 'v_');
         ob_start();
 
         try {
@@ -364,6 +368,7 @@ class View implements \ArrayAccess
      * @param int $duration Time to live of the cache fragment, in seconds
      * @param bool $open_buffer Set to false to prevent the opening of a buffer
      * @return bool True if the cached fragment could be inserted, false otherwise
+     * @throws \RuntimeException
      */
     public function load(string $key, int $duration, bool $open_buffer = true)
     {
@@ -505,7 +510,7 @@ class View implements \ArrayAccess
      */
     public function offsetExists($key)
     {
-        return isset($this->variables[$key]);
+        return array_key_exists($key, $this->variables);
     }
 
     /**

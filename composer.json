@@ -21,7 +21,8 @@
     "autoload": {
         "psr-0": {
             "pew": "src"
-        }
+        },
+        "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
     },
     "require-dev": {
         "phpunit/phpunit": "^6.3"

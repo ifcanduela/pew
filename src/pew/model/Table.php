@@ -43,7 +43,7 @@ class Table
      *
      * @var array
      */
-    protected $tableData = [];
+    protected static $tableData = [];
 
     /**
      * Current resultset.
@@ -85,7 +85,7 @@ class Table
      * @param Database $db Database instance to use
      * @param string|null $recordClass
      */
-    public function __construct($table = null, Database $db = null, $recordClass = null)
+    public function __construct(string $table, Database $db = null, string $recordClass = null)
     {
         $this->recordClass = $recordClass;
         $this->init($table, $db);
@@ -97,44 +97,25 @@ class Table
      * @param string $table Name of the table
      * @param Database $db Database instance to use
      */
-    public function init($table = null, Database $db = null)
+    public function init(string $table, Database $db = null)
     {
         # get the Database class instance
         $this->db = is_null($db) ? pew('db') : $db;
-        $this->table = $table ?: $this->tableName();
+        $this->table = $table;
 
-        if (!$this->db->tableExists($this->table)) {
-            throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
+        if (!isset(static::$tableData[$this->table])) {
+            if (!$this->db->tableExists($this->table)) {
+                throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
+            }
+
+            # some metadata about the table
+            $primary_key = $this->db->getPrimaryKeys($this->table);
+            $columns = $this->db->getColumnNames($this->table);
+            static::$tableData[$this->table]['name'] = $this->table;
+            static::$tableData[$this->table]['primary_key'] = $primary_key;
+            static::$tableData[$this->table]['columns'] = $columns;
+            static::$tableData[$this->table]['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
         }
-
-        # some metadata about the table
-        $primary_key = $this->db->getPrimaryKeys($this->table);
-        $columns = $this->db->getColumnNames($this->table);
-        $this->tableData['name'] = $this->table;
-        $this->tableData['primary_key'] = $primary_key;
-        $this->tableData['columns'] = $columns;
-        $this->tableData['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
-    }
-
-    /**
-     * Auto-resolve the table name for the current model.
-     *
-     * @return string
-     */
-    public function tableName()
-    {
-        if (!is_null($this->table)) {
-            return $this->table;
-        }
-
-        $shortname = (new \ReflectionClass($this))->getShortName();
-        $table_name = preg_replace('/Model$/', '', $shortname);
-
-        if (!$table_name) {
-            throw new TableNotSpecifiedException("Model class must be attached to a database table.");
-        }
-
-        return Str::underscored($table_name, true);
     }
 
     /**
@@ -144,7 +125,7 @@ class Table
      */
     public function primaryKey()
     {
-        return $this->tableData['primary_key'];
+        return static::$tableData[$this->table]['primary_key'];
     }
 
     /**
@@ -159,8 +140,8 @@ class Table
     public function columnNames($as_keys = true)
     {
         return $as_keys
-            ? $this->tableData['column_names']
-            : array_keys($this->tableData['column_names']);
+            ? static::$tableData[$this->table]['column_names']
+            : array_keys(static::$tableData[$this->table]['column_names']);
     }
 
     /**
@@ -198,7 +179,7 @@ class Table
      */
     public function createSelect() {
         $this->query = Query::select();
-        $this->query->from($this->tableName());
+        $this->query->from($this->table);
 
         return $this;
     }
@@ -208,7 +189,7 @@ class Table
      */
     public function createUpdate() {
         $this->query = Query::update();
-        $this->query->table($this->tableName());
+        $this->query->table($this->table);
 
         return $this;
     }
@@ -218,7 +199,7 @@ class Table
      */
     public function createInsert() {
         $this->query = Query::insert();
-        $this->query->into($this->tableName());
+        $this->query->into($this->table);
 
         return $this;
     }
@@ -229,7 +210,7 @@ class Table
     public function createDelete()
     {
         $this->query = Query::delete();
-        $this->query->table($this->tableName());
+        $this->query->table($this->table);
 
         return $this;
     }
@@ -340,7 +321,7 @@ class Table
         $attributes = $model->attributes();
         $record = $result = [];
 
-        foreach ($this->tableData['columns'] as $key) {
+        foreach (static::$tableData[$this->table]['columns'] as $key) {
             if (array_key_exists($key, $attributes)) {
                 $record[$key] = $attributes[$key];
             }
@@ -386,12 +367,12 @@ class Table
 
             # if $id is set, perform an UPDATE
             $where = [$primaryKeyName => $record[$primaryKeyName]];
-            $query = Query::update($this->tableName())->set($record)->where($where);
+            $query = Query::update($this->table)->set($record)->where($where);
             $this->db->run($query);
             $id = $record[$primaryKeyName];
         }
 
-        $model = $this->createSelect()->from($this->tableName())->where([$primaryKeyName => $id])->one();
+        $model = $this->createSelect()->from($this->table)->where([$primaryKeyName => $id])->one();
 
         if (method_exists($model, 'afterSave')) {
             $model->afterSave();
@@ -414,7 +395,7 @@ class Table
      */
     public function delete($id = null)
     {
-        $query = Query::delete($this->table());
+        $query = Query::delete($this->table);
 
         if (is_array($id)) {
             # use the $id as an array of conditions
@@ -478,7 +459,7 @@ class Table
      */
     public function hasColumn(string $column_name)
     {
-        return array_key_exists($column_name, $this->tableData['column_names']);
+        return array_key_exists($column_name, static::$tableData[$this->table]['column_names']);
     }
 
     /**
