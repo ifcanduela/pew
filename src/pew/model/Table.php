@@ -338,18 +338,15 @@ class Table
             unset($record[$primaryKeyName]);
 
             # set creation timestamp
-            if ($this->hasColumn('created')) {
-                $record['created'] = time();
+            if ($this->hasColumn($model::$createdFieldName)) {
+                $record[$model::$createdFieldName] = time();
             }
 
             # set modification timestamp
-            if ($this->hasColumn('modified')) {
-                $record['modified'] = time();
+            if ($this->hasColumn($model::$updatedFieldName)) {
+                $record[$model::$updatedFieldName] = time();
             }
 
-            if ($this->hasColumn('updated')) {
-                $record['updated'] = time();
-            }
 
             # if $id is not set, perform an INSERT
             $query = Query::insert()->into($this->table)->values($record);

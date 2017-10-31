@@ -60,7 +60,7 @@ $container['controller'] = function ($c) {
         return $c['controller_namespace'] . $parts[0];
     } elseif ($route->checkParam('controller')) {
         $handler = \Stringy\StaticStringy::upperCamelize($route->getParam('controller'));
-        return $c['controller_namespace'] . $handler . 'Controller';
+        return $c['controller_namespace'] . $handler;
     }
 
     return null;

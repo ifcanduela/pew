@@ -45,6 +45,12 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /** @var array List of validation errors. */
     public $errors = [];
 
+    /** @var string Name of the column holding the record creation timestamp. */
+    public static $createdFieldName = 'created';
+
+    /** @var string Name of the column holding the record update  timestamp. */
+    public static $updatedFieldName = 'updated';
+
     /**
      * Create an empty, new record.
      */
