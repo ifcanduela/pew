@@ -172,7 +172,11 @@ class View implements \ArrayAccess
      */
     public function exists(string $template = null)
     {
-        if ($template = null) {
+        if ($template === null) {
+            if ($this->template === null) {
+                throw new \RuntimeException("No template specified");
+            }
+            
             $template = $this->template;
         }
 
@@ -345,7 +349,7 @@ class View implements \ArrayAccess
      */
     protected function _render()
     {
-        extract(func_get_arg(1), EXTR_PREFIX_SAME | EXTR_PREFIX_INVALID | EXTR_PREFIX_IF_EXISTS, 'v_');
+        extract(func_get_arg(1), EXTR_PREFIX_INVALID, 'v_');
         ob_start();
 
         try {

@@ -1,6 +1,6 @@
 <?php
 
-namespace app\services;
+namespace tests\fixtures\services;
 
 class MiddlewareTest
 {

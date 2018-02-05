@@ -2,7 +2,7 @@
 
 use pew\App;
 
-require_once __DIR__ . '/../app/controllers/TestController.php';
+require_once __DIR__ . '/../fixtures/controllers/TestController.php';
 
 class AppTest extends PHPUnit\Framework\TestCase
 {
@@ -22,24 +22,25 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     /**
      * @expectedException RuntimeException
-     * @expectedExceptionMessage Configuration file C:\Dropbox\sites\github\ifcanduela\pew\tests\app/config/bad-config.php does not return an array
+     * @expectedExceptionMessage must return an array
      */
     public function testAppRequiresExistingConfigFileReturnArray()
     {
-        $app = new App(__DIR__ . '/../app/', 'bad-config');
+        $app = new App(__DIR__ . '/../fixtures/', 'bad-config');
     }
 
     public function testInitializeApp()
     {
-        $app = new App(__DIR__ . '/../app/', 'test');
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
 
         $this->assertInstanceOf(App::class, $app);
     }
 
     public function testTemplateResponse()
     {
-        $app = new App(__DIR__ . '/../app/', 'test');
-        $app->container['path'] = '/test/template-response';
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
+        $app->set('path', '/test/template-response');
+        $app->set('app_namespace', '\\tests\\fixtures\\');
         $request = $app->get('request');
 
         ob_start();
@@ -51,8 +52,9 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testJsonResponse()
     {
-        $app = new App(__DIR__ . '/../app/', 'test');
-        $app->container['path'] = '/test/json-response';
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
+        $app->set('path', '/test/json-response');
+        $app->set('app_namespace', '\\tests\\fixtures\\');
         $request = $app->get('request');
 
         ob_start();
@@ -64,8 +66,9 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testStringResponse()
     {
-        $app = new App(__DIR__ . '/../app/', 'test');
-        $app->container['path'] = '/test/string-response';
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
+        $app->set('path', '/test/string-response');
+        $app->set('app_namespace', '\\tests\\fixtures\\');
         $request = $app->get('request');
 
         ob_start();
@@ -77,8 +80,9 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testFalseResponse()
     {
-        $app = new App(__DIR__ . '/../app/', 'test');
-        $app->container['path'] = '/test/false-response';
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
+        $app->set('path', '/test/false-response');
+        $app->set('app_namespace', '\\tests\\fixtures\\');
         $request = $app->get('request');
 
         ob_start();
@@ -90,8 +94,8 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testCallback()
     {
-        $app = new App(__DIR__ . '/../app/', 'test');
-        $app->container['path'] = '/callback';
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
+        $app->set('path', '/callback');
 
         ob_start();
         $app->run();

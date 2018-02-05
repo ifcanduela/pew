@@ -15,7 +15,7 @@
         "filp/whoops": "^2.1",
         "danielstjules/stringy": "^2.3",
         "ifcanduela/abbrev": "*",
-        "ifcanduela/db": "^0.3",
+        "ifcanduela/db": "*",
         "monolog/monolog": "^1.23"
     },
     "autoload": {

@@ -11,7 +11,7 @@ class ViewTest extends PHPUnit\Framework\TestCase
 
     public function testBasics()
     {
-        $v = new View(__DIR__ . '/../assets/views');
+        $v = new View(__DIR__ . '/../fixtures/views');
 
         $this->assertEmpty($v->title());
 

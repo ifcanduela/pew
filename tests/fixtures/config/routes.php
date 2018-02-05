@@ -9,8 +9,8 @@ return [
 
     Route::from('/middleware')
         ->to('TestController@use_middleware')
-        ->before([\app\services\MiddlewareTest::class])
-        ->after([\app\services\MiddlewareTest::class]),
+        ->before([\fixtures\services\MiddlewareTest::class])
+        ->after([\fixtures\services\MiddlewareTest::class]),
 
     '/test/{action}' => 'TestController',
 ];

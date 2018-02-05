@@ -39,7 +39,7 @@ class Group extends Route
             }
 
             if ($this->prefix) {
-                $route->path(preg_replace('~/+~', '/', "{$this->prefix}/{$route->path}"));
+                $route->path(preg_replace('~/+~', '/', "{$this->prefix}{$route->path}"));
             }
 
             if ($this->before) {

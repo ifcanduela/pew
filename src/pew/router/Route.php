@@ -50,13 +50,16 @@ class Route implements \ArrayAccess
             $methods = preg_split('/\W+/', strtoupper($data['methods']));
         }
 
-        $path = '/' . ltrim($data['path'] ?? $data['from'], '/');
+        $path = $data['path'] ?? $data['from'];
 
         $route = new Route();
         $route
             ->path($path)
-            ->methods(...$methods)
-            ->handler($data['handler'] ?? $data['to']);
+            ->methods(...$methods);
+
+        if (isset($data['handler']) || isset($data['to'])) {
+            $route->handler($data['handler'] ?? $data['to']);
+        }
 
         if (isset($data['defaults'])) {
             $route->defaults($data['defaults']);
@@ -230,7 +233,7 @@ class Route implements \ArrayAccess
      */
     public function path(string $path)
     {
-        $this->path = '/' . ltrim($path, '/');
+        $this->path = $path;
 
         return $this;
     }

@@ -425,7 +425,7 @@ if (!function_exists('url')) {
             $base_url = rtrim($base_url, '/') . '/';
         }
 
-        $path = preg_replace('~\/+~', '/', join('/', array_filter($path)));
+        $path = preg_replace('~\/+~', '/', join('/', $path));
 
         return $base_url . trim($path, '/');
     }

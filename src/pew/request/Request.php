@@ -79,7 +79,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function isJson()
     {
-        # check if the requested URL end in '.json'
+        # check if the requested URL ends in '.json'
         if (preg_match('/[^A-Za-z0-9]json$/', $this->getPathInfo())) {
             return true;
         }

@@ -63,12 +63,7 @@ class Injector
             $found = false;
             $injection = null;
 
-            try {
-                $injection = $this->findKey($param->getName());
-                $found = true;
-            } catch (\RuntimeException $e) {
-            }
-
+            # first try: typehint
             if ($paramType = $param->getType()) {
                 try {
                     $injection = $this->findKey($paramType);
@@ -77,6 +72,16 @@ class Injector
                 }
             }
 
+            # second try: argument name
+            if (!$found) {
+                try {
+                    $injection = $this->findKey($param->getName());
+                    $found = true;
+                } catch (\RuntimeException $e) {
+                }
+            }
+
+            # third try: argument default value
             if (!$found && $param->isDefaultValueAvailable()) {
                 $injection = $param->getDefaultValue();
                 $found = true;

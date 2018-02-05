@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__DIR__) . '/app/controllers/TestController.php';
+require_once dirname(__DIR__) . '/fixtures/controllers/TestController.php';
 
 class ControllerTest extends PHPUnit\Framework\TestCase
 {
@@ -29,9 +29,9 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $view = new \pew\View();
 
-        $controller = new \app\controllers\TestController($request, $view);
+        $controller = new \tests\fixtures\controllers\TestController($request, $view);
 
-        $response = $controller->myAction();
+        $response = $controller->my_action();
 
         $this->assertInstanceOf(Symfony\Component\HttpFoundation\JsonResponse::class, $response);
         $this->assertEquals('"myAction"', $response->getContent());

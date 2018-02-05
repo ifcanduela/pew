@@ -5,11 +5,6 @@ use pew\router\Route;
 
 class RouterTest extends PHPUnit\Framework\TestCase
 {
-    protected function setUp()
-    {
-
-    }
-
     public function testRoutesFromArray()
     {
         $routes = [
@@ -73,7 +68,7 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $routes = [
             Route::group()->routes([
                     Route::from('[/{action}]')
-                ])->to('AdminController')->prefix('admin'),
+                ])->to('AdminController')->prefix('/admin'),
         ];
 
         $router = new Router($routes);
@@ -82,5 +77,23 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
         $this->assertInstanceOf(Route::class, $destination);
         $this->assertEquals('AdminController', $destination->getHandler());
+    }
+
+    public function testRouteGroupMiddleware()
+    {
+        $routes = Route::group()->routes([
+                    [
+                        'path' => '[/{action}]',
+                        'before' => ['BeforeMiddleware2'],
+                        'after' => ['AfterMiddleware2'],
+                    ]
+                ])->to('AdminController')
+                ->prefix('/admin')
+                ->before(['BeforeMiddleware1'])
+                ->after(['AfterMiddleware1'])
+                ->getRoutes();
+
+        $this->assertEquals(['BeforeMiddleware1', 'BeforeMiddleware2'], $routes[0]->getBefore());
+        $this->assertEquals(['AfterMiddleware1', 'AfterMiddleware2'], $routes[0]->getAfter());
     }
 }

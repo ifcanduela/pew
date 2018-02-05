@@ -57,9 +57,6 @@ class App
         $this->container['app_path'] = $app_path;
         $this->container['config_file_name'] = $config_file_name;
 
-        # init the pew() helper
-        pew(null, $this->container);
-
         # import app config and services
         $this->loadAppConfig("{$app_path}/{$config_folder}/{$config_file_name}.php");
         $this->loadAppBootstrap();
