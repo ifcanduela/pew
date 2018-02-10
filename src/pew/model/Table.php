@@ -394,9 +394,9 @@ class Table
         $primaryKeyName = $this->primaryKey();
 
         if (empty($record[$primaryKeyName])) {
-            $id = $this->insertRecord($record);
+            $id = $this->insertRecord($record, $model::$createdFieldName);
         } else {
-            $id = $this->updateRecord($record);
+            $id = $this->updateRecord($record, $model::$updatedFieldName);
         }
 
         if (method_exists($model, 'afterSave')) {
@@ -413,9 +413,10 @@ class Table
      * Inserts a record into the table.
      *
      * @param array $record An array or array-like object with column names and values
+     * @param string $fieldName The name of the column that stores the creation timestamp
      * @return mixed The primary key value of the inserted item.
      */
-    public function insertRecord(array $record)
+    protected function insertRecord(array $record, string $fieldName)
     {
         $primaryKeyName = $this->primaryKey();
 
@@ -423,8 +424,8 @@ class Table
         unset($record[$primaryKeyName]);
 
         # set creation timestamp
-        if ($this->hasColumn($model::$createddFieldName)) {
-            $record[$model::$createdFieldName] = time();
+        if ($this->hasColumn($fieldName)) {
+            $record[$fieldName] = time();
         }
 
         $query = Query::insert()->into($this->table)->values($record);
@@ -437,15 +438,16 @@ class Table
      * Updates a record in the table.
      *
      * @param array $record An array or array-like object with column names and values
+     * @param string $fieldName The name of the column that stores the update timestamp
      * @return mixed The primary key value of the updated item.
      */
-    public function updateRecord(array $record)
+    protected function updateRecord(array $record, string $fieldName)
     {
         $primaryKeyName = $this->primaryKey();
 
         # set modification timestamp
-        if ($this->hasColumn($model::$updatedFieldName)) {
-            $record[$model::$updatedFieldName] = time();
+        if ($this->hasColumn($fieldName)) {
+            $record[$fieldName] = time();
         }
 
         # if $id is set, perform an UPDATE
