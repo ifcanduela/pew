@@ -136,10 +136,13 @@ class App
 
         try {
             $route = $this->container['route'];
+            App::log('Matched route ' . $route->getPath());
+            $request = $this->container['request'];
 
             $response = $this->runBeforeMiddlewares($route, $injector);
 
             if ($response instanceof Response) {
+                App::log('Middleware returned response');
                 $result = $response;
             } else {
                 $handler = $this->container['controller'];
@@ -214,7 +217,9 @@ class App
      */
     protected function handleCallback(callable $handler, Injector $injector)
     {
-        $controller = $injector->createInstance(Controller::class);
+        App::log('Request handler is anonymous callback');
+
+        $controller = $injector->createinstance(Controller::class);
 
         return $injector->callFunction($handler, $controller);
     }
@@ -249,6 +254,8 @@ class App
         if (!($response instanceof Response)) {
             $response = $injector->callMethod($controller, $actionName);
         }
+
+        App::log("Request handler is {$handler}@{$actionName}");
 
         return $response;
     }

@@ -2,15 +2,37 @@
 
 namespace pew\model;
 
-use ifcanduela\db\Database;
 use pew\model\exception\TableNotSpecifiedException;
 use pew\model\exception\TableNotFoundException;
-use Stringy\StaticStringy as Str;
+use pew\model\relation\Relationship;
 
+use ifcanduela\db\Database;
 use ifcanduela\db\Query;
+
+use Stringy\Stringy as Str;
 
 /**
  * Table gateway class.
+ *
+ * @method Table columns(...$columns)
+ * @method Table from(...$columns)
+ * @method Table where(array $conditions)
+ * @method Table andWhere(array $conditions)
+ * @method Table orWhere(array $conditions)
+ * @method Table join()
+ * @method Table innerJoin()
+ * @method Table leftJoin()
+ * @method Table leftOuterJoin()
+ * @method Table rightJoin()
+ * @method Table outerJoin()
+ * @method Table fullOuterJoin()
+ * @method Table groupBy()
+ * @method Table having()
+ * @method Table andHaving()
+ * @method Table orHaving()
+ * @method Table orderBy()
+ * @method Table limit()
+ * @method Table offset()
  */
 class Table
 {
@@ -43,7 +65,7 @@ class Table
      *
      * @var array
      */
-    protected static $tableData = [];
+    protected $tableData = [];
 
     /**
      * Current resultset.
@@ -62,21 +84,18 @@ class Table
     protected $recordClass;
 
     /**
-     * Method used to fetch related records.
+     * Current selection query.
      *
-     * @var string
+     * @var \ifcanduela\db\Query
      */
-    protected $fetchMethod = 'one';
-
-    /**
-     * Method used to fetch related records.
-     *
-     * @var string
-     */
-    protected $fetchCondition;
-
-    /** @var \ifcanduela\db\Query */
     public $query;
+
+	/**
+     * List of relationships to fetch eagerly.
+     *
+     * @var array
+     */
+    protected $relationships = [];
 
     /**
      * The constructor builds the model!.
@@ -85,10 +104,13 @@ class Table
      * @param Database $db Database instance to use
      * @param string|null $recordClass
      */
-    public function __construct(string $table, Database $db = null, string $recordClass = null)
+    public function __construct($table, Database $db, $recordClass = null)
     {
+        $this->table = $table;
+        $this->db = $db;
         $this->recordClass = $recordClass;
-        $this->init($table, $db);
+
+        $this->init();
     }
 
     /**
@@ -97,25 +119,46 @@ class Table
      * @param string $table Name of the table
      * @param Database $db Database instance to use
      */
-    public function init(string $table, Database $db = null)
+    public function init()
     {
-        # get the Database class instance
-        $this->db = is_null($db) ? pew('db') : $db;
-        $this->table = $table;
-
-        if (!isset(static::$tableData[$this->table])) {
-            if (!$this->db->tableExists($this->table)) {
-                throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
-            }
-
-            # some metadata about the table
-            $primary_key = $this->db->getPrimaryKeys($this->table);
-            $columns = $this->db->getColumnNames($this->table);
-            static::$tableData[$this->table]['name'] = $this->table;
-            static::$tableData[$this->table]['primary_key'] = $primary_key;
-            static::$tableData[$this->table]['columns'] = $columns;
-            static::$tableData[$this->table]['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
+        if (!$this->db->tableExists($this->table)) {
+            throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
         }
+
+        # some metadata about the table
+        $this->tableData['name'] = $this->table;
+
+        if (!isset($this->tableData['primary_key'])) {
+            $primary_key = $this->db->getPrimaryKeys($this->table);
+            $this->tableData['primary_key'] = $primary_key;
+        }
+
+        if (!isset($this->tableData['columns'])) {
+            $columns = $this->db->getColumnNames($this->table);
+            $this->tableData['columns'] = $columns;
+            $this->tableData['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
+        }
+    }
+
+    /**
+     * Auto-resolve the table name for the current model.
+     *
+     * @return string
+     */
+    public function tableName()
+    {
+        if (!is_null($this->table)) {
+            return $this->table;
+        }
+
+        $shortname = (new \ReflectionClass($this))->getShortName();
+        $table_name = preg_replace('/Model$/', '', $shortname);
+
+        if (!$table_name) {
+            throw new TableNotSpecifiedException("Model class must be attached to a database table.");
+        }
+
+        return Str::create($table_name)->underscored(true);
     }
 
     /**
@@ -125,7 +168,7 @@ class Table
      */
     public function primaryKey()
     {
-        return static::$tableData[$this->table]['primary_key'];
+        return $this->tableData['primary_key'];
     }
 
     /**
@@ -140,8 +183,8 @@ class Table
     public function columnNames($as_keys = true)
     {
         return $as_keys
-            ? static::$tableData[$this->table]['column_names']
-            : array_keys(static::$tableData[$this->table]['column_names']);
+            ? $this->tableData['column_names']
+            : array_keys($this->tableData['column_names']);
     }
 
     /**
@@ -179,7 +222,7 @@ class Table
      */
     public function createSelect() {
         $this->query = Query::select();
-        $this->query->from($this->table);
+        $this->query->from($this->tableName());
 
         return $this;
     }
@@ -189,7 +232,7 @@ class Table
      */
     public function createUpdate() {
         $this->query = Query::update();
-        $this->query->table($this->table);
+        $this->query->table($this->tableName());
 
         return $this;
     }
@@ -199,7 +242,7 @@ class Table
      */
     public function createInsert() {
         $this->query = Query::insert();
-        $this->query->into($this->table);
+        $this->query->into($this->tableName());
 
         return $this;
     }
@@ -210,7 +253,7 @@ class Table
     public function createDelete()
     {
         $this->query = Query::delete();
-        $this->query->table($this->table);
+        $this->query->table($this->tableName());
 
         return $this;
     }
@@ -256,6 +299,15 @@ class Table
         throw new \RuntimeException("The $clause operation failed");
     }
 
+    public function recordClass(string $recordClass = null)
+    {
+        if ($recordClass) {
+            $this->recordClass = $recordClass;
+        }
+
+        return $this->recordClass;
+    }
+
     public function one()
     {
         $this->limit(1);
@@ -268,13 +320,17 @@ class Table
             $model = $className::fromArray($records[0]);
         }
 
+        if ($this->relationships) {
+            $this->loadRelationships([$model]);
+        }
+
         return $model;
     }
 
     /**
      * Fetch a list of records.
      *
-     * @return array
+     * @return Collection
      */
     public function all()
     {
@@ -286,7 +342,11 @@ class Table
             $models[] = $className::fromArray($record);
         }
 
-        return $models;
+        if ($this->relationships) {
+            $this->loadRelationships($models);
+        }
+
+        return new Collection($models);
     }
 
     /**
@@ -321,7 +381,7 @@ class Table
         $attributes = $model->attributes();
         $record = $result = [];
 
-        foreach (static::$tableData[$this->table]['columns'] as $key) {
+        foreach ($this->tableData['columns'] as $key) {
             if (array_key_exists($key, $attributes)) {
                 $record[$key] = $attributes[$key];
             }
@@ -334,48 +394,66 @@ class Table
         $primaryKeyName = $this->primaryKey();
 
         if (empty($record[$primaryKeyName])) {
-            # unset the primary key, just in case
-            unset($record[$primaryKeyName]);
-
-            # set creation timestamp
-            if ($this->hasColumn($model::$createdFieldName)) {
-                $record[$model::$createdFieldName] = time();
-            }
-
-            # set modification timestamp
-            if ($this->hasColumn($model::$updatedFieldName)) {
-                $record[$model::$updatedFieldName] = time();
-            }
-
-
-            # if $id is not set, perform an INSERT
-            $query = Query::insert()->into($this->table)->values($record);
-            $this->db->run($query);
-            $id = $this->db->lastInsertId();
+            $id = $this->insertRecord($record);
         } else {
-            # set modification timestamp
-            if ($this->hasColumn('modified')) {
-                $record['modified'] = time();
-            }
-
-            if ($this->hasColumn('updated')) {
-                $record['updated'] = time();
-            }
-
-            # if $id is set, perform an UPDATE
-            $where = [$primaryKeyName => $record[$primaryKeyName]];
-            $query = Query::update($this->table)->set($record)->where($where);
-            $this->db->run($query);
-            $id = $record[$primaryKeyName];
+            $id = $this->updateRecord($record);
         }
-
-        $model = $this->createSelect()->from($this->table)->where([$primaryKeyName => $id])->one();
 
         if (method_exists($model, 'afterSave')) {
             $model->afterSave();
         }
 
+        $model = $this->createSelect()->from($this->tableName())->where([$primaryKeyName => $id])->one();
+
+
         return $model->attributes();
+    }
+
+    /**
+     * Inserts a record into the table.
+     *
+     * @param array $record An array or array-like object with column names and values
+     * @return mixed The primary key value of the inserted item.
+     */
+    public function insertRecord(array $record)
+    {
+        $primaryKeyName = $this->primaryKey();
+
+        # unset the primary key, just in case
+        unset($record[$primaryKeyName]);
+
+        # set creation timestamp
+        if ($this->hasColumn($model::$createddFieldName)) {
+            $record[$model::$createdFieldName] = time();
+        }
+
+        $query = Query::insert()->into($this->table)->values($record);
+        $this->db->run($query);
+        
+        return $this->db->lastInsertId();
+    }
+
+    /**
+     * Updates a record in the table.
+     *
+     * @param array $record An array or array-like object with column names and values
+     * @return mixed The primary key value of the updated item.
+     */
+    public function updateRecord(array $record)
+    {
+        $primaryKeyName = $this->primaryKey();
+
+        # set modification timestamp
+        if ($this->hasColumn($model::$updatedFieldName)) {
+            $record[$model::$updatedFieldName] = time();
+        }
+
+        # if $id is set, perform an UPDATE
+        $where = [$primaryKeyName => $record[$primaryKeyName]];
+        $query = Query::update($this->tableName())->set($record)->where($where);
+        $this->db->run($query);
+        
+        return $record[$primaryKeyName];
     }
 
     /**
@@ -392,7 +470,7 @@ class Table
      */
     public function delete($id = null)
     {
-        $query = Query::delete($this->table);
+        $query = Query::delete($this->table());
 
         if (is_array($id)) {
             # use the $id as an array of conditions
@@ -456,7 +534,7 @@ class Table
      */
     public function hasColumn(string $column_name)
     {
-        return array_key_exists($column_name, static::$tableData[$this->table]['column_names']);
+        return array_key_exists($column_name, $this->tableData['column_names']);
     }
 
     /**
@@ -495,60 +573,56 @@ class Table
         throw new \BadMethodCallException("Invalid method '{$method}'");
     }
 
-    /**
-     * Set the fetch mode for related models.
-     *
-     * @return self
-     */
-    public function hasMany()
+
+
+    public function with(...$relationships)
     {
-        $this->fetchMethod = 'all';
+        $this->relationships = $relationships;
 
         return $this;
     }
 
     /**
-     * Set the fetch mode for related models.
-     *
-     * @return self
+     * Eager-load relationships.
+     * 
+     * @param  array  $models
+     * @return null
      */
-    public function belongsTo()
+    protected function loadRelationships(array $models)
     {
-        $this->fetchMethod = 'one';
+        static $depth = 0;
 
-        return $this;
-    }
+        $depth++;
 
-    /**
-     * Set a condition for fetching related models.
-     *
-     * This method is for internal use only.
-     *
-     * @param array $condition
-     * @return self
-     */
-    public function fetchCondition(array $condition)
-    {
-        $this->fetchCondition = $condition;
+        if ($models && $depth < 5) {
+            $class_name = get_class($models[0]);
+            $ref = new $class_name;
 
-        return $this;
-    }
+            foreach ($this->relationships as $relationship_field_name) {
+                $getter_method_name = 'get' . Str::create($relationship_field_name)->uppercamelize();
 
-    /**
-     * Fetch record for a defined relationship.
-     *
-     * This method is for internal use only.
-     *
-     * @return array|\pew\Model|null
-     */
-    public function fetch()
-    {
-        $this->andWhere($this->fetchCondition);
+                /** @var Relationship $relationship */
+                $relationship = $ref->$getter_method_name();
+                $groupingField = $relationship->getGroupingField();
 
-        if ($this->fetchMethod === 'all') {
-            return $this->all();
+                if ($relationship instanceof Relationship) {
+                    $relatedKeys = array_map(function ($r) use ($groupingField) {
+                        return $r->$groupingField;
+                    }, $models);
+
+                    $grouped = $relationship->find($relatedKeys);
+
+                    foreach ($models as $model) {
+                        $keyValue = $model->{$groupingField};
+
+                        if (isset($grouped[$keyValue])) {
+                            $model->attachRelated($getter_method_name, $grouped[$keyValue]);
+                        }
+                    }
+                }
+            }
         }
 
-        return $this->one();
+        $depth--;
     }
 }

@@ -6,20 +6,17 @@ use ifcanduela\db\Database;
 
 class TableFactory
 {
-    /**
-     * @var Database
-     */
+    /** @var Database */
     protected $db;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected static $connections = [];
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected static $connectionCallbacks = [];
+
+    /** @var array */
+    protected static $tableDefinitions = [];
 
     /**
      * Creates a new TableFactory.
@@ -86,6 +83,10 @@ class TableFactory
     {
         $db = static::getConnection($connectionName);
 
-        return new Table($tableName, $db, $recordClass);
+        if (!isset(static::$tableDefinitions[$tableName])) {
+            static::$tableDefinitions[$tableName] = new Table($tableName, $db, $recordClass);
+        }
+
+        return clone static::$tableDefinitions[$tableName];
     }
 }
