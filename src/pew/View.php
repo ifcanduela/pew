@@ -107,7 +107,7 @@ class View implements \ArrayAccess
      */
     public function get(string $key, $default = null)
     {
-        return array_key_exists($key, $this->variables) ? $this->variables[$key] : $default;
+        return $this->variables[$key] ?? $default;
     }
 
     /**
@@ -130,21 +130,25 @@ class View implements \ArrayAccess
      * @throws \Exception
      * @throws \RuntimeException
      */
-    public function render(array $data = [], string $template = null)
+    public function render(string $template = null, array $data = [])
     {
         if (!$template) {
             $template = $this->template;
         }
 
-        # make previous and received variables available using the index operator
-        $this->variables = array_merge($this->variables, $data);
+        if ($template === null) {
+            throw new \RuntimeException("No template specified");
+        }
 
-        # Get the view file
+        # find the template file
         $template_file = $this->resolve($template);
 
         if ($template_file === false) {
             throw new \RuntimeException("Template {$template} not found");
         }
+
+        # make previous and received variables available using the index operator
+        $this->variables = array_merge($this->variables, $data);
 
         $this->output
             = $output

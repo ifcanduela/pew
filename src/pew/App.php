@@ -274,10 +274,9 @@ class App
         }
 
         $view = $this->container['view'];
-        $view->template('errors/404');
         $view->layout(false);
 
-        $output = $view->render(['exception' => $e]);
+        $output = $view->render('errors/404', ['exception' => $e]);
 
         return new Response($output, 404);
     }
@@ -319,7 +318,7 @@ class App
 
         # use the action result to render the view
         $view = $this->container['view'];
-        $output = $view->render($actionResult);
+        $output = $view->render(null, $actionResult);
 
         return new Response($output);
     }

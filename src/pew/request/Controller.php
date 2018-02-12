@@ -25,7 +25,7 @@ class Controller
      */
     public $view;
 
-    public function __construct(Request $request, View $view)
+    public function __construct(Request $request, View $view = null)
     {
         $this->request = $request;
         $this->view = $view;
@@ -37,7 +37,7 @@ class Controller
      * @param string $uri
      * @return RedirectResponse
      */
-    public function redirect($uri)
+    public function redirect(string $uri)
     {
         return new RedirectResponse($uri);
     }
@@ -45,21 +45,22 @@ class Controller
     /**
      * Render a template.
      *
-     * The $template argument can be skipped
+     * The $template argument can be skipped with `null` if a call
+     * to `$view->template(string $template)` has been made beforehand.
      *
      * @param string $template
      * @param array $data
      * @return Response
      */
-    public function render($template, $data = [])
+    public function render(string $template, array $data = [])
     {
-        if (is_string($template)) {
+        if ($template !== null) {
             $this->view->template($template);
-        } else {
-            $data = $template;
         }
 
-        return new Response($this->view->render($data));
+        $content = $this->view->render($template, $data);
+
+        return new Response($content);
     }
 
     /**
