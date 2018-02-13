@@ -331,6 +331,27 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * @param int $count
+     * @return static|mixed
+     */
+    public function random($count = 1)
+    {
+        $single = $count === 1;
+        $items = [];
+        $max = count($this->items) - 1;
+
+        do {
+            $items[] = $this->items[mt_rand(0, $max)];
+        } while (--$count);
+
+        if ($single) {
+            return $items[0];
+        }
+
+        return new static($items);
+    }
+
+    /**
      * @param callable $callback
      * @param mixed $initial
      * @return mixed
@@ -519,27 +540,6 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         $items = array_map(function (...$values) {
             return $values;
         }, $this->items, ...$arrays);
-
-        return new static($items);
-    }
-
-    /**
-     * @param int $count
-     * @return static|mixed
-     */
-    public function random($count = 1)
-    {
-        $single = $count === 1;
-        $items = [];
-        $max = count($this->items) - 1;
-
-        do {
-            $items[] = $this->items[mt_rand(0, $max)];
-        } while (--$count);
-
-        if ($single) {
-            return $items[0];
-        }
 
         return new static($items);
     }

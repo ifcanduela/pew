@@ -11,10 +11,11 @@ use FastRoute\Dispatcher;
  */
 class Router
 {
-    /**
-     * @var Dispatcher
-     */
+    /** @var Dispatcher */
     protected $dispatcher;
+
+    /** @var array[] */
+    public $routes = [];
 
     /**
      * Initialize a Router.
@@ -38,12 +39,10 @@ class Router
      * Transform framework routes into Route objects.
      *
      * @param array $routeData
-     * @return array
+     * @return Route[]
      */
     protected function processRouteData(array $routeData)
     {
-        $routes = [];
-
         foreach ($routeData as $data) {
             if (is_array($data)) {
                 $data = Route::fromArray($data);
@@ -51,14 +50,14 @@ class Router
 
             if ($data instanceof Group) {
                 foreach ($data->getRoutes() as $route) {
-                    $routes[] = $route;
+                    $this->routes[] = $route;
                 }
             } else {
-                $routes[] = $data;
+                $this->routes[] = $data;
             }
         }
 
-        return $routes;
+        return $this->routes;
     }
 
     /**
