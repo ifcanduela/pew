@@ -6,7 +6,7 @@ use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
 
 /**
- * The Router class wraps the nikic\FastRoute library for slightly
+ * The Router class wraps the `nikic\FastRoute` library for slightly
  * taylor-made functionality.
  */
 class Router
