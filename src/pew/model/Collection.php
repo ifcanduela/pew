@@ -8,17 +8,17 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Create a collection.
-     * 
+     *
      * @param array $items
      */
     public function __construct(array $items = [])
     {
-        $this->items = $items
-;    }
+        $this->items = $items;
+    }
 
     /**
      * Create a collection.
-     * 
+     *
      * @param array $items
      * @return static
      */
@@ -29,7 +29,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * ArrayAccess
-     * 
+     *
      * @param mixed $offset
      * @return bool
      */
@@ -40,7 +40,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * ArrayAccess
-     * 
+     *
      * @param mixed $offset
      * @return mixed
      */
@@ -51,7 +51,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * ArrayAccess
-     * 
+     *
      * @param mixed $offset
      * @param mixed $value
      * @return null
@@ -67,7 +67,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * ArrayAccess
-     * 
+     *
      * @param mixed $offset
      * @return null
      */
@@ -78,7 +78,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Countable
-     * 
+     *
      * @return int
      */
     public function count()
@@ -107,6 +107,24 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Appends all items of an array to the end of the collection.
+     *
+     * If more than one array is passed, their order is retained.
+     *
+     * @param array $array
+     */
+    public function append(array ...$array)
+    {
+        $items = array_merge($this->items, ...$array);
+
+        return new static($items);
+    }
+
+    /**
+     * Split the collection into chunks.
+     *
+     * Each chunk will be itself a collection.
+     *
      * @param int $chunkSize
      * @param bool $preserveKeys
      * @return static
@@ -120,6 +138,13 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         }, $items));
     }
 
+    /**
+     * Create a new collection from a property or array index from every
+     * item in the collection.
+     *
+     * @param string $field
+     * @return static
+     */
     public function field($field)
     {
         $items = array_map(function ($item) use ($field) {
@@ -130,10 +155,37 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Adds items to the collection until a certain element count is reached.
+     *
+     * If a callable is supplied as `$value`, it will be called to use its return value as fill item.
+     * 
+     * @param int $count
+     * @param callable|mixed $value
+     * @return static
+     */
+    public function fill($count, $value)
+    {
+        $items = $this->items;
+        $start = count($items);
+
+        while ($start < $count) {
+            if (is_callable($value)) {
+                $items[$start] = $value();
+            } else {
+                $items[$start] = $value;
+            }
+
+            $count++;
+        }
+
+        return new static($items);
+    }
+
+    /**
      * Filter the items in the collection.
      *
      * Callback signature is function($value, $key): bool
-     * 
+     *
      * @param callable $callback
      * @param int $flag
      * @return static
@@ -147,7 +199,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Get the first item or items in the collection.
-     * 
+     *
      * @param integer $count
      * @return static|mixed
      */
@@ -164,7 +216,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * Group the items in the collection.
      *
      * Callback signature is function($value, $key): bool
-     * 
+     *
      * @param string|callable $field
      * @return static
      */
@@ -185,7 +237,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Check if the key exists in the collection.
-     * 
+     *
      * @param mixed $key
      * @return bool
      */
@@ -196,7 +248,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Check if the value exists in the collection.
-     * 
+     *
      * @param mixed $item
      * @param bool $strict
      * @return bool
@@ -208,7 +260,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Join the items into a string.
-     * 
+     *
      * @param string $glue
      * @param string|callable $field
      * @return string
@@ -230,7 +282,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Create a collection indexed by a field.
-     * 
+     *
      * @param string|callable $field
      * @return static
      */
@@ -251,7 +303,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Get the underlying items of the collection.
-     * 
+     *
      * @return array
      */
     public function items()
@@ -261,7 +313,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Get the keys of the collection.
-     * 
+     *
      * @return static
      */
     public function keys()
@@ -271,7 +323,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Get the last item or items in the collection.
-     * 
+     *
      * @param int $count
      * @return static|mixed
      */
@@ -286,7 +338,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Map the items into other items.
-     * 
+     *
      * @param callable $callback
      * @param array[] $arrays
      * @return static
@@ -300,7 +352,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Get the items that match a set of keys.
-     * 
+     *
      * @param int|string $keys
      * @return static
      */
@@ -312,6 +364,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Remove an item from the end of the collection.
+     *
      * @return mixed
      */
     public function pop()
@@ -320,6 +374,23 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Prepends all items of an array to the beginning of the collection.
+     *
+     * If more than one array is passed, their order is retained.
+     *
+     * @param array $array
+     */
+    public function prepend(array ...$array)
+    {
+        $array[] = $this->items;
+        $items = array_merge(...$array);
+
+        return new static($items);
+    }
+
+    /**
+     * Add an item to the end of the collection.
+     *
      * @param mixed $item
      * @return null
      */
@@ -331,20 +402,22 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Take one or more random items from the collection.
+     *
      * @param int $count
      * @return static|mixed
      */
     public function random($count = 1)
     {
         $single = $count === 1;
-        $items = [];
-        $max = count($this->items) - 1;
+        $pool = $this->items;
+        shuffle($pool);
 
         do {
-            $items[] = $this->items[mt_rand(0, $max)];
+            $items[] = array_pop($pool);
         } while (--$count);
 
-        if ($single) {
+        if ($single && $items) {
             return $items[0];
         }
 
@@ -352,6 +425,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Reduce the collection to a single value.
+     *
      * @param callable $callback
      * @param mixed $initial
      * @return mixed
@@ -362,6 +437,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Reverse the order of the items in the collection.
+     *
      * @param bool $preserveKeys
      * @return static
      */
@@ -371,6 +448,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Remove an item from the beginning of the collection.
+     *
      * @return mixed
      */
     public function shift()
@@ -379,6 +458,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Randomize the order of the items in the collection.
+     *
      * @return static
      */
     public function shuffle()
@@ -391,6 +472,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Take a sequence of items from the collection.
+     *
      * @param int $offset
      * @param int $length
      * @return static
@@ -401,6 +484,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Insert or replace a sequence of items in the collection.
+     *
      * @param int $offset
      * @param int $length
      * @param array $replacement
@@ -415,28 +500,41 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Sort the items in the collection.
+     *
      * @param string|callable|null $field
+     * @param bool $reverse
      * @return static
      */
-    public function sort($field = null)
+    public function sort($field = null, $reverse = false)
     {
-        $collection = new Collection($this->items);
+        $items = $this->items;
 
         if (is_callable($field)) {
-            usort($collection->items, $field);
+            usort($items, $field);
         } elseif ($field) {
-            usort($collection->items, function ($a, $b) use ($field) {
-                return $a->$field < $b->$field;
+            usort($items, function ($a, $b) use ($field) {
+                $_a = $a->$field ?? $a[$field] ?? null;
+                $_b = $a->$field ?? $a[$field] ?? null;
+
+                return $_a <=> $_b;
             });
         } else {
-            sort($collection->items);
+            sort($items);
         }
 
-        return $collection;
+        if ($reverse) {
+            array_reverse($items);
+        }
+
+        return new static($items);
     }
 
     /**
-     * 
+     * Return the items of the collection.
+     *
+     * If any item has a `toArray` method, it will be called.
+     *
      * @return array
      */
     public function toArray()
@@ -460,7 +558,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * @return string
      */
     public function toJson($options = null, $depth = 512)
-    {   
+    {
         $encode = json_encode($this->items, $options, $depth);
 
         if (false === $encode) {
@@ -472,7 +570,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Add an item to the beginning of the collection.
-     * 
+     *
      * @param mixed $item
      * @return null
      */
@@ -484,8 +582,34 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * Get the value of the items in the collection.
+     * Get all items in order until a condition is met.
+     *
+     * The signature for the callable is ($key, $value, $index)
      * 
+     * @param callable $condition 
+     * @return static
+     */
+    public function until(callable $condition)
+    {
+        $items = [];
+        $index = 0;
+
+        foreach ($this->items as $key => $value) {
+            $result = $condition($key, $value, $index);
+
+            if ($result) {
+                $items[$key] = $value;
+            } else {
+                break;
+            }
+        }
+
+        return new static($items);
+    }
+
+    /**
+     * Get the value of the items in the collection.
+     *
      * @return static
      */
     public function values()
@@ -495,7 +619,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Apply a callback to each item in the collection.
-     * 
+     *
      * @param callable $callback
      * @param mixed $userData
      * @return self
@@ -509,7 +633,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Get the items that don't match a set of keys.
-     * 
+     *
      * @param string|int $keys
      * @return static
      */
@@ -532,6 +656,12 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Aggregate items from one or more arrays into a collection of arrays.
+     *
+     * This method will take the items of the collection, turn each into an array,
+     * and append the corresponding items from each of the provided arrays to the
+     * new array item.
+     *
      * @param array $arrays
      * @return static
      */
@@ -544,8 +674,15 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         return new static($items);
     }
 
+    /**
+     * Clone the collection.
+     *
+     * @return static
+     */
     public function __clone()
     {
-        return new static($this->items);
+        $items = $this->items;
+
+        return new static($items);
     }
 }
