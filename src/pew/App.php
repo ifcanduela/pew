@@ -17,13 +17,13 @@ use pew\router\Route;
 class App
 {
     /** @var \Pimple\Container */
-    private $container;
+    protected $container;
 
     /** @var array */
     protected $middleware = [];
 
     /** @var static */
-    private static $instance;
+    protected static $instance;
 
     /**
      * Bootstrap a web app.
@@ -235,7 +235,8 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
-        $controllerSlug = Str::create(basename($controllerClass))->removeRight('Controller')->underscored()->slugify();
+        $shortName = (new \ReflectionClass($controllerClass))->getShortName();
+        $controllerSlug = Str::create($shortName)->removeRight('Controller')->underscored()->slugify();
         $actionName = $this->container['action'];
 
         $view = $this->container['view'];
