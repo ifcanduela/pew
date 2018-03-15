@@ -7,7 +7,7 @@ class HasMany extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return array
+     * @return \pew\model\Collection
      */
     public function fetch()
     {
@@ -29,6 +29,9 @@ class HasMany extends Relationship
         return $related->group($this->foreignKeyName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getGroupingField()
     {
         return $this->localKeyName;

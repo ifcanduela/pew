@@ -98,7 +98,7 @@ class Table
     protected $relationships = [];
 
     /**
-     * The constructor builds the model!.
+     * Create a table gateway object.
      *
      * @param string $table Name of the table
      * @param Database $db Database instance to use
@@ -114,10 +114,7 @@ class Table
     }
 
     /**
-     * Initialize a model binding it to a database table.
-     *
-     * @param string $table Name of the table
-     * @param Database $db Database instance to use
+     * Initialize a database table gateway.
      */
     public function init()
     {

@@ -5,7 +5,7 @@ namespace pew\console;
 /**
  * Base class for command-line scripts.
  *
- * Commands must implement the name(), description() and tun() methods
+ * Commands must implement the name(), description() and run() methods
  * from CommandInterface.
  *
  * The init() and finish() methods are called by the command app

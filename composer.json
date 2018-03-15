@@ -7,13 +7,14 @@
             "email": "ifcanduela@gmail.com"
         }
     ],
+    "homepage": "http://pew.ifcanduela.com",
     "require": {
         "php": ">=7.0.0",
         "symfony/http-foundation": "*",
         "nikic/fast-route": "^1.0",
         "pimple/pimple": "^3.0",
         "filp/whoops": "^2.1",
-        "danielstjules/stringy": "^2.3",
+        "danielstjules/stringy": "^3.0",
         "ifcanduela/abbrev": "*",
         "ifcanduela/db": "*",
         "monolog/monolog": "^1.23"

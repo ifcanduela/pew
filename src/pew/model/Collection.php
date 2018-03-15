@@ -2,8 +2,13 @@
 
 namespace pew\model;
 
+/**
+ * Collection wraps an array and provides an object-oriented interface to the most common
+ * array functions, and some extra functionalities.
+ */
 class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable
 {
+    /** @var array Collection items */
     protected $items = [];
 
     /**
@@ -28,7 +33,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * ArrayAccess
+     * Check if a key is set.
      *
      * @param mixed $offset
      * @return bool
@@ -39,7 +44,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * ArrayAccess
+     * Get an item by key.
      *
      * @param mixed $offset
      * @return mixed
@@ -50,7 +55,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * ArrayAccess
+     * Set an item by key.
      *
      * @param mixed $offset
      * @param mixed $value
@@ -66,7 +71,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * ArrayAccess
+     * Remove an item by key.
      *
      * @param mixed $offset
      * @return null
@@ -77,7 +82,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * Countable
+     * Get the number of items in the collection.
      *
      * @return int
      */
@@ -87,7 +92,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * IteratorAggregate
+     * Get an iterator for the collection.
      *
      * @return \ArrayIterator
      */
@@ -97,7 +102,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * JsonSerializable
+     * Specify data to serialize as JSON.
      *
      * @return string
      */
@@ -210,6 +215,18 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         }
 
         return new static(array_slice($this->items, 0, $count));
+    }
+
+    /**
+     * Flatten the items in the collection into a single-dimensional array.
+     * 
+     * @return static
+     */
+    public function flatten()
+    {
+        $it = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($this->items));
+
+        return new static(iterator_to_array($it, false));
     }
 
     /**

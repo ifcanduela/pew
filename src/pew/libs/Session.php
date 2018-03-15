@@ -5,6 +5,9 @@ namespace pew\libs;
 use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 use ArrayAccess;
 
+/**
+ * Wrapper around Symfony Session.
+ */
 class Session extends SymfonySession implements ArrayAccess
 {
     /**
@@ -43,6 +46,12 @@ class Session extends SymfonySession implements ArrayAccess
         return $default;
     }
 
+    /**
+     * Get a session variable.
+     * 
+     * @param string $key
+     * @return mixed
+     */
     public function offsetGet($key)
     {
         $sessionData = $this->all();
@@ -68,18 +77,37 @@ class Session extends SymfonySession implements ArrayAccess
         return $value;
     }
 
+    /**
+     * Set a session variable.
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @return null
+     */
     public function offsetSet($key, $value)
     {
         $this->set($key, $value);
     }
 
+    /**
+     * Check a session variable.
+     * 
+     * @param string $key
+     * @return bool
+     */
     public function offsetExists($key)
     {
         return $this->has($key);
     }
 
+    /**
+     * Unset a session variable.
+     * 
+     * @param string $key
+     * @return null
+     */
     public function offsetUnset($key)
     {
-        return $this->remove($key);
+        $this->remove($key);
     }
 }

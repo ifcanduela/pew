@@ -15,16 +15,16 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Controller
 {
-    /**
-     * @var \pew\request\Request
-     */
+    /** @var \pew\request\Request */
     public $request;
 
-    /**
-     * @var \pew\View
-     */
+    /** @var \pew\View */
     public $view;
 
+    /**
+     * @param Request $request
+     * @param View|null $view
+     */
     public function __construct(Request $request, View $view = null)
     {
         $this->request = $request;

@@ -10,59 +10,37 @@ use pew\libs\FileCache;
  */
 class View implements \ArrayAccess
 {
-    /**
-     * @var bool Render the view or not
-     */
+    /** @var boolean */
     public $render = true;
 
-    /**
-     * @var SplStack Base templates directory
-     */
+    /** @var SplStack Base templates directory */
     protected $folderStack;
 
-    /**
-     * @var string Template name
-     */
+    /** @var string Template name */
     protected $template = 'index';
 
-    /**
-     * @var string Layout name
-     */
+    /** @var string Layout name */
     protected $layout = false;
 
-    /**
-     * @var string View title
-     */
+    /** @var string View title */
     protected $title;
 
-    /**
-     * @var string Templates file extension
-     */
+    /** @var string Templates file extension */
     protected $extension = '.php';
 
-    /**
-     * @var string Result of rendering the view
-     */
+    /** @var string Result of rendering the view */
     protected $output = '';
 
-    /**
-     * @var array Rendered partial blocks
-     */
+    /** @var array Rendered partial blocks */
     protected $blocks = [];
 
-    /**
-     * @var SplStack Stack of block names
-     */
+    /** @var SplStack Stack of block names */
     protected $blockStack;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $variables = [];
 
-    /**
-     * @var FileCache
-     */
+    /** @var FileCache */
     protected $fileCache;
 
     /**
@@ -124,8 +102,10 @@ class View implements \ArrayAccess
     /**
      * Renders a view according to the request info.
      *
+     * Template names are resolved using the configured template directories and template file extension.
+     *
+     * @param string $template Template name, relative to one of the template directories.
      * @param array $data Template data
-     * @param string $template
      * @return string
      * @throws \Exception
      * @throws \RuntimeException

@@ -5,20 +5,42 @@ namespace pew\libs;
 use Stringy\Stringy as S;
 use pew\request\Request;
 
+/**
+ * Class to manipulate URLs.
+ */
 class Url
 {
     /** @var Request */
     public $request;
+    
+    /** @var array */
     public $routes = [];
+    
+    /** @var array */
     public $namedRoutes = [];
 
+    /** @var string */
     public $scheme = 'http';
+    
+    /** @var string */
     public $user = '';
+    
+    /** @var string */
     public $password = '';
+    
+    /** @var string */
     public $host = '';
+    
+    /** @var int */
     public $port = 80;
+    
+    /** @var string */
     public $path = [];
+    
+    /** @var array */
     public $query = [];
+    
+    /** @var string */
     public $fragment = '';
 
     /**

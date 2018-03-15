@@ -205,21 +205,50 @@ class Route implements \ArrayAccess
         return isset($this->params[$key]) || isset($this->defaults[$key]);
     }
 
+    /**
+     * Check if a route parameter exists.
+     * 
+     * @param string $key
+     * @return bool
+     */
     public function offsetExists($key)
     {
         return $this->checkParam($key);
     }
 
+    /**
+     * Get a route parameter by key.
+     * 
+     * @param string $key
+     * @return mixed
+     */
     public function offsetGet($key)
     {
         return $this->getParam($key);
     }
 
+    /**
+     * Set a route parameter value by key.
+     *
+     * Route parameters are read-only and cannot be set.
+     * 
+     * @param string $key
+     * @param mixed $value
+     * @throws \BadMethodCallException
+     */
     public function offsetSet($key, $value)
     {
         throw new \BadMethodCallException("Route is read-only: cannot set value {$key}");
     }
 
+    /**
+     * Unset a route parameter.
+     *
+     * Route parameters are read-only and cannot be unset.
+     * 
+     * @param string $key
+     * @throws \BadMethodCallException
+     */
     public function offsetUnset($key)
     {
         throw new \BadMethodCallException("Route is read-only: cannot unset value {$key}");
@@ -322,7 +351,6 @@ class Route implements \ArrayAccess
         return $this;
     }
 
-
     /**
      * Set a default value for a route placeholder.
      *
@@ -351,6 +379,11 @@ class Route implements \ArrayAccess
         return $r;
     }
 
+    /**
+     * Create a route group.
+     * 
+     * @return Group
+     */
     public static function group()
     {
         return new Group();

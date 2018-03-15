@@ -6,9 +6,19 @@ use pew\model\Collection;
 
 class HasAndBelongsToMany extends Relationship
 {
+    /** @var string Pivot table name */
     protected $through;
+
+    /** @var array|string Join condition */
     protected $on;
 
+    /**
+     * Specify a pivot table for the relationship.
+     * 
+     * @param string $table Name of the pivot table
+     * @param array $on Condition to join the far table to the pivot table.
+     * @return self
+     */
     public function through($table, array $on)
     {
         $this->through = $table;
@@ -75,6 +85,9 @@ class HasAndBelongsToMany extends Relationship
         }, $result);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getGroupingField()
     {
         return $this->localKeyName;

@@ -29,6 +29,9 @@ class HasOne extends Relationship
         return $related->index($this->localKeyName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getGroupingField()
     {
         return $this->localKeyName;

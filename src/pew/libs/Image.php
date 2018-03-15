@@ -17,19 +17,13 @@ class Image
     const ANCHOR_TOP_LEFT = 'top left';
     const ANCHOR_TOP_RIGHT = 'top right';
 
-    /**
-     * @var string Original file name.
-     */
+    /** @var string Original file name */
     protected $sourceFileName;
 
-    /**
-     * @var string Destination file name.
-     */
+    /** @var string Destination file name */
     protected $filename;
 
-    /**
-     * @var resource A GD resource containing the image data
-     */
+    /** @var resource A GD resource containing the image data */
     protected $resource;
 
     /**
@@ -38,24 +32,16 @@ class Image
      */
     protected $imageType;
 
-    /**
-     * @var string Image file MIME type.
-     */
+    /** @var string Image file MIME type */
     protected $mimeType;
 
-    /**
-     * @var int Output quality.
-     */
+    /** @var int Output quality */
     protected $quality;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $width;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     protected $height;
 
     /**

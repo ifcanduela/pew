@@ -7,29 +7,19 @@ namespace pew\libs;
  */
 class FileCache
 {
-    /**
-     * @var integer Seconds to cache data
-     */
+    /** @var integer Seconds to cache data */
     private $interval = 0;
 
-    /**
-     * @var string Location of cache files
-     */
+    /** @var string Location of cache files */
     private $folder = '';
 
-    /**
-     * @var boolean Use Gzip compression in cache files
-     */
+    /** @var boolean Use Gzip compression in cache files */
     private $gzip = true;
 
-    /**
-     * @var boolean Whether Gzip functionality is available
-     */
+    /** @var boolean Whether Gzip functionality is available */
     private $gzipEnabled = true;
 
-    /**
-     * @var string Suffix for Gzipped cache files
-     */
+    /** @var string Suffix for Gzipped cache files */
     private $gzipSuffix = '.gz';
 
     /**
@@ -219,11 +209,23 @@ class FileCache
         return unlink($file);
     }
 
+    /**
+     * Set a cache key.
+     * 
+     * @param string $key
+     * @param mixed $value
+     */
     public function __set($key, $value)
     {
         $this->save($key, $value);
     }
 
+    /**
+     * Get a cache key.
+     * 
+     * @param string $key
+     * @return mixed|null
+     */
     public function __get($key)
     {
         if ($this->cached($key)) {
@@ -233,11 +235,22 @@ class FileCache
         return null;
     }
 
+    /**
+     * Check if a cache key exists.
+     * 
+     * @param string $key
+     * @return bool
+     */
     public function __isset($key)
     {
         return $this->cached($key);
     }
 
+    /**
+     * Remove a cache key.
+     * 
+     * @param string $key
+     */
     public function __unset($key)
     {
         return $this->delete($key);

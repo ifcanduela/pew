@@ -8,10 +8,13 @@ abstract class Relationship
 {
     /** @var Table  */
     public $finder;
+
     /** @var string Name of the column in the table that starts the relationship */
     public $localKeyName;
+
     /** @var string Name of the column in the table with the related data */
     public $foreignKeyName;
+    
     /** @var mixed Value of the column to match */
     public $keyValue;
 

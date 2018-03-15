@@ -2,7 +2,9 @@
 
 require __DIR__ . '/functions.php';
 
-$container = new \Pimple\Container();
+use Pimple\Container;
+
+$container = new Container();
 
 //
 // CONFIG
@@ -17,11 +19,11 @@ $container['log_level'] = \Monolog\Logger::WARNING;
 $container['use_db'] = $container['env'];
 $container['www_path'] = getcwd();
 
-$container['root_path'] = function ($c) {
+$container['root_path'] = function (Container $c) {
     return dirname($c['app_path']);
 };
 
-$container['cache_path'] = function ($c) {
+$container['cache_path'] = function (Container $c) {
     return $c['root_path'] . '/cache';
 };
 
@@ -38,16 +40,21 @@ $container['ignore_url_suffixes'] = [
 // FACTORIES
 //
 
-$container['action'] = function ($c) {
+$container['action'] = function (Container $c) {
     $route = $c['route'];
     $parts = preg_split('/[@\.]/', $route->getHandler());
 
-    $action = $parts[1] ?? $route['action'] ?? $c['default_action'];
+    if ($parts[1]) {
+        return $parts[1];
+    } elseif ($route['action']) {
+        return \Stringy\Stringy::create($route['action'])->camelize();
+    }
 
-    return preg_replace('/[^a-zA-Z0-9_]/', '_', $action);
+    return $c['default_action'];
+
 };
 
-$container['controller'] = function ($c) {
+$container['controller'] = function (Container $c) {
     $route = $c['route'];
     $handler = $route->getHandler();
 
@@ -59,25 +66,25 @@ $container['controller'] = function ($c) {
         $parts = explode('@', $handler);
         return $c['controller_namespace'] . $parts[0];
     } elseif ($route->checkParam('controller')) {
-        $handler = \Stringy\StaticStringy::upperCamelize($route->getParam('controller'));
+        $handler = \Stringy\Stringy::create($route->getParam('controller'))->upperCamelize();
         return $c['controller_namespace'] . $handler;
     }
 
     return null;
 };
 
-$container['controller_namespace'] = function ($c) {
+$container['controller_namespace'] = function (Container $c) {
     return $c['app_namespace'] . 'controllers\\';
 };
 
-$container['controller_slug'] = function ($c) {
+$container['controller_slug'] = function (Container $c) {
     $controller_class = basename($c['controller']);
     $controller_name = preg_replace('/.+(Controller)$/', '', $controller_class);
 
-    return Stringy\StaticStringy::slugify($controller_name);
+    return \Stringy\Stringy::create($controller_name)->slugify();
 };
 
-$container['db'] = function ($c) {
+$container['db'] = function (Container $c) {
     $db_config = $c['db_config'];
 
     if (isset($c['use_db'])) {
@@ -106,7 +113,7 @@ $container['db'] = function ($c) {
     return $db;
 };
 
-$container['app_log'] = function ($c) {
+$container['app_log'] = function (Container $c) {
     $logger = new Monolog\Logger('App log');
     $logfile = $c['app_path'] . '/logs/app.log';
     $logger->pushHandler(new Monolog\Handler\StreamHandler($logfile, $c['log_level']));
@@ -114,7 +121,7 @@ $container['app_log'] = function ($c) {
     return $logger;
 };
 
-$container['db_log'] = function ($c) {
+$container['db_log'] = function (Container $c) {
     $logger = new Monolog\Logger('DB log');
     $logfile = $c['app_path'] . '/logs/db.log';
     $logger->pushHandler(new Monolog\Handler\StreamHandler($logfile, Monolog\Logger::DEBUG));
@@ -122,18 +129,18 @@ $container['db_log'] = function ($c) {
     return $logger;
 };
 
-$container['db_config'] = function ($c) {
+$container['db_config'] = function (Container $c) {
     return require $c['app_path'] . '/' . $c['config_folder'] . '/database.php';
 };
 
-$container['file_cache'] = function ($c) {
+$container['file_cache'] = function (Container $c) {
     $cache_path = $c['cache_path'];
     $cache_duration = $c['cache_duration'];
 
     return new \pew\libs\FileCache($cache_duration, $cache_path);
 };
 
-$container['injector'] = function ($c) {
+$container['injector'] = function (Container $c) {
     return new \pew\libs\Injector(
         $c['request']->request->all(),
         $c['request']->query->all(),
@@ -142,7 +149,7 @@ $container['injector'] = function ($c) {
     );
 };
 
-$container['path'] = function ($c) {
+$container['path'] = function (Container $c) {
     $request = $c['request'];
     $path_info = $request->getPathInfo();
 
@@ -159,7 +166,7 @@ $container['request'] = function () {
     return pew\request\Request::createFromGlobals();
 };
 
-$container['route'] = function ($c) {
+$container['route'] = function (Container $c) {
     $request = $c['request'];
     $router = $c['router'];
     $path_info = $c['path'];
@@ -167,13 +174,13 @@ $container['route'] = function ($c) {
     return $router->route($path_info, $request->getMethod());
 };
 
-$container['router'] = function ($c) {
+$container['router'] = function (Container $c) {
     $routes = $c['routes'];
 
     return new \pew\router\Router($routes);
 };
 
-$container['routes'] = function ($c) {
+$container['routes'] = function (Container $c) {
     $app_folder = $c['app_path'];
     $routes_path = $app_folder . '/'. $c['config_folder'] . '/routes.php';
 
@@ -252,14 +259,14 @@ $container['session'] = function () {
     return new \pew\libs\Session();
 };
 
-$container['url'] = function ($c) {
+$container['url'] = function (Container $c) {
     $request = $c['request'];
     $routes = $c['routes'];
 
     return new \pew\libs\Url($request, $routes);
 };
 
-$container['view'] = function ($c) {
+$container['view'] = function (Container $c) {
     $app_path = $c['app_path'];
     $file_cache = $c['file_cache'];
     $views_folder = $app_path . '/views/';
@@ -267,7 +274,7 @@ $container['view'] = function ($c) {
     return new \pew\View($views_folder, $file_cache);
 };
 
-$container['whoops_handler'] = function ($c) {
+$container['whoops_handler'] = function (Container $c) {
     $request = $c['request'];
 
     if (php_sapi_name() === 'cli' || $request->isJson()) {

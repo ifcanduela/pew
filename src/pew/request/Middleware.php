@@ -5,7 +5,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class Middleware
 {
-
     /**
      * @param $uri
      * @return \Symfony\Component\HttpFoundation\RedirectResponse

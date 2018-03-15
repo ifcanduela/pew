@@ -31,6 +31,9 @@ class BelongsTo extends Relationship
         return $related->index($this->foreignKeyName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getGroupingField()
     {
         return $this->localKeyName;

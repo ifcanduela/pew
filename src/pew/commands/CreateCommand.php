@@ -5,7 +5,7 @@ namespace pew\commands;
 use pew\console\Command;
 use pew\console\CommandArguments;
 
-use Stringy\StaticStringy as S;
+use Stringy\Stringy as S;
 
 class CreateCommand extends Command
 {
@@ -35,7 +35,7 @@ class CreateCommand extends Command
         if ($arguments->has(1)) {
             $tableName = $arguments->at(1);
         } else {
-            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', S::underscored($className)), 's') . 's';
+            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', S::create($className)->underscored()), 's') . 's';
         }
 
         $file_contents = <<<PHP
@@ -82,7 +82,7 @@ PHP;
     public function command(CommandArguments $arguments)
     {
         $className = $arguments->at(0);
-        $commandName = str_replace('_', '-', S::underscored($className));
+        $commandName = str_replace('_', '-', S::create($className)->underscored());
 
         if (substr($className, -strlen('Command')) !== 'Command') {
             $className .= 'Command';
