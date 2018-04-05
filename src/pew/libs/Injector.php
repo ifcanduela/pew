@@ -2,6 +2,8 @@
 
 namespace pew\libs;
 
+class KeyNotFoundException extends \Exception {}
+
 class Injector
 {
     /** @var array */
@@ -51,7 +53,7 @@ class Injector
      *
      * @param \ReflectionFunctionAbstract $method
      * @return array List of arguments
-     * @throws \RuntimeException When an argument cannot be found
+     * @throws KeyNotFoundException When an argument cannot be found
      */
     public function getInjections(\ReflectionFunctionAbstract $method)
     {
@@ -68,7 +70,7 @@ class Injector
                 try {
                     $injection = $this->findKey($paramType);
                     $found = true;
-                } catch (\RuntimeException $e) {
+                } catch (KeyNotFoundException $e) {
                 }
             }
 
@@ -77,7 +79,7 @@ class Injector
                 try {
                     $injection = $this->findKey($param->getName());
                     $found = true;
-                } catch (\RuntimeException $e) {
+                } catch (KeyNotFoundException $e) {
                 }
             }
 
@@ -89,7 +91,7 @@ class Injector
 
             if (!$found) {
                 $paramName = $param->getName() . ' (' . $param->getType() . ')';
-                throw new \RuntimeException("Could not find a definition for $paramName.");
+                throw new KeyNotFoundException("Could not find a definition for $paramName.");
             }
 
             $injections[] = $injection;
@@ -103,7 +105,7 @@ class Injector
      *
      * @param string $key
      * @return mixed The value of the key
-     * @throws \RuntimeException When the key is not found
+     * @throws KeyNotFoundException When the key is not found
      */
     protected function findKey(string $key)
     {
@@ -113,7 +115,7 @@ class Injector
             }
         }
 
-        throw new \RuntimeException("Key not found: {$key}");
+        throw new KeyNotFoundException("Key not found: {$key}");
     }
 
     /**
