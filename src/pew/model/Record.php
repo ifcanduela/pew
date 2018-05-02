@@ -330,9 +330,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         );
 
         foreach ($this->serialize as $key) {
-            if ($this->hasGetterResults($key)) {
-                $record[$key] = $this->$key;
-            }
+            $record[$key] = $this->$key;
         }
 
         return (object) $record;
