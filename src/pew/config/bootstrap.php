@@ -44,7 +44,7 @@ $container['action'] = function (Container $c) {
     $route = $c['route'];
     $parts = preg_split('/[@\.]/', $route->getHandler());
 
-    if ($parts[1]) {
+    if (!empty($parts[1])) {
         return $parts[1];
     } elseif ($route['action']) {
         return \Stringy\Stringy::create($route['action'])->camelize();
