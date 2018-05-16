@@ -6,17 +6,17 @@ use pew\model\Collection;
 
 class HasAndBelongsToMany extends Relationship
 {
-    /** @var string Pivot table name */
+    /** @var string Association table name */
     protected $through;
 
     /** @var array|string Join condition */
     protected $on;
 
     /**
-     * Specify a pivot table for the relationship.
+     * Specify a association table for the relationship.
      * 
-     * @param string $table Name of the pivot table
-     * @param array $on Condition to join the far table to the pivot table.
+     * @param string $table Name of the association table
+     * @param array $on Condition to join the far table to the association table.
      * @return self
      */
     public function through($table, array $on)

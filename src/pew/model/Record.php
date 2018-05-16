@@ -136,7 +136,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
     /**
      * Get an array representation of the record.
-     * 
+     *
      * @return array
      */
     public function toArray()
@@ -585,7 +585,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if (!$localKeyName) {
             $localKeyName = $this->tableManager->primaryKey();
         }
-        
+
         $matchValue = $this->primaryKeyValue();
 
         return new HasMany($className::find(), $localKeyName, $foreignKeyName, $matchValue);
@@ -623,7 +623,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if (!$localKeyName) {
             $localKeyName = $this->tableManager->primaryKey();
         }
-        
+
         $matchValue = $this->primaryKeyValue();
 
         return new HasOne($className::find(), $localKeyName, $foreignKeyName, $matchValue);
@@ -634,43 +634,43 @@ class Record implements \JsonSerializable, \IteratorAggregate
      *
      * In a relationship like this:
      *
-     * NEAR TABLE | PIVOT TABLE        | FAR TABLE
+     * NEAR TABLE | ASSOCIATION TABLE  | FAR TABLE
      * -------------------------------------------
      * id (PK)    | near_id <=> far_id | id (PK)
      *
      * The arguments should be as follows:
      *
      * - `$className`: model class for FAR TABLE
-     * - `$pivotTableName`: name of PIVOT TABLE
+     * - `$associationTableName`: name of ASSOCIATION TABLE
      * - `$nearKeyName`: id (PK) in NEAR TABLE
-     * - `$nearForeignKeyName`: near_id in PIVOT TABLE
-     * - `$farForeignKeyName`: far_id in PIVOT TABLE
+     * - `$nearForeignKeyName`: near_id in ASSOCIATION TABLE
+     * - `$farForeignKeyName`: far_id in ASSOCIATION TABLE
      * - `$farKeyName`: id (PK) in FAR TABLE
-     * - `$foreignKeyName`: `near_id` of PIVOT TABLE
+     * - `$foreignKeyName`: `near_id` of ASSOCIATION TABLE
      *
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string|null $pivotTableName
+     * @param string|null $associationTableName
      * @param string|null $nearKeyName
      * @param string|null $nearForeignKeyName
      * @param string|null $farForeignKeyName
      * @param string|null $farKeyName
      * @return HasAndBelongsToMany
      */
-    public function hasAndBelongsToMany(string $className, $pivotTableName = null, $nearKeyName = null, $nearForeignKeyName = null, $farForeignKeyName = null, $farKeyName = null)
+    public function hasAndBelongsToMany(string $className, $associationTableName = null, $nearKeyName = null, $nearForeignKeyName = null, $farForeignKeyName = null, $farKeyName = null)
     {
         $nearTableName = $this->tableName;
         $farTableName = (new $className)->tableName;
 
-        if (!$pivotTableName) {
+        if (!$associationTableName) {
             $tableNames = [
                 $nearTableName,
                 $farTableName,
             ];
             sort($tableNames);
 
-            $pivotTableName = join('_', $tableNames);
+            $associationTableName = join('_', $tableNames);
         }
 
         if (!$nearKeyName) {
@@ -691,10 +691,10 @@ class Record implements \JsonSerializable, \IteratorAggregate
             $farKeyName = (new $className)->tableManager->primaryKey();
         }
 
-        $on = ["{$pivotTableName}.{$farForeignKeyName}" => "{$farTableName}.{$farKeyName}"];
+        $on = ["{$associationTableName}.{$farForeignKeyName}" => "{$farTableName}.{$farKeyName}"];
 
         return (new HasAndBelongsToMany($className::find(), $nearKeyName, $nearForeignKeyName, $this->primaryKeyValue()))
-            ->through($pivotTableName, $on);
+            ->through($associationTableName, $on);
     }
 
     /**
