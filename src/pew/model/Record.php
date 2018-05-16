@@ -235,7 +235,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Saves the record to the table.
      *
-     * @return Record
+     * @return bool
      */
     public function save()
     {
@@ -244,9 +244,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if ($result) {
             $this->attributes($result);
             $this->isNew = false;
+
+            return true;
         }
 
-        return is_array($result);
+        return false;
     }
 
     /**
