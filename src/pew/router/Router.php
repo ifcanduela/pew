@@ -2,6 +2,7 @@
 
 namespace pew\router;
 
+use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
 
@@ -29,6 +30,7 @@ class Router
         $routes = $this->processRouteData($routeData);
 
         $this->dispatcher = simpleDispatcher(function ($r) use ($routes) {
+            /** @var RouteCollector $r */
             foreach ($routes as $data) {
                 $r->addRoute($data->getMethods(), $data->getPath(), $data);
             }
@@ -80,6 +82,7 @@ class Router
             throw new \RuntimeException("Method not allowed");
         }
 
+        /** @var Route $route */
         $route = $matchedRoute[1];
         $route->setParams($matchedRoute[2]);
 

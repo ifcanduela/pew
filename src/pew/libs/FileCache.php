@@ -250,6 +250,7 @@ class FileCache
      * Remove a cache key.
      * 
      * @param string $key
+     * @return null
      */
     public function __unset($key)
     {

@@ -7,7 +7,7 @@ abstract class Middleware
 {
     /**
      * @param $uri
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return RedirectResponse
      */
     public function redirect($uri)
     {

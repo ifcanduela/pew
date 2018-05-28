@@ -19,13 +19,13 @@ use Stringy\Stringy as Str;
  * @method Table where(array $conditions)
  * @method Table andWhere(array $conditions)
  * @method Table orWhere(array $conditions)
- * @method Table join()
- * @method Table innerJoin()
- * @method Table leftJoin()
- * @method Table leftOuterJoin()
- * @method Table rightJoin()
- * @method Table outerJoin()
- * @method Table fullOuterJoin()
+ * @method Table join(string $through, array $on)
+ * @method Table innerJoin(string $through, array $on)
+ * @method Table leftJoin(string $through, array $on)
+ * @method Table leftOuterJoin(string $through, array $on)
+ * @method Table rightJoin(string $through, array $on)
+ * @method Table outerJoin(string $through, array $on)
+ * @method Table fullOuterJoin(string $through, array $on)
  * @method Table groupBy()
  * @method Table having()
  * @method Table andHaving()
@@ -197,21 +197,6 @@ class Table
         }
 
         return $this->table;
-    }
-
-    /**
-     * Get an empty record.
-     *
-     * @param array $attributes
-     * @return Table A new record
-     */
-    public function create(array $attributes = [])
-    {
-        $class = '\\' . get_class($this);
-        $blank = new $class($this->table, $this->db);
-        $blank->attributes(array_merge($this->columnNames(), $attributes));
-
-        return $blank;
     }
 
     /**
@@ -478,7 +463,7 @@ class Table
         } elseif ($id === true) {
             # this deletes everything in $this->table
             return $this->db->run($query);
-        } else {
+        } elseif ($id !== null) {
             return $this->db->run($this->query->where([$this->primaryKey() => $id]));
         }
 

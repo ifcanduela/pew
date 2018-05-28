@@ -21,8 +21,10 @@ class CreateCommand extends Command
 
     public function run(CommandArguments $arguments)
     {
-        if ($arguments->type) {
-            return $this->{$arguments->type}($arguments);
+        if ($arguments->has("type")) {
+            $type = $arguments->get("type");
+
+            return $this->{$type}($arguments);
         }
 
         return false;

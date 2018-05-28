@@ -2,8 +2,6 @@
 
 namespace pew\request;
 
-use pew\request\Request;
-use pew\libs\Session;
 use pew\View;
 
 use Symfony\Component\HttpFoundation\JsonResponse;

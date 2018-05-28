@@ -125,7 +125,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public static function fromQuery(string $query, array $parameters = [])
     {
-        $record = new static;
+        $record = new static();
 
         $result = $record->tableManager->query($query, $parameters);
 
@@ -274,7 +274,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public static function updateAll(array $values, array $condition = null)
     {
-        $record = (new static);
+        $record = new static();
         $table = $record->tableManager;
         $table->createUpdate();
 

@@ -11,8 +11,6 @@ class BelongsTo extends Relationship
      */
     public function fetch()
     {
-        $someting = 1;
-
         return $this->finder->where([$this->foreignKeyName => $this->keyValue])->one();
     }
 

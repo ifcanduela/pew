@@ -65,10 +65,6 @@ class Route implements \ArrayAccess
             $route->defaults($data['defaults']);
         }
 
-        if (isset($data['filters'])) {
-            $route->filters(...$data['filters']);
-        }
-
         if (isset($data['before'])) {
             $route->before($data['before']);
         }

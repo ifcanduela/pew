@@ -116,7 +116,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      *
      * If more than one array is passed, their order is retained.
      *
-     * @param array $array
+     * @param array[] $array
+     * @return static
      */
     public function append(array ...$array)
     {
@@ -370,7 +371,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Get the items that match a set of keys.
      *
-     * @param int|string $keys
+     * @param string|int $keys...
      * @return static
      */
     public function only(...$keys)
@@ -395,7 +396,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      *
      * If more than one array is passed, their order is retained.
      *
-     * @param array $array
+     * @param array[] $array
+     * @return static
      */
     public function prepend(array ...$array)
     {
@@ -651,7 +653,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Get the items that don't match a set of keys.
      *
-     * @param string|int $keys
+     * @param string|int $keys...
      * @return static
      */
     public function without(...$keys)

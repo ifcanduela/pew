@@ -3,7 +3,6 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
-use pew\console\CommandInterface;
 
 class App extends \pew\App
 {
@@ -22,6 +21,7 @@ class App extends \pew\App
 
         foreach ($command_files as $command_file) {
             $class_name = '\\app\\commands\\' . pathinfo($command_file, PATHINFO_FILENAME);
+            /** @var Command $command */
             $command = $injector->createInstance($class_name);
 
             $this->availableCommands[$command->name()] = $command;

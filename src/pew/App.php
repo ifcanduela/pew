@@ -133,9 +133,9 @@ class App
     {
         $result = false;
         $injector = $this->container['injector'];
+        $route = $this->container['route'];
 
         try {
-            $route = $this->container['route'];
             App::log('Matched route ' . $route->getPath());
             $request = $this->container['request'];
 
