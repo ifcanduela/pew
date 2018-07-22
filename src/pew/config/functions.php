@@ -413,6 +413,8 @@ if (!function_exists('url')) {
      * will print
      *     http://www.example.com/pewexample/www/css/styles.css.
      *
+     * Pass associative arrays to add query parameters to the URL.
+     *
      * @param string|string[] ...$path One or more path segments
      * @return string The resulting url
      */
@@ -425,9 +427,12 @@ if (!function_exists('url')) {
             $base_url = rtrim($base_url, '/') . '/';
         }
 
-        $path = preg_replace('~\/+~', '/', join('/', $path));
+        $params = array_filter($path, "is_array");
+        $query = count($params) ? array_merge(...$params) : [];
+        $path = preg_replace('~\/+~', '/', join('/', array_filter($path, "is_string")));
+        $query_string = http_build_query($query);
 
-        return $base_url . trim($path, '/');
+        return $base_url . trim($path, '/') . ($query_string ? "?{$query_string}" : "");
     }
 }
 
