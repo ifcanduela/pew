@@ -14,10 +14,11 @@
         "nikic/fast-route": "^1.0",
         "pimple/pimple": "^3.0",
         "filp/whoops": "^2.1",
-        "danielstjules/stringy": "^3.0",
+        "danielstjules/stringy": "3.1.0",
         "ifcanduela/abbrev": "*",
         "ifcanduela/db": "*",
-        "monolog/monolog": "^1.23"
+        "monolog/monolog": "^1.23",
+        "symfony/validator": "3.4"
     },
     "autoload": {
         "psr-0": {
