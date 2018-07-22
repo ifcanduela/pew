@@ -79,9 +79,10 @@ $container['controller_namespace'] = function (Container $c) {
 
 $container['controller_slug'] = function (Container $c) {
     $controller_class = basename($c['controller']);
-    $controller_name = preg_replace('/.+(Controller)$/', '', $controller_class);
 
-    return \Stringy\Stringy::create($controller_name)->slugify();
+    return \Stringy\Stringy::create($controller_class)
+        ->removeRight("Controller")
+        ->slugify();
 };
 
 $container['db'] = function (Container $c) {
