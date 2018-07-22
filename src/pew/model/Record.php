@@ -130,8 +130,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $result = $record->tableManager->query($query, $parameters);
 
         return new Collection(array_map(function ($r) {
-                return static::fromArray($r);
-            }, $result));
+            return static::fromArray($r);
+        }, $result));
     }
 
     /**
@@ -163,7 +163,27 @@ class Record implements \JsonSerializable, \IteratorAggregate
             }
         }
 
-        return $this->record;
+        $include = array_merge(get_object_vars($this), $this->record);
+        $exclude = [
+            "connectionName" => true,
+            "createdFieldName" => true,
+            "doNotSerialize" => true,
+            "errors" => true,
+            "getterMethods" => true,
+            "getterResults" => true,
+            "isNew" => true,
+            "primaryKey" => true,
+            "record" => true,
+            "serialize" => true,
+            "setterMethods" => true,
+            "tableManager" => true,
+            "tableName" => true,
+            "updatedFieldName" => true,
+        ];
+
+        $record = array_diff_key($include, $exclude);
+
+        return $record;
     }
 
     /**
@@ -326,10 +346,10 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function jsonSerialize()
     {
-        $record = array_diff_key(
-            $this->attributes(),
-            array_flip($this->doNotSerialize)
-        );
+        $include = $this->attributes();
+        $exclude = array_flip($this->doNotSerialize);
+
+        $record = array_diff_key($include, $exclude);
 
         foreach ($this->serialize as $key) {
             $record[$key] = $this->$key;
