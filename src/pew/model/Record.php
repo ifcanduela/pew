@@ -151,7 +151,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * argument.
      *
      * @param array $attributes Associative array of column names and values
-     * @return array An associative array of current column names and values
+     * @return self|array An associative array of current column names and values or the object itself
      */
     public function attributes(array $attributes = null)
     {
@@ -161,6 +161,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
                     $this->$key = $value;
                 }
             }
+
+            return $this;
         }
 
         $include = array_merge(get_object_vars($this), $this->record);
