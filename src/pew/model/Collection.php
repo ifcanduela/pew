@@ -244,10 +244,16 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
         foreach ($this->items as $key => $value) {
             if (is_callable($field)) {
-                $items[$field($value, $key)][] = $value;
+                $k = $field($value, $key);
             } else {
-                $items[$value->$field][] = $value;
+                $k = $value->$field;
             }
+
+            if (!isset($items[$k])) {
+                $items[$k] = new static();
+            }
+
+            $items[$k][] = $value;
         }
 
         return new static($items);
