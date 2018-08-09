@@ -142,7 +142,7 @@ class App
             App::log('Matched route ' . $route->getPath());
             $request = $this->container['request'];
 
-            $response = $this->runBeforeMiddlewares($route, $injector);
+            $response = $this->runBeforeMiddleware($route, $injector);
 
             if ($response instanceof Response) {
                 App::log('Middleware returned response');
@@ -180,7 +180,7 @@ class App
         $response->send();
     }
 
-    protected function runBeforeMiddlewares(Route $route, Injector $injector)
+    protected function runBeforeMiddleware(Route $route, Injector $injector)
     {
         $middlewareClasses = $route->getBefore() ?: [];
 
