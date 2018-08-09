@@ -3,7 +3,7 @@
 namespace pew;
 
 use SplStack;
-use pew\libs\FileCache;
+use pew\lib\FileCache;
 
 /**
  * This class encapsulates the template rendering functionality.

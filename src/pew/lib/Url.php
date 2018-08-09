@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\libs;
+namespace pew\lib;
 
 use Stringy\Stringy as S;
 use pew\request\Request;

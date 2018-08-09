@@ -6,6 +6,9 @@ use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
 
+class RouteNotFound extends \RuntimeException {}
+class InvalidHttpMethod extends \RuntimeException {}
+
 /**
  * The Router class wraps the `nikic\FastRoute` library for slightly
  * taylor-made functionality.
@@ -75,11 +78,11 @@ class Router
         $matchedRoute = $this->dispatcher->dispatch($httpMethod, $pathInfo);
 
         if ($matchedRoute[0] === Dispatcher::NOT_FOUND) {
-            throw new \RuntimeException("Route not found");
+            throw new RouteNotFound("Route not found");
         }
 
         if ($matchedRoute[0] === Dispatcher::METHOD_NOT_ALLOWED) {
-            throw new \RuntimeException("Method not allowed");
+            throw new InvalidHttpMethod("Method not allowed");
         }
 
         /** @var Route $route */

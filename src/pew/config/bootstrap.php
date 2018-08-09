@@ -42,16 +42,23 @@ $container['ignore_url_suffixes'] = [
 
 $container['action'] = function (Container $c) {
     $route = $c['route'];
-    $parts = preg_split('/[@\.]/', $route->getHandler());
+    $handler = $route->getHandler();
 
-    if (!empty($parts[1])) {
-        return $parts[1];
-    } elseif ($route['action']) {
-        return \Stringy\Stringy::create($route['action'])->camelize();
+    if (is_string($handler)) {
+        $parts = preg_split('/[@\.]/', $handler);
+
+        if (!empty($parts[1])) {
+            return $parts[1];
+        }
+
+        if ($route['action']) {
+            return \Stringy\Stringy::create($route['action'])->camelize();
+        }
+
+        return $c['default_action'];
     }
 
-    return $c['default_action'];
-
+    return null;
 };
 
 $container['controller'] = function (Container $c) {
@@ -78,11 +85,17 @@ $container['controller_namespace'] = function (Container $c) {
 };
 
 $container['controller_slug'] = function (Container $c) {
-    $controller_class = basename($c['controller']);
+    $controller = $c['controller'];
 
-    return \Stringy\Stringy::create($controller_class)
-        ->removeRight("Controller")
-        ->slugify();
+    if ($controller) {
+        $controller_class = basename($c['controller']);
+
+        return \Stringy\Stringy::create($controller_class)
+            ->removeRight("Controller")
+            ->slugify();
+    }
+
+    return null;
 };
 
 $container['db'] = function (Container $c) {
@@ -138,11 +151,11 @@ $container['file_cache'] = function (Container $c) {
     $cache_path = $c['cache_path'];
     $cache_duration = $c['cache_duration'];
 
-    return new \pew\libs\FileCache($cache_duration, $cache_path);
+    return new \pew\lib\FileCache($cache_duration, $cache_path);
 };
 
 $container['injector'] = function (Container $c) {
-    return new \pew\libs\Injector(
+    return new \pew\lib\Injector(
         $c['request']->request->all(),
         $c['request']->query->all(),
         $c['route'],
@@ -257,14 +270,14 @@ $container['routes'] = function (Container $c) {
 };
 
 $container['session'] = function () {
-    return new \pew\libs\Session();
+    return new \pew\lib\Session();
 };
 
 $container['url'] = function (Container $c) {
     $request = $c['request'];
     $routes = $c['routes'];
 
-    return new \pew\libs\Url($request, $routes);
+    return new \pew\lib\Url($request, $routes);
 };
 
 $container['view'] = function (Container $c) {

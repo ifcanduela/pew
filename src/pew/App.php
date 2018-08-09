@@ -3,10 +3,12 @@
 namespace pew;
 
 use Monolog\Logger;
+use pew\router\InvalidHttpMethod;
+use pew\router\RouteNotFound;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Stringy\Stringy as Str;
-use pew\libs\Injector;
+use pew\lib\Injector;
 use pew\router\Route;
 
 /**
@@ -132,10 +134,11 @@ class App
     public function run()
     {
         $result = false;
-        $injector = $this->container['injector'];
-        $route = $this->container['route'];
 
         try {
+            $injector = $this->container['injector'];
+            $route = $this->container['route'];
+
             App::log('Matched route ' . $route->getPath());
             $request = $this->container['request'];
 
@@ -157,6 +160,10 @@ class App
                     $result = $this->handleAction($handler, $injector);
                 }
             }
+        } catch (RouteNotFound $e) {
+            $result = $this->handleError($e);
+        } catch (InvalidHttpMethod $e) {
+            $result = $this->handleError($e);
         } catch (\Exception $e) {
             $result = $this->handleError($e);
         }

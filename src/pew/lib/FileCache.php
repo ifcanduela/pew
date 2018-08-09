@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\libs;
+namespace pew\lib;
 
 /**
  * This class can save and load serialized data to and from files.

@@ -33,6 +33,17 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
+     * Create a collection from an array.
+     *
+     * @param array $items
+     * @return static
+     */
+    public static function fromArray(array $items)
+    {
+        return new static($items);
+    }
+
+    /**
      * Check if a key is set.
      *
      * @param mixed $offset
@@ -564,7 +575,9 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      */
     public function toArray()
     {
-        $items = array_map(function ($item) {
+        $keys = array_keys($this->items);
+        
+        $values = array_map(function ($item) {
             if (method_exists($item, 'toArray')) {
                 return $item->toArray();
             }
@@ -572,7 +585,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
             return $item;
         }, $this->items);
 
-        return $items;
+        return array_combine($keys, $values);
     }
 
     /**
@@ -670,17 +683,6 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * @param string $className
-     * @return static
-     */
-    public function wrap($className)
-    {
-        return new static(array_map(function ($item) use ($className) {
-            return $className::fromArray($item);
-        }, $this->items));
-    }
-
-    /**
      * Aggregate items from one or more arrays into a collection of arrays.
      *
      * This method will take the items of the collection, turn each into an array,
@@ -693,7 +695,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     public function zip(...$arrays)
     {
         $items = array_map(function (...$values) {
-            return $values;
+            return new static($values);
         }, $this->items, ...$arrays);
 
         return new static($items);

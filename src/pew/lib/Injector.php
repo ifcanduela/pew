@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\libs;
+namespace pew\lib;
 
 class KeyNotFoundException extends \Exception {}
 

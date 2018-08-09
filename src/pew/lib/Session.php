@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\libs;
+namespace pew\lib;
 
 use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 use ArrayAccess;

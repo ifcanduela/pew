@@ -1,6 +1,6 @@
 <?php
 
-namespace pew\libs;
+namespace pew\lib;
 
 /**
  * A class to facilitate the creation of thumbnails.
@@ -604,6 +604,8 @@ class Image
      */
     protected function checkResource()
     {
-        $this->checkResource();
+        if (!$this->resource) {
+            throw new \RuntimeException("No image loaded");
+        }
     }
 }
