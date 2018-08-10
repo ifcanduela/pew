@@ -79,7 +79,7 @@ class TableFactory
      * @param string $connectionName
      * @return Table
      */
-    public static function create($tableName, string $recordClass, $connectionName = 'default')
+    public static function create($tableName, string $recordClass, $connectionName = "default")
     {
         $db = static::getConnection($connectionName);
 

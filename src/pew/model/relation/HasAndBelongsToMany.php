@@ -14,7 +14,7 @@ class HasAndBelongsToMany extends Relationship
 
     /**
      * Specify a association table for the relationship.
-     * 
+     *
      * @param string $table Name of the association table
      * @param array $on Condition to join the far table to the association table.
      * @return self
@@ -23,7 +23,7 @@ class HasAndBelongsToMany extends Relationship
     {
         $this->through = $table;
         $this->on = $on;
-        
+
         return $this;
     }
 
@@ -34,8 +34,8 @@ class HasAndBelongsToMany extends Relationship
      */
     public function fetch()
     {
-        $fk = $this->through . '.' . $this->foreignKeyName;
-        
+        $fk = $this->through . "." . $this->foreignKeyName;
+
         return $this->finder->join($this->through, $this->on)->where([$fk => $this->keyValue])->all();
     }
 
@@ -50,12 +50,12 @@ class HasAndBelongsToMany extends Relationship
      */
     public function find(array $relatedKeys)
     {
-        $fk = $this->through . '.' . $this->foreignKeyName;
+        $fk = $this->through . "." . $this->foreignKeyName;
 
         $this->finder
             ->columns($this->foreignKeyName, $this->finder->tableName() . ".*")
             ->join($this->through, $this->on)
-            ->where([$fk => ['IN', $relatedKeys]]);
+            ->where([$fk => ["IN", $relatedKeys]]);
         $related = $this->finder->db->run($this->finder->query);
         $grouped = $this->groupRecords($related, $this->foreignKeyName);
 

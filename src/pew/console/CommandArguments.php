@@ -35,7 +35,7 @@ class CommandArguments
         for ($i = 0; $i < $argCount; $i++) {
             $value = $commandLineArguments[$i];
 
-            if ($value[0] !== '-') {
+            if ($value[0] !== "-") {
                 if ($keyName) {
                     $this->namedArguments[$keyName] = $value;
                     $keyName = null;
@@ -47,7 +47,7 @@ class CommandArguments
                     $this->namedArguments[$keyName] = true;
                 }
 
-                $keyName = trim($value, '-');
+                $keyName = trim($value, "-");
             }
         }
 

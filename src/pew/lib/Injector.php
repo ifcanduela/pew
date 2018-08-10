@@ -90,7 +90,7 @@ class Injector
             }
 
             if (!$found) {
-                $paramName = $param->getName() . ' (' . $param->getType() . ')';
+                $paramName = $param->getName() . " (" . $param->getType() . ")";
                 throw new KeyNotFoundException("Could not find a definition for $paramName.");
             }
 
@@ -147,7 +147,7 @@ class Injector
     public function callMethod($object, string $methodName)
     {
         if (!is_object($object)) {
-            throw new \InvalidArgumentException('Invalid argument supplied to ' . __METHOD__. ': $object must be an object.');
+            throw new \InvalidArgumentException("Invalid argument supplied to " . __METHOD__. ": \$object must be an object.");
         }
 
         $method = new \ReflectionMethod($object, $methodName);

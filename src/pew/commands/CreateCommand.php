@@ -11,12 +11,12 @@ class CreateCommand extends Command
 {
     public function name()
     {
-        return 'create';
+        return "create";
     }
 
     public function description()
     {
-        return 'Create app files.';
+        return "Create app files.";
     }
 
     public function run(CommandArguments $arguments)
@@ -37,7 +37,7 @@ class CreateCommand extends Command
         if ($arguments->has(1)) {
             $tableName = $arguments->at(1);
         } else {
-            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', S::create($className)->underscored()), 's') . 's';
+            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', S::create($className)->underscored()), "s") . "s";
         }
 
         $file_contents = <<<PHP
@@ -49,12 +49,12 @@ use pew\Model;
 
 class {$className} extends Model
 {
-    public \$tableName = '{$tableName}';
+    public \$tableName = "{$tableName}";
 }
 
 PHP;
 
-        $filename = root('app', 'models', "{$className}.php");
+        $filename = root("app", "models", "{$className}.php");
 
         $this->createFile($file_contents, $filename);
     }
@@ -77,17 +77,17 @@ class {$className} extends Controller
 
 PHP;
 
-        $filename = root('app', 'controllers', "{$className}.php");
+        $filename = root("app", "controllers", "{$className}.php");
         $this->createFile($file_contents, $filename);
     }
 
     public function command(CommandArguments $arguments)
     {
         $className = $arguments->at(0);
-        $commandName = str_replace('_', '-', S::create($className)->underscored());
+        $commandName = str_replace("_", "-", S::create($className)->underscored());
 
-        if (substr($className, -strlen('Command')) !== 'Command') {
-            $className .= 'Command';
+        if (substr($className, -strlen("Command")) !== "Command") {
+            $className .= "Command";
         }
 
         $file_contents = <<<PHP
@@ -102,23 +102,23 @@ class {$className} extends Command
 {
     public function name()
     {
-        return '{$commandName}';
+        return "{$commandName}";
     }
 
     public function description()
     {
-        return '';
+        return ";
     }
 
     public function run(CommandArguments \$args)
     {
-        echo \$this->info('{$commandName}');
+        echo \$this->info("{$commandName}");
     }
 }
 
 PHP;
 
-        $filename = root('app', 'commands', "{$className}.php");
+        $filename = root("app", "commands", "{$className}.php");
         $this->createFile($file_contents, $filename);
     }
 

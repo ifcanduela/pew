@@ -15,22 +15,22 @@ class App extends \pew\App
      */
     public function run()
     {
-        $injector = $this->container['injector'];
+        $injector = $this->container["injector"];
 
-        $command_files = glob($this->container['app_path'] . '/commands/*Command.php');
+        $command_files = glob($this->container["app_path"] . "/commands/*Command.php");
 
         foreach ($command_files as $command_file) {
-            $class_name = '\\app\\commands\\' . pathinfo($command_file, PATHINFO_FILENAME);
+            $class_name = "\\app\\commands\\" . pathinfo($command_file, PATHINFO_FILENAME);
             /** @var Command $command */
             $command = $injector->createInstance($class_name);
 
             $this->availableCommands[$command->name()] = $command;
         }
 
-        $command_files = glob(dirname(__DIR__) . '/commands/*Command.php');
+        $command_files = glob(dirname(__DIR__) . "/commands/*Command.php");
 
         foreach ($command_files as $command_file) {
-            $class_name = '\\pew\\commands\\' . pathinfo($command_file, PATHINFO_FILENAME);
+            $class_name = "\\pew\\commands\\" . pathinfo($command_file, PATHINFO_FILENAME);
             $command = $injector->createInstance($class_name);
 
             $this->availableCommands[$command->name()] = $command;
@@ -41,16 +41,16 @@ class App extends \pew\App
         if (empty($arguments)) {
             foreach ($this->availableCommands as $command) {
                 echo $command->name() . PHP_EOL;
-                echo '    ' . $command->description() . PHP_EOL;
+                echo "    " . $command->description() . PHP_EOL;
             }
 
             die();
         }
 
-        if (strpos($arguments['command'], ':') !== false) {
-            list($commandName, $action) = explode(':', $arguments['command']);
+        if (strpos($arguments["command"], ":") !== false) {
+            list($commandName, $action) = explode(":", $arguments["command"]);
         } else {
-            list($commandName, $action) = [$arguments['command'], 'run'];
+            list($commandName, $action) = [$arguments["command"], "run"];
         }
 
         $command = $this->findCommand($commandName);
@@ -59,7 +59,7 @@ class App extends \pew\App
             $this->commandMissing($commandName);
         }
 
-        $this->container['arguments'] = new CommandArguments($arguments['arguments']);
+        $this->container["arguments"] = new CommandArguments($arguments["arguments"]);
 
         return $injector->callMethod($command, $action);
     }
@@ -89,8 +89,8 @@ class App extends \pew\App
      */
     private function getArguments()
     {
-        $argv = $_SERVER['argv'];
-        $script_name = $_SERVER['SCRIPT_NAME'];
+        $argv = $_SERVER["argv"];
+        $script_name = $_SERVER["SCRIPT_NAME"];
 
         $script_name_pos = array_search($script_name, $argv, true);
 
@@ -98,7 +98,7 @@ class App extends \pew\App
 
         if ($arguments) {
             $command = array_shift($arguments);
-            return compact('command', 'arguments');
+            return compact("command", "arguments");
         }
 
         return [];

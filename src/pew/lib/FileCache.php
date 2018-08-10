@@ -11,7 +11,7 @@ class FileCache
     private $interval = 0;
 
     /** @var string Location of cache files */
-    private $folder = '';
+    private $folder = "";
 
     /** @var boolean Use Gzip compression in cache files */
     private $gzip = true;
@@ -20,7 +20,7 @@ class FileCache
     private $gzipEnabled = true;
 
     /** @var string Suffix for Gzipped cache files */
-    private $gzipSuffix = '.gz';
+    private $gzipSuffix = ".gz";
 
     /**
      * Create a cache manager.
@@ -28,7 +28,7 @@ class FileCache
      * @param integer $seconds Defaults to 12 hours
      * @param string $folder Cache files location
      */
-    public function __construct($seconds = 43200, $folder = 'cache')
+    public function __construct($seconds = 43200, $folder = "cache")
     {
         $this->folder = $folder;
         $this->interval($seconds);
@@ -39,7 +39,7 @@ class FileCache
         }
 
         # The gzencode function exists in PHP 5.3, but gzdecode could not exist
-        if (!function_exists('gzdecode')) {
+        if (!function_exists("gzdecode")) {
             # If there is not gzdecode function, disable Gzip functionality
             $this->gzipEnabled = false;
             $this->gzip = false;
@@ -211,7 +211,7 @@ class FileCache
 
     /**
      * Set a cache key.
-     * 
+     *
      * @param string $key
      * @param mixed $value
      */
@@ -222,7 +222,7 @@ class FileCache
 
     /**
      * Get a cache key.
-     * 
+     *
      * @param string $key
      * @return mixed|null
      */
@@ -237,7 +237,7 @@ class FileCache
 
     /**
      * Check if a cache key exists.
-     * 
+     *
      * @param string $key
      * @return bool
      */
@@ -248,7 +248,7 @@ class FileCache
 
     /**
      * Remove a cache key.
-     * 
+     *
      * @param string $key
      * @return null
      */

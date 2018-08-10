@@ -14,7 +14,7 @@ class View implements \ArrayAccess
     protected $folderStack;
 
     /** @var string Template name */
-    protected $template = 'index';
+    protected $template = "index";
 
     /** @var string Layout name */
     protected $layout = false;
@@ -23,10 +23,10 @@ class View implements \ArrayAccess
     protected $title;
 
     /** @var string Templates file extension */
-    protected $extension = '.php';
+    protected $extension = ".php";
 
     /** @var string Result of rendering the view */
-    protected $output = '';
+    protected $output = "";
 
     /** @var array Rendered partial blocks */
     protected $blocks = [];
@@ -125,7 +125,7 @@ class View implements \ArrayAccess
 
         $this->output
             = $output
-            = $view_data['output']
+            = $view_data["output"]
             = $this->_render($template_file, $this->variables);
 
         if ($this->layout) {
@@ -170,7 +170,7 @@ class View implements \ArrayAccess
      */
     protected function addFolder(string $folder)
     {
-        $this->folderStack->push(rtrim($folder, '\\/'));
+        $this->folderStack->push(rtrim($folder, "\\/"));
 
         return $this;
     }
@@ -239,11 +239,11 @@ class View implements \ArrayAccess
     public function extension(string $extension = null)
     {
         if ($extension !== null) {
-            $this->extension = '.' . ltrim($extension, '.');
+            $this->extension = "." . ltrim($extension, ".");
             return $this;
         }
 
-        return '.' . ltrim($this->extension, '.');
+        return "." . ltrim($this->extension, ".");
     }
 
     /**
@@ -326,7 +326,7 @@ class View implements \ArrayAccess
      */
     protected function _render()
     {
-        extract(func_get_arg(1), EXTR_PREFIX_INVALID, 'v_');
+        extract(func_get_arg(1), EXTR_PREFIX_INVALID, "v_");
         ob_start();
 
         try {
@@ -408,10 +408,10 @@ class View implements \ArrayAccess
     public function block(string $name)
     {
         if (array_key_exists($name, $this->blocks)) {
-            return join('', $this->blocks[$name]);
+            return join("", $this->blocks[$name]);
         }
 
-        return '';
+        return "";
     }
 
     /**
@@ -457,7 +457,7 @@ class View implements \ArrayAccess
      */
     public function escape($value)
     {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars($value, ENT_QUOTES, "UTF-8");
     }
 
     /**

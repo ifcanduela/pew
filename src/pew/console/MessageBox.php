@@ -65,19 +65,19 @@ class MessageBox extends Message
         $lines = [];
 
         foreach ($text as $line) {
-            $more = explode('#$#', wordwrap($line, $this->width - ($this->padding * 2), '#$#'));
+            $more = explode("#$#", wordwrap($line, $this->width - ($this->padding * 2), "#$#"));
             $lines = array_merge($lines, $more);
         }
 
-        array_unshift($lines, str_repeat(' ', $this->width - ($this->padding * 2)));
-        array_push($lines, str_repeat(' ', $this->width - ($this->padding * 2)));
+        array_unshift($lines, str_repeat(" ", $this->width - ($this->padding * 2)));
+        array_push($lines, str_repeat(" ", $this->width - ($this->padding * 2)));
 
         $formattedLines = [];
 
         foreach ($lines as $line) {
-            $str = str_pad(str_repeat(' ', $this->padding) . $line . str_repeat(' ', $this->padding), $this->width, ' ', STR_PAD_RIGHT);
+            $str = str_pad(str_repeat(" ", $this->padding) . $line . str_repeat(" ", $this->padding), $this->width, " ", STR_PAD_RIGHT);
 
-            $formattedLines[] = str_repeat(' ', $this->margin) . parent::format($str);
+            $formattedLines[] = str_repeat(" ", $this->margin) . parent::format($str);
         }
 
         $this->newLine = $newLine;

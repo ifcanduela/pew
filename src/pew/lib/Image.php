@@ -7,15 +7,15 @@ namespace pew\lib;
  */
 class Image
 {
-    const ANCHOR_BOTTOM = 'bottom';
-    const ANCHOR_BOTTOM_LEFT = 'bottom left';
-    const ANCHOR_BOTTOM_RIGHT = 'bottom right';
-    const ANCHOR_CENTER = 'center';
-    const ANCHOR_LEFT = 'left';
-    const ANCHOR_RIGHT = 'right';
-    const ANCHOR_TOP = 'top';
-    const ANCHOR_TOP_LEFT = 'top left';
-    const ANCHOR_TOP_RIGHT = 'top right';
+    const ANCHOR_BOTTOM = "bottom";
+    const ANCHOR_BOTTOM_LEFT = "bottom left";
+    const ANCHOR_BOTTOM_RIGHT = "bottom right";
+    const ANCHOR_CENTER = "center";
+    const ANCHOR_LEFT = "left";
+    const ANCHOR_RIGHT = "right";
+    const ANCHOR_TOP = "top";
+    const ANCHOR_TOP_LEFT = "top left";
+    const ANCHOR_TOP_RIGHT = "top right";
 
     /** @var string Original file name */
     protected $sourceFileName;
@@ -102,15 +102,15 @@ class Image
      */
     public function upload(array $file)
     {
-        if (!file_exists($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
-            throw new \Exception("Uploaded file {$file['filename']} not found [temp={$file['tmp_name']}]");
+        if (!file_exists($file["tmp_name"]) || !is_uploaded_file($file["tmp_name"])) {
+            throw new \Exception("Uploaded file " . $file["filename"] . " not found [temp=" . $file["tmp_name"] . "]");
         }
 
-        $this->sourceFileName = $file['tmp_name'];
-        $this->filename = $file['name'];
+        $this->sourceFileName = $file["tmp_name"];
+        $this->filename = $file["name"];
 
         $this->init();
-        $this->loadFile($file['tmp_name'], $this->imageType);
+        $this->loadFile($file["tmp_name"], $this->imageType);
 
         return $this;
     }
@@ -144,7 +144,7 @@ class Image
 
         if (!$this->resource) {
             $error = error_get_last();
-            throw new \Exception("The file {$filename} is not a valid image resouce. " . $error['message']);
+            throw new \Exception("The file {$filename} is not a valid image resouce. " . $error["message"]);
         }
 
         return false;
@@ -178,7 +178,7 @@ class Image
     {
         $fileinfo = getimagesize($this->sourceFileName);
         list($this->width, $this->height, $this->imageType) = $fileinfo;
-        $this->mimeType = $fileinfo['mime'];
+        $this->mimeType = $fileinfo["mime"];
 
         return $this;
     }
@@ -232,7 +232,7 @@ class Image
             $quality = $this->quality;
         }
 
-        if (strpos(basename($destination), '.') === false) {
+        if (strpos(basename($destination), ".") === false) {
             $destination .= DIRECTORY_SEPARATOR . basename($this->filename);
         }
 
@@ -290,7 +290,7 @@ class Image
 
         $extension = image_type_to_extension($image_type, $dot);
 
-        return str_replace(['jpeg', 'tiff'], ['jpg', 'tif'], $extension);
+        return str_replace(["jpeg", "tiff"], ["jpg", "tif"], $extension);
     }
 
     /**

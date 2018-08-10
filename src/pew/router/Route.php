@@ -14,7 +14,7 @@ class Route implements \ArrayAccess
     protected $handler;
 
     /** @var array */
-    protected $methods = ['*'];
+    protected $methods = ["*"];
 
     /** @var array */
     protected $defaults = [];
@@ -44,33 +44,33 @@ class Route implements \ArrayAccess
      */
     public static function fromArray(array $data)
     {
-        $methods = ['*'];
+        $methods = ["*"];
 
-        if (isset($data['methods'])) {
-            $methods = preg_split('/\W+/', strtoupper($data['methods']));
+        if (isset($data["methods"])) {
+            $methods = preg_split('/\W+/', strtoupper($data["methods"]));
         }
 
-        $path = $data['path'] ?? $data['from'];
+        $path = $data["path"] ?? $data["from"];
 
         $route = new Route();
         $route
             ->path($path)
             ->methods(...$methods);
 
-        if (isset($data['handler']) || isset($data['to'])) {
-            $route->handler($data['handler'] ?? $data['to']);
+        if (isset($data["handler"]) || isset($data["to"])) {
+            $route->handler($data["handler"] ?? $data["to"]);
         }
 
-        if (isset($data['defaults'])) {
-            $route->defaults($data['defaults']);
+        if (isset($data["defaults"])) {
+            $route->defaults($data["defaults"]);
         }
 
-        if (isset($data['before'])) {
-            $route->before($data['before']);
+        if (isset($data["before"])) {
+            $route->before($data["before"]);
         }
 
-        if (isset($data['after'])) {
-            $route->after($data['after']);
+        if (isset($data["after"])) {
+            $route->after($data["after"]);
         }
 
         return $route;
@@ -167,7 +167,7 @@ class Route implements \ArrayAccess
     {
         $value = $this->params[$key] ?? $this->defaults[$key] ?? $default;
 
-        return $key === 'rest' ? explode('/', $value) : $value;
+        return $key === "rest" ? explode("/", $value) : $value;
     }
 
     /**
@@ -203,7 +203,7 @@ class Route implements \ArrayAccess
 
     /**
      * Check if a route parameter exists.
-     * 
+     *
      * @param string $key
      * @return bool
      */
@@ -214,7 +214,7 @@ class Route implements \ArrayAccess
 
     /**
      * Get a route parameter by key.
-     * 
+     *
      * @param string $key
      * @return mixed
      */
@@ -227,7 +227,7 @@ class Route implements \ArrayAccess
      * Set a route parameter value by key.
      *
      * Route parameters are read-only and cannot be set.
-     * 
+     *
      * @param string $key
      * @param mixed $value
      * @throws \BadMethodCallException
@@ -241,7 +241,7 @@ class Route implements \ArrayAccess
      * Unset a route parameter.
      *
      * Route parameters are read-only and cannot be unset.
-     * 
+     *
      * @param string $key
      * @throws \BadMethodCallException
      */
@@ -273,7 +273,7 @@ class Route implements \ArrayAccess
     public function handler($handler)
     {
         if (!$handler) {
-            throw new \Exception('Route handler cannot be empty');
+            throw new \Exception("Route handler cannot be empty");
         }
 
         $this->handler = $handler;
@@ -303,7 +303,7 @@ class Route implements \ArrayAccess
      */
     public function methods(string ...$methods)
     {
-        $this->methods = array_map('strtoupper', $methods);
+        $this->methods = array_map("strtoupper", $methods);
 
         return $this;
     }
@@ -377,7 +377,7 @@ class Route implements \ArrayAccess
 
     /**
      * Create a route group.
-     * 
+     *
      * @return Group
      */
     public static function group()

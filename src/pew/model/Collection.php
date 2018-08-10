@@ -175,7 +175,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * Adds items to the collection until a certain element count is reached.
      *
      * If a callable is supplied as `$value`, it will be called to use its return value as fill item.
-     * 
+     *
      * @param int $count
      * @param callable|mixed $value
      * @return static
@@ -231,7 +231,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
     /**
      * Flatten the items in the collection into a single-dimensional array.
-     * 
+     *
      * @return static
      */
     public function flatten()
@@ -576,9 +576,9 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     public function toArray()
     {
         $keys = array_keys($this->items);
-        
+
         $values = array_map(function ($item) {
-            if (method_exists($item, 'toArray')) {
+            if (method_exists($item, "toArray")) {
                 return $item->toArray();
             }
 
@@ -623,8 +623,8 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * Get all items in order until a condition is met.
      *
      * The signature for the callable is ($key, $value, $index)
-     * 
-     * @param callable $condition 
+     *
+     * @param callable $condition
      * @return static
      */
     public function until(callable $condition)

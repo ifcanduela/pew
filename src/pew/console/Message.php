@@ -4,18 +4,18 @@ namespace pew\console;
 
 class Message
 {
-    const COLOR_BLACK = 'black';
-    const COLOR_RED = 'red';
-    const COLOR_GREEN = 'green';
-    const COLOR_YELLOW = 'yellow';
-    const COLOR_BLUE = 'blue';
-    const COLOR_MAGENTA = 'magenta';
-    const COLOR_CYAN = 'cyan';
-    const COLOR_WHITE = 'white';
-    const COLOR_DEFAULT = 'default';
+    const COLOR_BLACK = "black";
+    const COLOR_RED = "red";
+    const COLOR_GREEN = "green";
+    const COLOR_YELLOW = "yellow";
+    const COLOR_BLUE = "blue";
+    const COLOR_MAGENTA = "magenta";
+    const COLOR_CYAN = "cyan";
+    const COLOR_WHITE = "white";
+    const COLOR_DEFAULT = "default";
 
     /** @var string Text to format and print */
-    protected $text = '';
+    protected $text = "";
 
     /** @var int|null Width of the text, use NULL for automatic width */
     public $width = null;
@@ -203,14 +203,14 @@ class Message
      */
     public function format(string $text = null)
     {
-        $set = join(';', $this->setCodes);
-        $unset = join(';', $this->unsetCodes);
+        $set = join(";", $this->setCodes);
+        $unset = join(";", $this->unsetCodes);
 
         $text = $text ?? $this->text;
         $width = $this->width ?? strlen($text);
-        $eol = $this->newLine ? PHP_EOL : '';
+        $eol = $this->newLine ? PHP_EOL : "";
 
-        $text = str_pad($text, $width, ' ', STR_PAD_RIGHT);
+        $text = str_pad($text, $width, " ", STR_PAD_RIGHT);
 
         return "\033[{$set}m{$text}\033[{$unset}m{$eol}";
     }

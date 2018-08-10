@@ -46,7 +46,7 @@ abstract class Command implements CommandInterface
      */
     public function info(string $text)
     {
-        return $this->message($text)->fg('cyan');
+        return $this->message($text)->fg("cyan");
     }
 
     /**
@@ -57,7 +57,7 @@ abstract class Command implements CommandInterface
      */
     public function success(string $text)
     {
-        return $this->message($text)->fg('green');
+        return $this->message($text)->fg("green");
     }
 
     /**
@@ -68,7 +68,7 @@ abstract class Command implements CommandInterface
      */
     public function warning(string $text)
     {
-        return $this->message($text)->fg('yellow');
+        return $this->message($text)->fg("yellow");
     }
 
     /**
@@ -79,7 +79,7 @@ abstract class Command implements CommandInterface
      */
     public function error(string $text)
     {
-        return $this->message($text)->fg('black')->bg('red');
+        return $this->message($text)->fg("black")->bg("red");
     }
 
     /**
@@ -101,7 +101,7 @@ abstract class Command implements CommandInterface
      */
     public function infoBox(string ...$text)
     {
-        return $this->messageBox(...$text)->fg('white')->bg('cyan');
+        return $this->messageBox(...$text)->fg("white")->bg("cyan");
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class Command implements CommandInterface
      */
     public function successBox(string ...$text)
     {
-        return $this->messageBox(...$text)->fg('white')->bg('green');
+        return $this->messageBox(...$text)->fg("white")->bg("green");
     }
 
     /**
@@ -123,7 +123,7 @@ abstract class Command implements CommandInterface
      */
     public function warningBox(string ...$text)
     {
-        return $this->messageBox(...$text)->fg('black')->bg('yellow');
+        return $this->messageBox(...$text)->fg("black")->bg("yellow");
     }
 
     /**
@@ -134,6 +134,6 @@ abstract class Command implements CommandInterface
      */
     public function errorBox(string ...$text)
     {
-        return $this->messageBox(...$text)->fg('black')->bg('red');
+        return $this->messageBox(...$text)->fg("black")->bg("red");
     }
 }

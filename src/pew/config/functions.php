@@ -3,7 +3,7 @@
  * Assorted functions, helpers and shortcuts.
  */
 
-if (!function_exists('pew')) {
+if (!function_exists("pew")) {
     /**
      * Pew config read-only shortcut.
      *
@@ -22,7 +22,7 @@ if (!function_exists('pew')) {
     }
 }
 
-if (!function_exists('frand')) {
+if (!function_exists("frand")) {
     /**
      * Generates a floating-point pseudo-random number.
      *
@@ -53,7 +53,7 @@ if (!function_exists('frand')) {
     }
 }
 
-if (!function_exists('get_execution_time')) {
+if (!function_exists("get_execution_time")) {
     /**
      * Setups and returns a timer to compute the script execution time.
      *
@@ -85,7 +85,7 @@ if (!function_exists('get_execution_time')) {
     }
 }
 
-if (!function_exists('organize_files_array')) {
+if (!function_exists("organize_files_array")) {
     /**
      * Organizes the $_FILES array when multiple uploads are enabled.
      *
@@ -168,7 +168,7 @@ if (!function_exists('organize_files_array')) {
     }
 }
 
-if (!function_exists('array_group')) {
+if (!function_exists("array_group")) {
     /**
      * Group elements of an array by the value of one of their keys.
      *
@@ -191,7 +191,7 @@ if (!function_exists('array_group')) {
     }
 }
 
-if (!function_exists('array_reindex')) {
+if (!function_exists("array_reindex")) {
     /**
      * Builds a key/value array using a value from an array as index.
      *
@@ -237,7 +237,7 @@ if (!function_exists('array_reindex')) {
     }
 }
 
-if (!function_exists('array_reap')) {
+if (!function_exists("array_reap")) {
     /**
      * Isolate values from an array according to a pattern.
      *
@@ -262,7 +262,7 @@ if (!function_exists('array_reap')) {
     {
         if (is_string($filter)) {
             # if $filter is a string, divide and acquire filter atoms
-            $filters = explode(':', trim($filter, ':'));
+            $filters = explode(":", trim($filter, ":"));
         } elseif (is_array($filter)) {
             # if $filter was already an array, go ahead
             $filters = $filter;
@@ -295,19 +295,19 @@ if (!function_exists('array_reap')) {
             $reap = false;
 
             switch ($f) {
-                case '#':
-                case '#i':
+                case "#":
+                case "#i":
                     # match any number
                     $reap = is_numeric($key);
                     break;
-                case '#s':
-                case '$':
+                case "#s":
+                case "$":
                     # match any string
                     $reap = is_string($key);
                     break;
                 default:
                     # match specific value
-                    $reap = ("$key" === "$f");
+                    $reap = $key == $f;
                     break;
             }
 
@@ -329,7 +329,7 @@ if (!function_exists('array_reap')) {
     }
 }
 
-if (!function_exists('array_flatten')) {
+if (!function_exists("array_flatten")) {
     /**
      * Collect all non-array values of a multi-dimensional array.
      *
@@ -348,7 +348,7 @@ if (!function_exists('array_flatten')) {
     }
 }
 
-if (!function_exists('array_path')) {
+if (!function_exists("array_path")) {
     /**
      * Get an element from an array using a character-delimited list of indexes.
      *
@@ -357,7 +357,7 @@ if (!function_exists('array_path')) {
      * @param string $separator
      * @return mixed
      */
-    function array_path(array $array, string $path, string $separator = '.')
+    function array_path(array $array, string $path, string $separator = ".")
     {
         $source = (array) $array;
         $steps = explode($separator, $path);
@@ -375,7 +375,7 @@ if (!function_exists('array_path')) {
     }
 }
 
-if (!function_exists('root')) {
+if (!function_exists("root")) {
     /**
      * A quick way to get the filesystem root directory or any file below it.
      *
@@ -392,7 +392,7 @@ if (!function_exists('root')) {
         static $root_path;
 
         if (!isset($root_path)) {
-             $root_path = pew('root_path');
+             $root_path = pew("root_path");
         }
 
         array_unshift($path, $root_path);
@@ -404,7 +404,7 @@ if (!function_exists('root')) {
     }
 }
 
-if (!function_exists('url')) {
+if (!function_exists("url")) {
     /**
      * Gets an absolute URL, having the location of the site as base URL.
      *
@@ -423,20 +423,20 @@ if (!function_exists('url')) {
         static $base_url;
 
         if (!isset($base_url)) {
-            $base_url = pew('request')->appUrl();
-            $base_url = rtrim($base_url, '/') . '/';
+            $base_url = pew("request")->appUrl();
+            $base_url = rtrim($base_url, "/") . "/";
         }
 
         $params = array_filter($path, "is_array");
         $query = count($params) ? array_merge(...$params) : [];
-        $path = preg_replace('~\/+~', '/', join('/', array_filter($path, "is_string")));
+        $path = preg_replace('~\/+~', "/", join("/", array_filter($path, "is_string")));
         $query_string = http_build_query($query);
 
-        return $base_url . trim($path, '/') . ($query_string ? "?{$query_string}" : "");
+        return $base_url . trim($path, "/") . ($query_string ? "?{$query_string}" : "");
     }
 }
 
-if (!function_exists('here')) {
+if (!function_exists("here")) {
     /**
      * Get the current URI.
      *
@@ -447,14 +447,14 @@ if (!function_exists('here')) {
         static $here;
 
         if (!$here) {
-            $here = pew('path');
+            $here = pew("path");
         }
 
         return $here;
     }
 }
 
-if (!function_exists('session')) {
+if (!function_exists("session")) {
     /**
      * Helper for session values.
      *
@@ -469,18 +469,18 @@ if (!function_exists('session')) {
         static $session;
 
         if (!$session) {
-            $session = pew('session');
+            $session = pew("session");
         }
 
         if (is_null($path)) {
             return $session->all();
         }
 
-        return array_path($session->all(), $path, '.') ?? $default;
+        return array_path($session->all(), $path, ".") ?? $default;
     }
 }
 
-if (!function_exists('flash')) {
+if (!function_exists("flash")) {
     /**
      * Helper for flash data.
      *
@@ -493,7 +493,7 @@ if (!function_exists('flash')) {
         static $session;
 
         if (!$session) {
-            $session = pew('session');
+            $session = pew("session");
         }
 
         if (null === $key) {

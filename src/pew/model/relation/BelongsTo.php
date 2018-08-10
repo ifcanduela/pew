@@ -24,7 +24,7 @@ class BelongsTo extends Relationship
      */
     public function find(array $relatedKeys)
     {
-        $related = $this->finder->where([$this->foreignKeyName => ['IN', $relatedKeys]])->all();
+        $related = $this->finder->where([$this->foreignKeyName => ["IN", $relatedKeys]])->all();
 
         return $related->index($this->foreignKeyName);
     }

@@ -48,14 +48,14 @@ class Session extends SymfonySession implements ArrayAccess
 
     /**
      * Get a session variable.
-     * 
+     *
      * @param string $key
      * @return mixed
      */
     public function offsetGet($key)
     {
         $sessionData = $this->all();
-        $indexes = explode('.', $key);
+        $indexes = explode(".", $key);
         $first_index = array_shift($indexes);
 
         if (!$this->has($first_index)) {
@@ -79,7 +79,7 @@ class Session extends SymfonySession implements ArrayAccess
 
     /**
      * Set a session variable.
-     * 
+     *
      * @param string $key
      * @param mixed $value
      * @return null
@@ -91,7 +91,7 @@ class Session extends SymfonySession implements ArrayAccess
 
     /**
      * Check a session variable.
-     * 
+     *
      * @param string $key
      * @return bool
      */
@@ -102,7 +102,7 @@ class Session extends SymfonySession implements ArrayAccess
 
     /**
      * Unset a session variable.
-     * 
+     *
      * @param string $key
      * @return null
      */

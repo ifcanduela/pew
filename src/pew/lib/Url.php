@@ -12,36 +12,36 @@ class Url
 {
     /** @var Request */
     public $request;
-    
+
     /** @var array */
     public $routes = [];
-    
+
     /** @var array */
     public $namedRoutes = [];
 
     /** @var string */
-    public $scheme = 'http';
-    
+    public $scheme = "http";
+
     /** @var string */
-    public $user = '';
-    
+    public $user = "";
+
     /** @var string */
-    public $password = '';
-    
+    public $password = "";
+
     /** @var string */
-    public $host = '';
-    
+    public $host = "";
+
     /** @var int */
     public $port = 80;
-    
+
     /** @var string */
     public $path = [];
-    
+
     /** @var array */
     public $query = [];
-    
+
     /** @var string */
-    public $fragment = '';
+    public $fragment = "";
 
     /**
      * Create a URL object.
@@ -55,8 +55,8 @@ class Url
             $request = (string) $request;
             $this->request = Request::create($request);
 
-            if (false !== strpos($request, '#')) {
-                $this->fragment = (string) S::create($request)->substr(strpos($request, '#'))->removeLeft('#');
+            if (false !== strpos($request, "#")) {
+                $this->fragment = (string) S::create($request)->substr(strpos($request, "#"))->removeLeft("#");
             }
         } elseif ($request instanceof Request) {
             $this->request = $request;
@@ -71,7 +71,7 @@ class Url
         $this->password = $this->request->getPassword();
         $this->host = $this->request->getHost();
         $this->port = $this->request->getPort();
-        $this->path = array_filter(explode('/', $this->request->getPathInfo()));
+        $this->path = array_filter(explode("/", $this->request->getPathInfo()));
         parse_str($this->request->getQueryString(), $this->query);
     }
 
@@ -93,8 +93,8 @@ class Url
      */
     public function to(string ...$path)
     {
-        $path = rtrim('/' . join('/', $path), '/');
-        $path = preg_replace('~\/+~', '/', $path);
+        $path = rtrim("/" . join("/", $path), "/");
+        $path = preg_replace('~\/+~', "/", $path);
 
         return $this->request->getSchemeAndHttpHost() . $path;
     }
@@ -112,39 +112,39 @@ class Url
         # arrange all the named routes
         if (!$this->namedRoutes) {
             foreach ($this->routes as $route) {
-                if (isset($route['name']) && $route['name']) {
-                    $this->namedRoutes[$route['name']] = $route;
+                if (isset($route["name"]) && $route["name"]) {
+                    $this->namedRoutes[$route["name"]] = $route;
                 }
             }
         }
 
         if (isset($this->namedRoutes[$routeName])) {
             $route = $this->namedRoutes[$routeName];
-            $path = $route['path'];
+            $path = $route["path"];
 
             # merge the defaults with the passed params
-            if (isset($route['defaults'])) {
-                $params = array_merge($route['defaults'], $params);
+            if (isset($route["defaults"])) {
+                $params = array_merge($route["defaults"], $params);
             }
 
             # replace all available params
             foreach ($params as $key => $value) {
-                $path = str_replace('{' . $key . '}', $value, $path);
+                $path = str_replace("{" . $key . "}", $value, $path);
             }
 
             # clear all remaining optional parameters
-            while (strpos($path, '}]') !== false) {
+            while (strpos($path, "}]") !== false) {
                 // try to remove [\{var}]
-                $path = preg_replace('~(\[\/\{[^}]+\}\])~', '', $path);
+                $path = preg_replace('~(\[\/\{[^}]+\}\])~', "", $path);
             }
 
             # check if there are any remaining mandatory parameters
-            if (strpos($path, '{')) {
-                throw new \Exception("Not all required placeholders could be filled for {$route['path']}");
+            if (strpos($path, "{")) {
+                throw new \Exception("Not all required placeholders could be filled for " . $route["path"]);
             }
 
             # clean the optional parameter markers
-            $path = str_replace(['[', ']'], '', $path);
+            $path = str_replace(["[", "]"], "", $path);
 
             return $this->to($path);
         }
@@ -161,7 +161,7 @@ class Url
     public function setScheme(string $scheme)
     {
         $url = clone $this;
-        $url->scheme = S::create($scheme)->removeRight('://');
+        $url->scheme = S::create($scheme)->removeRight("://");
 
         return $url;
     }
@@ -175,7 +175,7 @@ class Url
      */
     public function getScheme()
     {
-        return S::create($this->scheme ?: 'http')->ensureRight('://');
+        return S::create($this->scheme ?: "http")->ensureRight("://");
     }
 
     /**
@@ -214,16 +214,16 @@ class Url
      */
     public function getAuth()
     {
-        $auth = '';
+        $auth = "";
 
         if ($this->user) {
             $auth .= $this->user;
 
             if ($this->password) {
-                $auth .= ':' . $this->password;
+                $auth .= ":" . $this->password;
             }
 
-            $auth .= '@';
+            $auth .= "@";
         }
 
         return $auth;
@@ -283,10 +283,10 @@ class Url
         }
 
         if ($this->port && $this->port != 80) {
-            return ':' . $this->port;
+            return ":" . $this->port;
         }
 
-        return '';
+        return "";
     }
 
     /**
@@ -306,7 +306,7 @@ class Url
         foreach ($path as $value) {
             $url->path = array_values(array_merge(
                 $url->path,
-                array_filter(explode('/', $value . '/'))
+                array_filter(explode("/", $value . "/"))
             ));
         }
 
@@ -355,7 +355,7 @@ class Url
      */
     public function getPath()
     {
-        return '/' . join('/', $this->path);
+        return "/" . join("/", $this->path);
     }
 
     /**
@@ -433,7 +433,7 @@ class Url
      */
     public function getQueryString()
     {
-        return $this->query ? '?' . http_build_query($this->query) : '';
+        return $this->query ? "?" . http_build_query($this->query) : "";
     }
 
     /**
@@ -445,7 +445,7 @@ class Url
     public function setFragment(string $fragment)
     {
         $url = clone $this;
-        $url->fragment = (string) S::create($fragment)->substr(strpos($fragment, '#'))->removeLeft('#');
+        $url->fragment = (string) S::create($fragment)->substr(strpos($fragment, "#"))->removeLeft("#");
 
         return $url;
     }
@@ -457,7 +457,7 @@ class Url
      */
     public function getFragment()
     {
-        return $this->fragment ? '#' . $this->fragment : '';
+        return $this->fragment ? "#" . $this->fragment : "";
     }
 
     /**

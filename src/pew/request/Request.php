@@ -24,7 +24,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function isPost()
     {
-        return $this->isMethod('POST');
+        return $this->isMethod("POST");
     }
 
     /**
@@ -34,7 +34,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function isGet()
     {
-        return $this->isMethod('GET');
+        return $this->isMethod("GET");
     }
 
     /**
@@ -47,7 +47,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function method()
     {
-        $method = $this->request->get('_method') ?? $this->getMethod();
+        $method = $this->request->get("_method") ?? $this->getMethod();
 
         return strtoupper($method);
     }
@@ -79,8 +79,8 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function isJson()
     {
-        # check if the requested URL ends in '.json'
-        if (preg_match('/[^A-Za-z0-9]json$/', $this->getPathInfo())) {
+        # check if the requested URL ends in '.json' or '|json'
+        if (preg_match('/[\.|]json\$/', $this->getPathInfo())) {
             return true;
         }
 

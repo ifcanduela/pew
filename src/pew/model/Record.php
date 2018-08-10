@@ -18,7 +18,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     protected $tableName;
 
     /** @var string Name of the primary key fields of the table the Model manages. */
-    protected $primaryKey = 'id';
+    protected $primaryKey = "id";
 
     /** @var array List of class properties to serialize as JSON. */
     public $serialize = [];
@@ -42,7 +42,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     protected $tableManager;
 
     /** @var string Database connection name. */
-    protected $connectionName = 'default';
+    protected $connectionName = "default";
 
     /** @var bool Flag for new records. */
     public $isNew = false;
@@ -51,10 +51,10 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public $errors = [];
 
     /** @var string Name of the column holding the record creation timestamp. */
-    public static $createdFieldName = 'created';
+    public static $createdFieldName = "created";
 
     /** @var string Name of the column holding the record update  timestamp. */
-    public static $updatedFieldName = 'updated';
+    public static $updatedFieldName = "updated";
 
     /**
      * Create an empty, new record.
@@ -62,7 +62,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function __construct()
     {
         if (!$this->tableName) {
-            $this->tableName = Str::create(basename(get_class($this)))->underscored() . 's';
+            $this->tableName = Str::create(basename(get_class($this)))->underscored() . "s";
         }
 
         $this->tableManager = $this->table();
@@ -141,7 +141,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function toArray()
     {
-        return array_merge($this->record, call_user_func('get_object_vars', $this));
+        return array_merge($this->record, call_user_func("get_object_vars", $this));
     }
 
     /**
@@ -207,7 +207,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function addError(string $field, string $message)
     {
-        $this->errors[] = (object) compact('field', 'message');
+        $this->errors[] = (object) compact("field", "message");
     }
 
     /**
@@ -371,7 +371,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $table = $record->table();
 
         $table->createSelect()
-            ->columns($record->tableName . '.*')
+            ->columns($record->tableName . ".*")
             ->from($record->tableName);
 
         return $table;
@@ -389,7 +389,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $table = $record->table();
 
         $table->createSelect()
-            ->columns($record->tableName . '.*')
+            ->columns($record->tableName . ".*")
             ->from($record->tableName);
 
         return $table->where([$table->primaryKey() => $id])->one();
@@ -417,7 +417,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function __set($key, $value)
     {
         if (!array_key_exists($key, static::$setterMethods)) {
-            $methodName = 'set' . Str::create($key)->upperCamelize();
+            $methodName = "set" . Str::create($key)->upperCamelize();
             static::$setterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
@@ -454,7 +454,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             if (!$this->hasGetterResults($key)) {
                 $fetch = $this->$methodName();
 
-                if (method_exists($fetch, 'fetch')) {
+                if (method_exists($fetch, "fetch")) {
                     $fetch = $fetch->fetch();
                 }
 
@@ -504,14 +504,14 @@ class Record implements \JsonSerializable, \IteratorAggregate
     {
         $methodStr = Str::create($method);
 
-        if ($methodStr->startsWith('findAllBy')) {
-            $field = $methodStr->removeLeft('findAllBy')->underscored()->__toString();
+        if ($methodStr->startsWith("findAllBy")) {
+            $field = $methodStr->removeLeft("findAllBy")->underscored()->__toString();
             $value = array_shift($arguments);
             return static::find()->where([$field => $value])->all();
         }
 
-        if ($methodStr->startsWith('findOneBy')) {
-            $field = $methodStr->removeLeft('findOneBy')->underscored()->__toString();
+        if ($methodStr->startsWith("findOneBy")) {
+            $field = $methodStr->removeLeft("findOneBy")->underscored()->__toString();
             $value = array_shift($arguments);
             return static::find()->where([$field => $value])->one();
         }
@@ -565,7 +565,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     {
         if (!$localKeyName) {
             $otherClass = basename($className);
-            $localKeyName = Str::create($otherClass)->underscored() . '_id';
+            $localKeyName = Str::create($otherClass)->underscored() . "_id";
         }
 
         if (!$foreignKeyName) {
@@ -603,7 +603,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     {
         if (!$foreignKeyName) {
             $thisClass = basename(get_class($this));
-            $foreignKeyName = Str::create($thisClass)->underscored() . '_id';
+            $foreignKeyName = Str::create($thisClass)->underscored() . "_id";
         }
 
         if (!$localKeyName) {
@@ -641,7 +641,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     {
         if (!$foreignKeyName) {
             $thisClass = basename(get_class($this));
-            $foreignKeyName = Str::create($thisClass)->underscored() . '_id';
+            $foreignKeyName = Str::create($thisClass)->underscored() . "_id";
         }
 
         if (!$localKeyName) {
@@ -694,7 +694,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             ];
             sort($tableNames);
 
-            $associationTableName = join('_', $tableNames);
+            $associationTableName = join("_", $tableNames);
         }
 
         if (!$nearKeyName) {
@@ -703,12 +703,12 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         if (!$nearForeignKeyName) {
             $thisClass = basename(get_class($this));
-            $nearForeignKeyName = Str::create($thisClass)->underscored() . '_id';
+            $nearForeignKeyName = Str::create($thisClass)->underscored() . "_id";
         }
 
         if (!$farForeignKeyName) {
             $farClass = basename($className);
-            $farForeignKeyName = Str::create($farClass)->underscored() . '_id';
+            $farForeignKeyName = Str::create($farClass)->underscored() . "_id";
         }
 
         if (!$farKeyName) {
@@ -731,7 +731,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     {
         # generate a getter method name if it does not yet exist
         if (!array_key_exists($key, static::$getterMethods)) {
-            $methodName = 'get' . Str::create($key)->upperCamelize();
+            $methodName = "get" . Str::create($key)->upperCamelize();
             static::$getterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
@@ -746,7 +746,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     protected function hasGetterResults($key)
     {
-        $methodName = 'get' . Str::create($key)->upperCamelize();
+        $methodName = "get" . Str::create($key)->upperCamelize();
 
         return array_key_exists($methodName, $this->getterResults);
     }

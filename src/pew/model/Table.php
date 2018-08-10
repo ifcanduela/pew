@@ -123,17 +123,17 @@ class Table
         }
 
         # some metadata about the table
-        $this->tableData['name'] = $this->table;
+        $this->tableData["name"] = $this->table;
 
-        if (!isset($this->tableData['primary_key'])) {
+        if (!isset($this->tableData["primary_key"])) {
             $primary_key = $this->db->getPrimaryKeys($this->table);
-            $this->tableData['primary_key'] = $primary_key;
+            $this->tableData["primary_key"] = $primary_key;
         }
 
-        if (!isset($this->tableData['columns'])) {
+        if (!isset($this->tableData["columns"])) {
             $columns = $this->db->getColumnNames($this->table);
-            $this->tableData['columns'] = $columns;
-            $this->tableData['column_names'] = array_combine($columns, array_fill(0, count($columns), null));
+            $this->tableData["columns"] = $columns;
+            $this->tableData["column_names"] = array_combine($columns, array_fill(0, count($columns), null));
         }
     }
 
@@ -149,7 +149,7 @@ class Table
         }
 
         $shortname = (new \ReflectionClass($this))->getShortName();
-        $table_name = preg_replace('/Model$/', '', $shortname);
+        $table_name = preg_replace('/Model$/', "", $shortname);
 
         if (!$table_name) {
             throw new TableNotSpecifiedException("Model class must be attached to a database table.");
@@ -165,7 +165,7 @@ class Table
      */
     public function primaryKey()
     {
-        return $this->tableData['primary_key'];
+        return $this->tableData["primary_key"];
     }
 
     /**
@@ -180,8 +180,8 @@ class Table
     public function columnNames($as_keys = true)
     {
         return $as_keys
-            ? $this->tableData['column_names']
-            : array_keys($this->tableData['column_names']);
+            ? $this->tableData["column_names"]
+            : array_keys($this->tableData["column_names"]);
     }
 
     /**
@@ -201,7 +201,7 @@ class Table
 
     /**
      * Initialize a SELECT query.
-     * 
+     *
      * @return self
      */
     public function createSelect()
@@ -214,7 +214,7 @@ class Table
 
     /**
      * Initialize an UPDATE query.
-     * 
+     *
      * @return self
      */
     public function createUpdate()
@@ -227,7 +227,7 @@ class Table
 
     /**
      * Initialize an INSERT query.
-     * 
+     *
      * @return self
      */
     public function createInsert()
@@ -240,7 +240,7 @@ class Table
 
     /**
      * Initialize a DELETE query.
-     * 
+     *
      * @return self
      */
     public function createDelete()
@@ -271,7 +271,7 @@ class Table
         # trim whitespace around the SQL
         $query = trim($query);
         # extract the SQL clause being used (SELECT, INSERT, etc...)
-        $clause = strtoupper(strtok($query, ' '));
+        $clause = strtoupper(strtok($query, " "));
 
         # prepare the SQL query
         $stm = $this->db->prepare($query);
@@ -279,7 +279,7 @@ class Table
         $success = $stm->execute($data);
 
         if ($success) {
-            if ($clause == 'SELECT') {
+            if ($clause == "SELECT") {
                 # return an array of Models
                 $result = $stm->fetchAll();
 
@@ -294,7 +294,7 @@ class Table
 
     /**
      * Set or get the class of the records managed by the table.
-     * 
+     *
      * @param string|null $recordClass
      * @return string|null
      */
@@ -309,7 +309,7 @@ class Table
 
     /**
      * Retrieve one record matching the query.
-     * 
+     *
      * @return Record|null
      */
     public function one()
@@ -361,10 +361,10 @@ class Table
     public function count()
     {
         # query the database
-        $this->query->columns('COUNT(*) as count');
+        $this->query->columns("COUNT(*) as count");
         $result = $this->db->run($this->query);
 
-        return $result[0]['count'];
+        return $result[0]["count"];
     }
 
     /**
@@ -378,14 +378,14 @@ class Table
      */
     public function save(Record $model)
     {
-        if (method_exists($model, 'beforeSave')) {
+        if (method_exists($model, "beforeSave")) {
             $model->beforeSave();
         }
 
         $attributes = $model->attributes();
         $record = $result = [];
 
-        foreach ($this->tableData['columns'] as $key) {
+        foreach ($this->tableData["columns"] as $key) {
             if (array_key_exists($key, $attributes)) {
                 $record[$key] = $attributes[$key];
             }
@@ -403,7 +403,7 @@ class Table
             $id = $this->updateRecord($record, $model::$updatedFieldName);
         }
 
-        if (method_exists($model, 'afterSave')) {
+        if (method_exists($model, "afterSave")) {
             $model->afterSave();
         }
 
@@ -434,7 +434,7 @@ class Table
 
         $query = Query::insert()->into($this->table)->values($record);
         $this->db->run($query);
-        
+
         return $this->db->lastInsertId();
     }
 
@@ -458,7 +458,7 @@ class Table
         $where = [$primaryKeyName => $record[$primaryKeyName]];
         $query = Query::update($this->tableName())->set($record)->where($where);
         $this->db->run($query);
-        
+
         return $record[$primaryKeyName];
     }
 
@@ -489,7 +489,7 @@ class Table
             return $this->db->run($this->query->where([$this->primaryKey() => $id]));
         }
 
-        throw new \RuntimeException('Delete requires conditions or parameters');
+        throw new \RuntimeException("Delete requires conditions or parameters");
     }
 
     /**
@@ -540,7 +540,7 @@ class Table
      */
     public function hasColumn(string $column_name)
     {
-        return array_key_exists($column_name, $this->tableData['column_names']);
+        return array_key_exists($column_name, $this->tableData["column_names"]);
     }
 
     /**
@@ -590,7 +590,7 @@ class Table
 
     /**
      * Eager-load relationships.
-     * 
+     *
      * @param  array  $models
      * @return null
      */
@@ -605,7 +605,7 @@ class Table
             $ref = new $class_name;
 
             foreach ($this->relationships as $relationship_field_name) {
-                $getter_method_name = 'get' . Str::create($relationship_field_name)->uppercamelize();
+                $getter_method_name = "get" . Str::create($relationship_field_name)->uppercamelize();
 
                 /** @var Relationship $relationship */
                 $relationship = $ref->$getter_method_name();
