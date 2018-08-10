@@ -2,6 +2,8 @@
 
 namespace pew\console;
 
+use Stringy\Stringy as S;
+
 class CommandArguments
 {
     /** @var array Arguments preceded by a nametag (-n or --name) */
@@ -102,7 +104,7 @@ class CommandArguments
         $keyList = func_get_args();
 
         foreach ($keyList as $key) {
-            $argumentName = static::camelToDashes($key);
+            $argumentName = S::create($key)->dasherize();
 
             if (array_key_exists($argumentName, $this->namedArguments)) {
                 return $this->namedArguments[$argumentName];
@@ -121,35 +123,5 @@ class CommandArguments
     public function __get($key)
     {
         return $this->get($key);
-    }
-
-    /**
-     * Convert a dash-delimited argument name to camel-case.
-     *
-     * @param string $dashes A dash-delimited string.
-     * @return string A camel-case representation of the dash-delimited string.
-     */
-    public static function dashesToCamel($dashes)
-    {
-        $camel = preg_replace_callback('/\-(.)/', function ($match) {
-            return strtoupper($match[1]);
-        }, $dashes);
-
-        return str_replace('-', '', $camel);
-    }
-
-    /**
-     * Convert a camel-case argument name to dash-delimited.
-     *
-     * @param string $camel A camel-case string.
-     * @return string A dash-delimited representation of the camel-case string.
-     */
-    public static function camelToDashes($camel)
-    {
-        $dashes = preg_replace_callback('/([a-z])([A-Z0-9])/', function ($match) {
-            return $match[1] . '-' . $match[2];
-        }, $camel);
-
-        return strtolower(trim($dashes, '-'));
     }
 }

@@ -113,7 +113,7 @@ public function view($name, $view)
 }
 ```
 
-The base controller class add the `renderJson()` and `redirect()`  methods, whose results must be `return`ed by the action method:
+The base controller class adds the `renderJson()` and `redirect()`  methods, whose results must be `return`ed by the action method:
 
 ```php
 public function index($name, $request)

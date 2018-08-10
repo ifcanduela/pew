@@ -14,6 +14,7 @@ class Group extends Route
     protected $prefix;
 
     /**
+     * Set the routes in the group.
      *
      * @param  Route[] $routes
      * @return self
@@ -26,7 +27,8 @@ class Group extends Route
     }
 
     /**
-     * Get the routes in the group
+     * Get the routes in the group.
+     *
      * @return Route[]
      */
     public function getRoutes()

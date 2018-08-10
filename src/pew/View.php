@@ -10,9 +10,6 @@ use pew\lib\FileCache;
  */
 class View implements \ArrayAccess
 {
-    /** @var boolean */
-    public $render = true;
-
     /** @var SplStack Base templates directory */
     protected $folderStack;
 
@@ -57,11 +54,7 @@ class View implements \ArrayAccess
         $this->folderStack = new SplStack();
         $this->fileCache = $file_cache;
 
-        if ($templates_folder === null) {
-            $templates_folder = getcwd();
-        }
-
-        $this->addFolder($templates_folder);
+        $this->addFolder($templates_folder ?? getcwd());
     }
 
     /**
@@ -160,7 +153,7 @@ class View implements \ArrayAccess
             if ($this->template === null) {
                 throw new \RuntimeException("No template specified");
             }
-            
+
             $template = $this->template;
         }
 

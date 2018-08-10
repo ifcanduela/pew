@@ -78,7 +78,7 @@ class {$className} extends Controller
 PHP;
 
         $filename = root('app', 'controllers', "{$className}.php");
-		$this->createFile($file_contents, $filename);
+        $this->createFile($file_contents, $filename);
     }
 
     public function command(CommandArguments $arguments)

@@ -200,9 +200,12 @@ class Table
     }
 
     /**
+     * Initialize a SELECT query.
+     * 
      * @return self
      */
-    public function createSelect() {
+    public function createSelect()
+    {
         $this->query = Query::select();
         $this->query->from($this->tableName());
 
@@ -210,9 +213,12 @@ class Table
     }
 
     /**
+     * Initialize an UPDATE query.
+     * 
      * @return self
      */
-    public function createUpdate() {
+    public function createUpdate()
+    {
         $this->query = Query::update();
         $this->query->table($this->tableName());
 
@@ -220,9 +226,12 @@ class Table
     }
 
     /**
+     * Initialize an INSERT query.
+     * 
      * @return self
      */
-    public function createInsert() {
+    public function createInsert()
+    {
         $this->query = Query::insert();
         $this->query->into($this->tableName());
 
@@ -230,6 +239,8 @@ class Table
     }
 
     /**
+     * Initialize a DELETE query.
+     * 
      * @return self
      */
     public function createDelete()
@@ -281,6 +292,12 @@ class Table
         throw new \RuntimeException("The $clause operation failed");
     }
 
+    /**
+     * Set or get the class of the records managed by the table.
+     * 
+     * @param string|null $recordClass
+     * @return string|null
+     */
     public function recordClass(string $recordClass = null)
     {
         if ($recordClass) {
@@ -290,6 +307,11 @@ class Table
         return $this->recordClass;
     }
 
+    /**
+     * Retrieve one record matching the query.
+     * 
+     * @return Record|null
+     */
     public function one()
     {
         $this->limit(1);

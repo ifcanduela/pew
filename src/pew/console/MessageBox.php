@@ -11,6 +11,7 @@ class MessageBox extends Message
 
     /**
      * MessageBox constructor.
+     *
      * @param string|string[] ...$lines
      */
     public function __construct(...$lines)
