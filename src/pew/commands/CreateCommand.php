@@ -83,12 +83,9 @@ PHP;
 
     public function command(CommandArguments $arguments)
     {
-        $className = $arguments->at(0);
-        $commandName = str_replace("_", "-", S::create($className)->underscored());
-
-        if (substr($className, -strlen("Command")) !== "Command") {
-            $className .= "Command";
-        }
+        $className = S::create($arguments->at(0));
+        $commandName = $className->removeRight("Command")->dasherize();
+        $className = $className->ensureRigth("Command");
 
         $file_contents = <<<PHP
 <?php
@@ -107,7 +104,7 @@ class {$className} extends Command
 
     public function description()
     {
-        return ";
+        return "";
     }
 
     public function run(CommandArguments \$args)
