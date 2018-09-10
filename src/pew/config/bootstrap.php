@@ -57,6 +57,10 @@ return (function () {
         $route = $c["route"];
         $handler = $route->getHandler();
 
+        if (is_callable($handler)) {
+            return null;
+        }
+
         if (is_string($handler)) {
             $parts = preg_split('/[@\.]/', $handler);
 
@@ -67,11 +71,9 @@ return (function () {
             if ($route["action"]) {
                 return (string) S::create($route["action"])->camelize();
             }
-
-            return $c["default_action"];
         }
 
-        return null;
+        return $c["default_action"];
     };
 
     $container["controller"] = function (Container $c) {
