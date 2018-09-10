@@ -119,7 +119,7 @@ class Table
     public function init()
     {
         if (!$this->db->tableExists($this->table)) {
-            throw new TableNotFoundException("Table {$this->table} for model " . get_class($this) . " not found.");
+            throw new TableNotFoundException("Table {$this->table} for model {$this->recordClass} not found.");
         }
 
         # some metadata about the table
