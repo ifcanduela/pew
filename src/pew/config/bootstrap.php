@@ -64,16 +64,14 @@ return (function () {
         if (is_string($handler)) {
             $parts = preg_split('/[@\.]/', $handler);
 
-            if (!empty($parts[1])) {
+            if (isset($parts[1])) {
                 return $parts[1];
-            }
-
-            if ($route["action"]) {
-                return (string) S::create($route["action"])->camelize();
             }
         }
 
-        return $c["default_action"];
+        $action_slug = $route->getParam("action", $c["default_action"]);
+
+        return (string) S::create($action_slug)->camelize();
     };
 
     $container["controller"] = function (Container $c) {

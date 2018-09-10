@@ -310,6 +310,7 @@ class App
 
         # check if the request is JSON and return an appropriate response
         $request = $this->container["request"];
+
         if ($request->isJson()) {
             return new JsonResponse($actionResult);
         }
