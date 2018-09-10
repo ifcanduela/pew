@@ -16,7 +16,7 @@ class CreateCommand extends Command
 
     public function description()
     {
-        return "Create app files.";
+        return "Generates app files.";
     }
 
     public function run(CommandArguments $arguments)
@@ -27,7 +27,123 @@ class CreateCommand extends Command
             return $this->{$type}($arguments);
         }
 
+        echo $this->infoBox("Create application files");
+
+        echo $this->messageBox(
+            "  - create:command <ClassName>",
+            "    Generates a console command. The suffix `Command` will be added if it's not present.",
+            "  - create:controller <ClassName>",
+            "    Generate an action class. The suffix `Controller` is optional.",
+            "  - create:middleware <ClassName>",
+            "    Generate a middleware controller with stubs for `before()` and `after()`.",
+            "  - create:model <ClassName> [table_name]",
+            "    Generate a database Model class. The table name can be inferred from the class name."
+        );
+
         return false;
+    }
+
+    public function command(CommandArguments $arguments)
+    {
+        $arg = $arguments->at(0);
+
+        if (!$arg) {
+            echo $this->errorBox("Missing argument: ClassName");
+            die;
+        }
+
+        $className = S::create($arg);
+
+        $commandName = $className->removeRight("Command")->dasherize();
+        $className = $className->ensureRight("Command");
+
+        $file_contents = <<<PHP
+<?php
+
+namespace app\commands;
+
+use pew\console\Command;
+use pew\console\CommandArguments;
+
+class {$className} extends Command
+{
+    public function name()
+    {
+        return "{$commandName}";
+    }
+
+    public function description()
+    {
+        return "";
+    }
+
+    public function run(CommandArguments \$args)
+    {
+        echo \$this->info("{$commandName}");
+    }
+}
+
+PHP;
+
+        $filename = root("app", "commands", "{$className}.php");
+
+        $this->createFile($file_contents, $filename);
+    }
+
+    public function controller(CommandArguments $arguments)
+    {
+        $className = $arguments->at(0);
+
+        if (!$className) {
+            echo $this->errorBox("Missing argument: ClassName");
+            die;
+        }
+
+        $file_contents = <<<PHP
+<?php
+
+namespace app\controllers;
+
+use pew\Controller;
+
+class {$className} extends Controller
+{
+
+}
+
+PHP;
+
+        $filename = root("app", "controllers", "{$className}.php");
+        $this->createFile($file_contents, $filename);
+    }
+
+    public function middleware(CommandArguments $arguments)
+    {
+        $className = $arguments->at(0);
+
+        $file_contents = <<<PHP
+<?php
+
+namespace app\middleware;
+
+class OnlyAuthenticated extends \\request\\Middlewaree
+{
+    public function before()
+    {
+
+    }
+
+    public function after()
+    {
+
+    }
+}
+
+
+PHP;
+
+        $filename = root("app", "middleware", "{$className}.php");
+        $this->createFile($file_contents, $filename);
     }
 
     public function model(CommandArguments $arguments)
@@ -59,73 +175,13 @@ PHP;
         $this->createFile($file_contents, $filename);
     }
 
-    public function controller(CommandArguments $arguments)
-    {
-        $className = $arguments->at(0);
-
-        $file_contents = <<<PHP
-<?php
-
-namespace app\controllers;
-
-use pew\Controller;
-
-class {$className} extends Controller
-{
-
-}
-
-PHP;
-
-        $filename = root("app", "controllers", "{$className}.php");
-        $this->createFile($file_contents, $filename);
-    }
-
-    public function command(CommandArguments $arguments)
-    {
-        $className = S::create($arguments->at(0));
-        $commandName = $className->removeRight("Command")->dasherize();
-        $className = $className->ensureRigth("Command");
-
-        $file_contents = <<<PHP
-<?php
-
-namespace app\commands;
-
-use pew\console\Command;
-use pew\console\CommandArguments;
-
-class {$className} extends Command
-{
-    public function name()
-    {
-        return "{$commandName}";
-    }
-
-    public function description()
-    {
-        return "";
-    }
-
-    public function run(CommandArguments \$args)
-    {
-        echo \$this->info("{$commandName}");
-    }
-}
-
-PHP;
-
-        $filename = root("app", "commands", "{$className}.php");
-        $this->createFile($file_contents, $filename);
-    }
-
     public function createFile(string $content, string $filename)
     {
         if (!file_exists($filename)) {
             file_put_contents($filename, $content);
-            echo $this->info("{$filename} created.");
+            echo $this->successBox("{$filename} created.");
         } else {
-            echo $this->error("{$filename} already exists.");
+            echo $this->errorBox("{$filename} already exists.");
         }
     }
 }
