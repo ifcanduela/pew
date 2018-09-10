@@ -80,7 +80,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     public function isJson()
     {
         # check if the requested URL ends in '.json' or '|json'
-        if (preg_match('/[\.|]json\$/', $this->getPathInfo())) {
+        if (preg_match('/[\.|]json$/', $this->getPathInfo())) {
             return true;
         }
 
