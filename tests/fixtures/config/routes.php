@@ -8,7 +8,7 @@ return [
     },
 
     Route::from('/middleware')
-        ->to('TestController@use_middleware')
+        ->to('TestController@useMiddleware')
         ->before([\fixtures\services\MiddlewareTest::class])
         ->after([\fixtures\services\MiddlewareTest::class]),
 

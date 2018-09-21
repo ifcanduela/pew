@@ -1,6 +1,6 @@
 <?php
 
-use pew\libs\Url;
+use pew\lib\Url;
 use pew\request\Request;
 
 class UrlTest extends PHPUnit\Framework\TestCase

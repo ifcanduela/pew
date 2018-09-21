@@ -31,7 +31,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $controller = new \tests\fixtures\controllers\TestController($request, $view);
 
-        $response = $controller->my_action();
+        $response = $controller->myAction();
 
         $this->assertInstanceOf(Symfony\Component\HttpFoundation\JsonResponse::class, $response);
         $this->assertEquals('"myAction"', $response->getContent());

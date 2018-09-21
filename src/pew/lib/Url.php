@@ -93,7 +93,7 @@ class Url
      */
     public function to(string ...$path)
     {
-        $path = rtrim("/" . join("/", $path), "/");
+        $path = rtrim("/" . join("/", array_filter($path)), "/");
         $path = preg_replace('~\/+~', "/", $path);
 
         return $this->request->getSchemeAndHttpHost() . $path;

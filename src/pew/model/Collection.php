@@ -8,7 +8,11 @@ namespace pew\model;
  */
 class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable
 {
-    /** @var array Collection items */
+    /**
+     *
+     *
+     * @var array Collection items
+     */
     protected $items = [];
 
     /**
@@ -150,9 +154,13 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     {
         $items = array_chunk($this->items, $chunkSize, $preserveKeys);
 
-        return new static(array_map(function ($chunk) {
+        return new static(
+            array_map(
+                function ($chunk) {
             return new static($chunk);
-        }, $items));
+                }, $items
+            )
+        );
     }
 
     /**
@@ -164,9 +172,11 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      */
     public function field($field)
     {
-        $items = array_map(function ($item) use ($field) {
+        $items = array_map(
+            function ($item) use ($field) {
             return $item->$field ?? $item[$field] ?? null;
-        }, $this->items);
+            }, $this->items
+        );
 
         return new static($items);
     }
@@ -187,12 +197,12 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
         while ($start < $count) {
             if (is_callable($value)) {
-                $items[$start] = $value();
+                $items[$start] = $value($start);
             } else {
                 $items[$start] = $value;
             }
 
-            $count++;
+            $start++;
         }
 
         return new static($items);
@@ -257,7 +267,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
             if (is_callable($field)) {
                 $k = $field($value, $key);
             } else {
-                $k = $value->$field;
+                $k = $value->$field ?? $value[$field] ?? null;
             }
 
             if (!isset($items[$k])) {
@@ -305,9 +315,11 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         if (is_callable($field)) {
             $items = array_map($field, $this->items);
         } elseif (is_string($field)) {
-            $items = array_map(function ($item) use ($field) {
-                return $item->$field ?? $item[$field] ?? null;
-            }, $this->items);
+            $items = array_map(
+                function ($item) use ($field) {
+                    return $item->$field ?? $item[$field] ?? null;
+                }, $this->items
+            );
         } else {
             $items = $this->items;
         }
@@ -327,9 +339,14 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
 
         foreach ($this->items as $key => $value) {
             if (is_callable($field)) {
-                $items[$field($key, $value)] = $value;
+                $index = $field($value, $key);
+                $items[$index] = $value;
             } else {
-                $items[$value->$field] = $value;
+                $index = $value->$field ?? $value[$field] ?? null;
+
+                if ($index) {
+                    $items[$index] = $value;
+                }
             }
         }
 
@@ -549,12 +566,14 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         if (is_callable($field)) {
             usort($items, $field);
         } elseif ($field) {
-            usort($items, function ($a, $b) use ($field) {
+            usort(
+                $items, function ($a, $b) use ($field) {
                 $_a = $a->$field ?? $a[$field] ?? null;
                 $_b = $a->$field ?? $a[$field] ?? null;
 
                 return $_a <=> $_b;
-            });
+                }
+            );
         } else {
             sort($items);
         }
@@ -577,13 +596,15 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     {
         $keys = array_keys($this->items);
 
-        $values = array_map(function ($item) {
+        $values = array_map(
+            function ($item) {
             if (method_exists($item, "toArray")) {
                 return $item->toArray();
             }
 
             return $item;
-        }, $this->items);
+            }, $this->items
+        );
 
         return array_combine($keys, $values);
     }
@@ -694,9 +715,11 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      */
     public function zip(...$arrays)
     {
-        $items = array_map(function (...$values) {
+        $items = array_map(
+            function (...$values) {
             return new static($values);
-        }, $this->items, ...$arrays);
+            }, $this->items, ...$arrays
+        );
 
         return new static($items);
     }

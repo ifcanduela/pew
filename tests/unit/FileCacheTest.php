@@ -1,6 +1,6 @@
 <?php
 
-use pew\libs\FileCache;
+use pew\lib\FileCache;
 
 class FileCacheTest extends PHPUnit\Framework\TestCase
 {

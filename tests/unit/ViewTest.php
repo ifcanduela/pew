@@ -18,8 +18,7 @@ class ViewTest extends PHPUnit\Framework\TestCase
         $this->assertTrue($v->exists('view1'));
         $this->assertFalse($v->exists('nope'));
 
-        $v->template('view1');
-        $result = $v->render(['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
+        $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
 
         $this->assertEquals('<div>PARAMETER</div>
 <div>PROPERTY</div>
@@ -28,7 +27,7 @@ class ViewTest extends PHPUnit\Framework\TestCase
 
         $v->layout('layout');
         $v->title('test');
-        $result = $v->render(['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
+        $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
 
         $this->assertEquals('<title>test</title>
 <div>PARAMETER</div>

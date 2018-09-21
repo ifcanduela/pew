@@ -23,7 +23,7 @@ class Type3 implements Type {
 
 namespace {
 
-use pew\libs\Injector;
+use pew\lib\Injector;
 
 class InjectorTest extends PHPUnit\Framework\TestCase
 {
@@ -44,7 +44,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
 
         $injections = $injector->callFunction($callback);
 
-        $this->assertEquals(\pew\libs\Injector::class, get_class($injector));
+        $this->assertEquals(\pew\lib\Injector::class, get_class($injector));
         $this->assertEquals($injections, [$t2, false]);
     }
 
@@ -182,7 +182,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
 
     public function testGetInjectionMissing()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(\pew\lib\KeyNotFoundException::class);
 
         $callback = function () {};
 

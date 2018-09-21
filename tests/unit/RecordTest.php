@@ -26,17 +26,17 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $db = Database::sqlite(':memory:');
         $db->setLogger($this->getLogger());
 
-        $db->query('CREATE TABLE projects (id INTEGER PRIMARY KEY, name TEXT)');
-        $db->query('INSERT INTO projects (name) VALUES ("Project Alpha")');
-        $db->query('INSERT INTO projects (name) VALUES ("Project Beta")');
-        $db->query('INSERT INTO projects (name) VALUES ("Project Gamma")');
+        $db->run('CREATE TABLE projects (id INTEGER PRIMARY KEY, name TEXT)');
+        $db->run('INSERT INTO projects (name) VALUES ("Project Alpha")');
+        $db->run('INSERT INTO projects (name) VALUES ("Project Beta")');
+        $db->run('INSERT INTO projects (name) VALUES ("Project Gamma")');
 
-        $db->query('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, project_id INTEGER)');
-        $db->query('INSERT INTO users (username, project_id) VALUES ("User 1", 1)');
-        $db->query('INSERT INTO users (username, project_id) VALUES ("User 2", 1)');
-        $db->query('INSERT INTO users (username, project_id) VALUES ("User 3", 2)');
-        $db->query('INSERT INTO users (username, project_id) VALUES ("User 4", 2)');
-        $db->query('INSERT INTO users (username, project_id) VALUES ("User 5", 3)');
+        $db->run('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, project_id INTEGER)');
+        $db->run('INSERT INTO users (username, project_id) VALUES ("User 1", 1)');
+        $db->run('INSERT INTO users (username, project_id) VALUES ("User 2", 1)');
+        $db->run('INSERT INTO users (username, project_id) VALUES ("User 3", 2)');
+        $db->run('INSERT INTO users (username, project_id) VALUES ("User 4", 2)');
+        $db->run('INSERT INTO users (username, project_id) VALUES ("User 5", 3)');
 
         $this->db = $db;
         TableFactory::setConnection("default", $db);
@@ -51,6 +51,7 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals([
                 'id' => null,
                 'name' => null,
+                'extraField' => 'extraValue',
             ], $model->attributes());
 
         $this->assertNull($model->id);
@@ -74,13 +75,10 @@ class RecordTest extends PHPUnit\Framework\TestCase
         # check the iterated fields
         $this->assertEquals(['id', 'name'], $fields);
         # check the fields serialized into JSON
-        $this->assertEquals('{"id":"4","name":"Project Zeta"}', json_encode($model));
-        # check the extra fields serialized to JSON
-        $model->serialize = ['extraField'];
-        $this->assertEquals('{"id":"4","name":"Project Zeta","extraField":"extraValue"}', json_encode($model));
+        $this->assertEquals(["id"=>"4","name"=>"Project Zeta","extraField"=>"extraValue"], json_decode(json_encode($model), true));
         # check the fields excluded from JSON serialization
         $model->doNotSerialize = ['name'];
-        $this->assertEquals('{"id":"4","extraField":"extraValue"}', json_encode($model));
+        $this->assertEquals(["id"=>"4","extraField"=>"extraValue"], json_decode(json_encode($model), true));
     }
 
     public function testRecordFromQuery()
@@ -88,7 +86,7 @@ class RecordTest extends PHPUnit\Framework\TestCase
         # retrieve a list of records based on an SQL query
         $projects = Project::fromQuery('SELECT * FROM projects WHERE id > 1');
 
-        $this->assertTrue(is_array($projects));
+        $this->assertInstanceOf(\pew\model\Collection::class, $projects);
         $this->assertInstanceOf(Project::class, $projects[0]);
     }
 

@@ -4,31 +4,31 @@ namespace tests\fixtures\controllers;
 
 class TestController extends \pew\Controller
 {
-    public function my_action()
+    public function myAction()
     {
         return $this->renderJson('myAction');
     }
 
-    public function template_response()
+    public function templateResponse()
     {
         return [
             'hello' => 'world',
         ];
     }
 
-    public function json_response()
+    public function jsonResponse()
     {
         return $this->renderJson([
             'hello' => 'world',
         ]);
     }
 
-    public function string_response()
+    public function stringResponse()
     {
         return 'response';
     }
 
-    public function false_response()
+    public function falseResponse()
     {
         return false;
     }
