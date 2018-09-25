@@ -386,12 +386,18 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
     public function testWithout()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = new Collection([1, 2, 3, 4]);
+
+        $this->assertEquals([0 => 1, 1 => 2, 3 => 4], $c->without(2)->toArray());
     }
 
     public function testZip()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = new Collection([1, 2, 3, 4]);
+
+        $c = $c->zip([5, 6, 7, 8], [9, 10, 11, 12]);
+
+        $this->assertEquals([[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]], $c->toArray());
     }
 
     public function testTestClone()

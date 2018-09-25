@@ -69,9 +69,9 @@ return (function () {
             }
         }
 
-        $action_slug = $route->getParam("action", $c["default_action"]);
+        $actionSlug = $route->getParam("action", $c["default_action"]);
 
-        return (string) S::create($action_slug)->camelize();
+        return (string) S::create($actionSlug)->camelize();
     };
 
     $container["controller"] = function (Container $c) {
@@ -101,9 +101,9 @@ return (function () {
         $controller = $c["controller"];
 
         if ($controller) {
-            $controller_class = basename($c["controller"]);
+            $controllerClass = basename($c["controller"]);
 
-            return (string) S::create($controller_class)
+            return (string) S::create($controllerClass)
                 ->removeRight("Controller")
                 ->slugify();
         }
@@ -112,27 +112,27 @@ return (function () {
     };
 
     $container["db"] = function (Container $c) {
-        $db_config = $c["db_config"];
+        $dbConfig = $c["db_config"];
 
         if (isset($c["use_db"])) {
-            $use_db = $c["use_db"];
+            $useDb = $c["use_db"];
         } else {
-            $use_db = "default";
+            $useDb = "default";
         }
 
-        if (!array_key_exists($use_db, $db_config)) {
-            throw new RuntimeException("Database configuration preset '{$use_db}' does not exist");
+        if (!array_key_exists($useDb, $dbConfig)) {
+            throw new RuntimeException("Database configuration preset '{$useDb}' does not exist");
         }
 
-        $connection_settings = $db_config[$use_db];
+        $connectionSettings = $dbConfig[$useDb];
 
-        if (!isset($connection_settings)) {
+        if (!isset($connectionSettings)) {
             throw new RuntimeException("Database is disabled.");
         }
 
-        $db = Database::fromArray($connection_settings);
+        $db = Database::fromArray($connectionSettings);
 
-        if (isset($db_config["log_queries"]) && $db_config["log_queries"]) {
+        if (isset($dbConfig["log_queries"]) && $dbConfig["log_queries"]) {
             $logger = $c["db_log"];
             $db->setLogger($logger);
         }
@@ -161,10 +161,10 @@ return (function () {
     };
 
     $container["file_cache"] = function (Container $c) {
-        $cache_path = $c["cache_path"];
-        $cache_duration = $c["cache_duration"];
+        $cachePath = $c["cache_path"];
+        $cacheDuration = $c["cache_duration"];
 
-        return new FileCache($cache_duration, $cache_path);
+        return new FileCache($cacheDuration, $cachePath);
     };
 
     $container["injector"] = function (Container $c) {
@@ -178,14 +178,14 @@ return (function () {
 
     $container["path"] = function (Container $c) {
         $request = $c["request"];
-        $path_info = $request->getPathInfo();
+        $pathInfo = $request->getPathInfo();
 
         $ignore_url_suffixes = join("|", $c["ignore_url_suffixes"]);
         $ignore_url_separator = join("|", $c["ignore_url_separator"]);
 
-        $path_info = preg_replace('/[' . $ignore_url_separator. '](' . $ignore_url_suffixes . ')$/', "", $path_info);
+        $pathInfo = preg_replace('/[' . $ignore_url_separator. '](' . $ignore_url_suffixes . ')$/', "", $pathInfo);
 
-        return "/" . trim($path_info, "/");
+        return "/" . trim($pathInfo, "/");
     };
 
     $container["request"] = function () {
@@ -195,9 +195,9 @@ return (function () {
     $container["route"] = function (Container $c) {
         $request = $c["request"];
         $router = $c["router"];
-        $path_info = $c["path"];
+        $pathInfo = $c["path"];
 
-        return $router->route($path_info, $request->getMethod());
+        return $router->route($pathInfo, $request->getMethod());
     };
 
     $container["router"] = function (Container $c) {
@@ -207,10 +207,10 @@ return (function () {
     };
 
     $container["routes"] = function (Container $c) {
-        $app_folder = $c["app_path"];
-        $routes_path = $app_folder . "/". $c["config_folder"] . "/routes.php";
+        $appFolder = $c["app_path"];
+        $routesPath = $appFolder . "/". $c["config_folder"] . "/routes.php";
 
-        $definitions = require $routes_path;
+        $definitions = require $routesPath;
 
         $routes = [];
 
@@ -223,19 +223,19 @@ return (function () {
                 $routes[] = $handler;
             } elseif (is_array($handler) && isset($handler["resource"])) {
                 // create CRUD routes from resource route
-                $controller_class = $handler["resource"];
+                $controllerClass = $handler["resource"];
 
                 if (isset($handler["path"])) {
                     $slug = S::create($handler["path"]);
                 } else {
-                    $slug = S::create($controller_class)->humanize()->slugify();
+                    $slug = S::create($controllerClass)->humanize()->slugify();
                 }
 
                 $underscored = $slug->underscored();
 
                 $routes[] = [
                         "path" => "/{$slug}/{id}/edit",
-                        "handler" => "{$controller_class}@edit",
+                        "handler" => "{$controllerClass}@edit",
                         "methods" => "GET POST",
                         "name"=> "{$underscored}_edit",
                         "defaults" => $handler["defaults"] ?? [],
@@ -243,7 +243,7 @@ return (function () {
                     ];
                 $routes[] = [
                         "path" => "/{$slug}/{id}/delete",
-                        "handler" => "{$controller_class}@delete",
+                        "handler" => "{$controllerClass}@delete",
                         "methods" => "GET POST",
                         "name"=> "{$underscored}_delete",
                         "defaults" => $handler["defaults"] ?? [],
@@ -251,7 +251,7 @@ return (function () {
                     ];
                 $routes[] = [
                         "path" => "/{$slug}/add",
-                        "handler" => "{$controller_class}@add",
+                        "handler" => "{$controllerClass}@add",
                         "methods" => "GET POST",
                         "name"=> "{$underscored}_add",
                         "defaults" => $handler["defaults"] ?? [],
@@ -259,14 +259,14 @@ return (function () {
                     ];
                 $routes[] = [
                         "path" => "/{$slug}/{id}",
-                        "handler" => "{$controller_class}@view",
+                        "handler" => "{$controllerClass}@view",
                         "name"=> "{$underscored}_view",
                         "defaults" => $handler["defaults"] ?? [],
                         "conditions" => $handler["conditions"] ?? [],
                     ];
                 $routes[] = [
                         "path" => "/{$slug}",
-                        "handler" => "{$controller_class}@index",
+                        "handler" => "{$controllerClass}@index",
                         "name"=> "{$underscored}_index",
                         "defaults" => $handler["defaults"] ?? [],
                         "conditions" => $handler["conditions"] ?? [],
@@ -294,10 +294,10 @@ return (function () {
 
     $container["view"] = function (Container $c) {
         $app_path = $c["app_path"];
-        $file_cache = $c["file_cache"];
-        $views_folder = $app_path . "/views/";
+        $fileCache = $c["file_cache"];
+        $viewsFolder = $app_path . "/views/";
 
-        return new View($views_folder, $file_cache);
+        return new View($viewsFolder, $fileCache);
     };
 
     # setup the Whoops error handler

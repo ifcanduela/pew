@@ -159,13 +159,13 @@ class FileCache
     {
         $file = $this->filename($key);
 
-        $serialized_data = serialize($data);
+        $serializedData = serialize($data);
 
         if ($this->gzip) {
-            $serialized_data = gzencode($serialized_data);
+            $serializedData = gzencode($serializedData);
         }
 
-        return file_put_contents($file, $serialized_data);
+        return file_put_contents($file, $serializedData);
     }
 
     /**
@@ -183,13 +183,13 @@ class FileCache
             throw new \RuntimeException("Cache file not found: {$file}");
         }
 
-        $serialized_data = file_get_contents($file);
+        $serializedData = file_get_contents($file);
 
         if ($this->gzip) {
-            $serialized_data = gzdecode($serialized_data);
+            $serializedData = gzdecode($serializedData);
         }
 
-        return unserialize($serialized_data);
+        return unserialize($serializedData);
     }
 
     /**

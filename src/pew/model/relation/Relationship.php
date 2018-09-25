@@ -49,7 +49,7 @@ abstract class Relationship
      *
      * @return mixed
      */
-    public abstract function fetch();
+    abstract public function fetch();
 
     /**
      * Find all related records for a group of records.
@@ -57,7 +57,7 @@ abstract class Relationship
      * @param array $relatedKeys
      * @return mixed
      */
-    public abstract function find(array $relatedKeys);
+    abstract public function find(array $relatedKeys);
 
     /**
      * Get the field the records are grouped around.
@@ -66,5 +66,5 @@ abstract class Relationship
      * 
      * @return string
      */
-    public abstract function getGroupingField();
+    abstract public function getGroupingField();
 }

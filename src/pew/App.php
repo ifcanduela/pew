@@ -34,38 +34,38 @@ class App
      * absolute. The Config File Name is a base name (e.g. `config`) located in the
      * `config` folder inside the App Folder (e.g. `app/config/config.php`).
      *
-     * @param string $app_folder The path to the app folder
-     * @param string $config_file_name Base name of the file to use for configuration.
+     * @param string $appFolder The path to the app folder
+     * @param string $configFileName Base name of the file to use for configuration.
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      */
-    public function __construct($app_folder, $config_file_name = "config")
+    public function __construct($appFolder, $configFileName = "config")
     {
         $this->container = require __DIR__ . "/config/bootstrap.php";
 
-        if (realpath($app_folder)) {
-            $app_path_pre = $app_folder;
+        if (realpath($appFolder)) {
+            $appPathPre = $appFolder;
         } else {
-            $app_path_pre = getcwd() . DIRECTORY_SEPARATOR . $app_folder;
+            $appPathPre = getcwd() . DIRECTORY_SEPARATOR . $appFolder;
         }
 
-        $app_path = realpath($app_path_pre);
+        $appPath = realpath($appPathPre);
 
-        if ($app_path === false) {
-            throw new \InvalidArgumentException("The app path does not exist: {$app_path_pre}");
+        if ($appPath === false) {
+            throw new \InvalidArgumentException("The app path does not exist: {$appPathPre}");
         }
 
-		$config_folder = $this->container["config_folder"];
-        $this->container["app_path"] = $app_path;
-        $this->container["config_file_name"] = $config_file_name;
+        $configFolder = $this->container["config_folder"];
+        $this->container["app_path"] = $appPath;
+        $this->container["config_file_name"] = $configFileName;
 
         # import app config and services
-        $this->loadAppConfig("{$app_path}/{$config_folder}/{$config_file_name}.php");
+        $this->loadAppConfig("{$appPath}/{$configFolder}/{$configFileName}.php");
         $this->loadAppBootstrap();
 
         static::$instance = $this;
 
-        App::log("App path set to {$app_path}", Logger::INFO);
+        App::log("App path set to {$appPath}", Logger::INFO);
     }
 
     /**
@@ -81,20 +81,20 @@ class App
     /**
      * Import the application configuration.
      *
-     * @param string $config_filename The file name, relative to the base path
+     * @param string $configFilename The file name, relative to the base path
      * @return bool TRUE when the file exists, FALSE otherwise
      * @throws \RuntimeException
      */
-    protected function loadAppConfig($config_filename)
+    protected function loadAppConfig($configFilename)
     {
-        if (file_exists($config_filename)) {
-            $app_config = require $config_filename;
+        if (file_exists($configFilename)) {
+            $appConfig = require $configFilename;
 
-            if (!is_array($app_config)) {
-                throw new \RuntimeException("Configuration file {$config_filename} must return an array");
+            if (!is_array($appConfig)) {
+                throw new \RuntimeException("Configuration file {$configFilename} must return an array");
             }
 
-            foreach ($app_config as $key => $value) {
+            foreach ($appConfig as $key => $value) {
                 $this->container[$key] = $value;
             }
 
@@ -205,6 +205,7 @@ class App
             } else {
                 $mw = $injector->createInstance($middlewareClass);
             }
+
             $newResponse = $injector->callMethod($mw, "after");
 
             if ($newResponse instanceof Response) {

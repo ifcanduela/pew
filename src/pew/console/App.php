@@ -17,21 +17,21 @@ class App extends \pew\App
     {
         $injector = $this->container["injector"];
 
-        $command_files = glob($this->container["app_path"] . "/commands/*Command.php");
+        $commandFiles = glob($this->container["app_path"] . "/commands/*Command.php");
 
-        foreach ($command_files as $command_file) {
-            $class_name = "\\app\\commands\\" . pathinfo($command_file, PATHINFO_FILENAME);
+        foreach ($commandFiles as $commandFile) {
+            $className = "\\app\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
             /** @var Command $command */
-            $command = $injector->createInstance($class_name);
+            $command = $injector->createInstance($className);
 
             $this->availableCommands[$command->name()] = $command;
         }
 
-        $command_files = glob(dirname(__DIR__) . "/commands/*Command.php");
+        $commandFiles = glob(dirname(__DIR__) . "/commands/*Command.php");
 
-        foreach ($command_files as $command_file) {
-            $class_name = "\\pew\\commands\\" . pathinfo($command_file, PATHINFO_FILENAME);
-            $command = $injector->createInstance($class_name);
+        foreach ($commandFiles as $commandFile) {
+            $className = "\\pew\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
+            $command = $injector->createInstance($className);
 
             $this->availableCommands[$command->name()] = $command;
         }
@@ -90,11 +90,11 @@ class App extends \pew\App
     private function getArguments()
     {
         $argv = $_SERVER["argv"];
-        $script_name = $_SERVER["SCRIPT_NAME"];
+        $scriptName = $_SERVER["SCRIPT_NAME"];
 
-        $script_name_pos = array_search($script_name, $argv, true);
+        $scriptNamePos = array_search($scriptName, $argv, true);
 
-        $arguments = array_slice($argv, $script_name_pos + 1);
+        $arguments = array_slice($argv, $scriptNamePos + 1);
 
         if ($arguments) {
             $command = array_shift($arguments);

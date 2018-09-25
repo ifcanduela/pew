@@ -45,16 +45,16 @@ class View implements \ArrayAccess
      *
      * If no folder is provided, the current working directory is used.
      *
-     * @param string $templates_folder
-     * @param FileCache $file_cache
+     * @param string $templatesFolder
+     * @param FileCache $fileCache
      */
-    public function __construct(string $templates_folder = null, FileCache $file_cache = null)
+    public function __construct(string $templatesFolder = null, FileCache $fileCache = null)
     {
         $this->blockStack = new SplStack();
         $this->folderStack = new SplStack();
-        $this->fileCache = $file_cache;
+        $this->fileCache = $fileCache;
 
-        $this->addFolder($templates_folder ?? getcwd());
+        $this->addFolder($templatesFolder ?? getcwd());
     }
 
     /**
@@ -114,28 +114,25 @@ class View implements \ArrayAccess
         }
 
         # find the template file
-        $template_file = $this->resolve($template);
+        $templateFile = $this->resolve($template);
 
-        if ($template_file === false) {
+        if ($templateFile === false) {
             throw new \RuntimeException("Template {$template} not found");
         }
 
         # make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
 
-        $this->output
-            = $output
-            = $view_data["output"]
-            = $this->_render($template_file, $this->variables);
+        $this->output = $output = $this->_render($templateFile, $this->variables);
 
         if ($this->layout) {
-            $layout_file = $this->resolve($this->layout);
+            $layoutFile = $this->resolve($this->layout);
 
-            if ($layout_file === false) {
+            if ($layoutFile === false) {
                 throw new \RuntimeException("Layout {$this->layout} not found");
             }
 
-            $output = $this->_render($layout_file, $view_data);
+            $output = $this->_render($layoutFile, ["output" => $output]);
         }
 
         return $output;
@@ -178,16 +175,16 @@ class View implements \ArrayAccess
     /**
      * Find a template in the folder stack.
      *
-     * @param string $template_file Template file name and extension
+     * @param string $templateFile Template file name and extension
      * @return string|bool The location of the template, or false
      */
-    protected function resolve(string $template_file)
+    protected function resolve(string $templateFile)
     {
-        $template_file_name = $template_file . $this->extension();
+        $templateFileName = $templateFile . $this->extension();
 
         foreach ($this->folderStack as $folder) {
-            if (file_exists($folder . DIRECTORY_SEPARATOR . $template_file_name)) {
-                return $folder . DIRECTORY_SEPARATOR . $template_file_name;
+            if (file_exists($folder . DIRECTORY_SEPARATOR . $templateFileName)) {
+                return $folder . DIRECTORY_SEPARATOR . $templateFileName;
             }
         }
 
@@ -303,14 +300,14 @@ class View implements \ArrayAccess
      */
     public function insert(string $template, array $data = [])
     {
-        $element_file = $this->resolve($template);
+        $elementFile = $this->resolve($template);
 
-        if ($element_file === false) {
+        if ($elementFile === false) {
             throw new \RuntimeException("The partial template file $template could not be found.");
         }
 
         # Render the element.
-        return $this->_render($element_file, $data);
+        return $this->_render($elementFile, $data);
     }
 
     /**
@@ -347,11 +344,11 @@ class View implements \ArrayAccess
      *
      * @param string $key Name key of the cached fragment to load
      * @param int $duration Time to live of the cache fragment, in seconds
-     * @param bool $open_buffer Set to false to prevent the opening of a buffer
+     * @param bool $openBuffer Set to false to prevent the opening of a buffer
      * @return bool True if the cached fragment could be inserted, false otherwise
      * @throws \RuntimeException
      */
-    public function load(string $key, int $duration, bool $open_buffer = true)
+    public function load(string $key, int $duration, bool $openBuffer = true)
     {
         if ($this->fileCache) {
             if ($this->fileCache->cached($key, $duration)) {
@@ -361,7 +358,7 @@ class View implements \ArrayAccess
                 return true;
             }
 
-            if ($open_buffer) {
+            if ($openBuffer) {
                 ob_start();
             }
         }
@@ -417,12 +414,12 @@ class View implements \ArrayAccess
     /**
      * Starts a block.
      *
-     * @param string $block_name
+     * @param string $blockName
      * @param bool $replace
      */
-    public function beginBlock(string $block_name, bool $replace = false)
+    public function beginBlock(string $blockName, bool $replace = false)
     {
-        $this->blockStack->push([$block_name, $replace]);
+        $this->blockStack->push([$blockName, $replace]);
         ob_start();
     }
 
@@ -433,16 +430,16 @@ class View implements \ArrayAccess
     {
         $output = ob_get_clean();
 
-        list($block_name, $replace) = $this->blockStack->pop();
+        list($blockName, $replace) = $this->blockStack->pop();
 
-        if (!array_key_exists($block_name, $this->blocks)) {
-            $this->blocks[$block_name] = [];
+        if (!array_key_exists($blockName, $this->blocks)) {
+            $this->blocks[$blockName] = [];
         }
 
         if ($replace) {
-            $this->blocks[$block_name] = [$output];
+            $this->blocks[$blockName] = [$output];
         } else {
-            $this->blocks[$block_name][] = $output;
+            $this->blocks[$blockName][] = $output;
         }
     }
 

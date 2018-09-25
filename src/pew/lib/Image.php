@@ -119,13 +119,13 @@ class Image
      * Create an image from a file.
      *
      * @param string $filename The image file name
-     * @param int $image_type One of the IMAGETYPE_* constants
+     * @param int $imageType One of the IMAGETYPE_* constants
      * @return int Return value from the imageCreateFrom* function
      * @throws \Exception
      */
-    protected function loadFile(string $filename, $image_type)
+    protected function loadFile(string $filename, $imageType)
     {
-        switch ($image_type) {
+        switch ($imageType) {
             case IMAGETYPE_JPEG:
                 $this->resource = @imagecreatefromjpeg($filename);
                 break;
@@ -211,12 +211,12 @@ class Image
      * @see http://www.php.net/manual/en/function.image-type-to-mime-type.php
      *
      * @param string $destination Destination folder or filename
-     * @param int $image_type One of the IMAGETYPE_* constants
+     * @param int $imageType One of the IMAGETYPE_* constants
      * @param int $quality Output quality (0 - 100)
      * @return int Result of the image* functions
      * @throws \Exception
      */
-    public function save($destination, $image_type = null, $quality = null)
+    public function save($destination, $imageType = null, $quality = null)
     {
         $this->checkResource();
 
@@ -224,8 +224,8 @@ class Image
             $destination = getcwd();
         }
 
-        if (is_null($image_type)) {
-            $image_type = $this->imageType;
+        if (is_null($imageType)) {
+            $imageType = $this->imageType;
         }
 
         if (is_null($quality)) {
@@ -236,7 +236,7 @@ class Image
             $destination .= DIRECTORY_SEPARATOR . basename($this->filename);
         }
 
-        switch ($image_type) {
+        switch ($imageType) {
             case IMAGETYPE_JPEG:
                 return imagejpeg($this->resource, $destination, $quality);
 
@@ -247,7 +247,7 @@ class Image
                 return imagegif($this->resource, $destination);
 
             default:
-                throw new \Exception("The image format of file {$this->sourceFileName} ({$image_type}) is not supported");
+                throw new \Exception("The image format of file {$this->sourceFileName} ({$imageType}) is not supported");
         }
     }
 
@@ -274,21 +274,21 @@ class Image
      * Get the extension for the image.
      *
      * @param boolean $dot Whether to include a dot before the extension or not
-     * @param int $image_type One of the IMAGETYPE_* constants
+     * @param int $imageType One of the IMAGETYPE_* constants
      * @return string The extension corresponding to the image
      * @throws \Exception
      */
-    public function extension($dot = true, $image_type = null)
+    public function extension($dot = true, $imageType = null)
     {
-        if (is_null($image_type)) {
+        if (is_null($imageType)) {
             if (!$this->imageType) {
                 throw new \Exception("Cannot find extension");
             }
 
-            $image_type = $this->imageType;
+            $imageType = $this->imageType;
         }
 
-        $extension = image_type_to_extension($image_type, $dot);
+        $extension = image_type_to_extension($imageType, $dot);
 
         return str_replace(["jpeg", "tiff"], ["jpg", "tif"], $extension);
     }
@@ -390,17 +390,17 @@ class Image
             throw new \BadMethodCallException("Image::resize() requires its first or second argument to be integers");
         }
 
-        $new_w = (int) $w;
-        $new_h = (int) $h;
+        $newWidth = (int) $w;
+        $newHeight = (int) $h;
 
-        if (!$new_w) {
-            $new_w = $new_h * $this->width / $this->height;
-        } elseif (!$new_h) {
-            $new_h = $new_w * $this->height / $this->width;
+        if (!$newWidth) {
+            $newWidth = $newHeight * $this->width / $this->height;
+        } elseif (!$newHeight) {
+            $newHeight = $newWidth * $this->height / $this->width;
         }
 
-        $resized = imagecreatetruecolor($new_w, $new_h);
-        imagecopyresampled($resized, $this->resource, 0, 0, 0, 0, $new_w, $new_h, $this->width, $this->height);
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        imagecopyresampled($resized, $this->resource, 0, 0, 0, 0, $newWidth, $newHeight, $this->width, $this->height);
 
         imagedestroy($this->resource);
         $this->resource = $resized;
@@ -447,7 +447,7 @@ class Image
     {
         $this->checkResource();
 
-        $valid_anchors = [
+        $validAnchors = [
             self::ANCHOR_BOTTOM,
             self::ANCHOR_BOTTOM_LEFT,
             self::ANCHOR_BOTTOM_RIGHT,
@@ -459,34 +459,34 @@ class Image
             self::ANCHOR_TOP_RIGHT,
         ];
 
-        if (!in_array($anchor, $valid_anchors)) {
+        if (!in_array($anchor, $validAnchors)) {
             throw new \BadMethodCallException("Invalid anchor point for Image::crop()");
         }
 
-        $old_w = $this->width();
-        $old_h = $this->height();
+        $oldWidth = $this->width();
+        $oldHeight = $this->height();
 
-        $x_offset = ($old_w - $w) / 2;
-        $y_offset = ($old_h - $h) / 2;
+        $xOffset = ($oldWidth - $w) / 2;
+        $yOffset = ($oldHeight - $h) / 2;
 
         if (in_array($anchor, [self::ANCHOR_TOP_LEFT, self::ANCHOR_TOP, self::ANCHOR_TOP_RIGHT])) {
-            $y_offset = 0;
+            $yOffset = 0;
         }
 
         if (in_array($anchor, [self::ANCHOR_BOTTOM_LEFT, self::ANCHOR_BOTTOM, self::ANCHOR_BOTTOM_RIGHT])) {
-            $y_offset = $old_h - $h;
+            $yOffset = $oldHeight - $h;
         }
 
         if (in_array($anchor, [self::ANCHOR_TOP_LEFT, self::ANCHOR_LEFT, self::ANCHOR_BOTTOM_LEFT])) {
-            $x_offset = 0;
+            $xOffset = 0;
         }
 
         if (in_array($anchor, [self::ANCHOR_TOP_RIGHT, self::ANCHOR_RIGHT, self::ANCHOR_BOTTOM_RIGHT])) {
-            $x_offset = $old_w - $w;
+            $xOffset = $oldWidth - $w;
         }
 
         $cropped = imagecreatetruecolor($w, $h);
-        imagecopyresampled($cropped, $this->resource, 0, 0, $x_offset, $y_offset, $w, $h, $w, $h);
+        imagecopyresampled($cropped, $this->resource, 0, 0, $xOffset, $yOffset, $w, $h, $w, $h);
 
         imagedestroy($this->resource);
         $this->resource = $cropped;
@@ -541,17 +541,17 @@ class Image
      *
      * @see http://www.php.net/manual/en/function.image-type-to-mime-type.php
      *
-     * @param int $image_type One of the IMAGETYPE_* constants
+     * @param int $imageType One of the IMAGETYPE_* constants
      * @param int $quality Quality of the PNG or JPEG output, from 0 to 100
      * @throws \Exception
      */
-    public function serve($image_type = IMAGETYPE_JPEG, $quality = 75)
+    public function serve($imageType = IMAGETYPE_JPEG, $quality = 75)
     {
         $this->checkResource();
 
         ob_start();
 
-        switch ($image_type) {
+        switch ($imageType) {
             case IMAGETYPE_JPEG:
                 imagejpeg($this->resource, null, $quality);
                 break;
@@ -569,7 +569,7 @@ class Image
         }
 
         $stream = ob_get_clean();
-        header("Content-type:" . image_type_to_mime_type($image_type));
+        header("Content-type:" . image_type_to_mime_type($imageType));
         die($stream);
     }
 

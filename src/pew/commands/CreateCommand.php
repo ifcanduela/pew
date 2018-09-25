@@ -57,7 +57,7 @@ class CreateCommand extends Command
         $commandName = $className->removeRight("Command")->dasherize();
         $className = $className->ensureRight("Command");
 
-        $file_contents = <<<PHP
+        $fileContents = <<<PHP
 <?php
 
 namespace app\commands;
@@ -87,7 +87,7 @@ PHP;
 
         $filename = root("app", "commands", "{$className}.php");
 
-        $this->createFile($file_contents, $filename);
+        $this->createFile($fileContents, $filename);
     }
 
     public function controller(CommandArguments $arguments)
@@ -99,7 +99,7 @@ PHP;
             die;
         }
 
-        $file_contents = <<<PHP
+        $fileContents = <<<PHP
 <?php
 
 namespace app\controllers;
@@ -114,14 +114,14 @@ class {$className} extends Controller
 PHP;
 
         $filename = root("app", "controllers", "{$className}.php");
-        $this->createFile($file_contents, $filename);
+        $this->createFile($fileContents, $filename);
     }
 
     public function middleware(CommandArguments $arguments)
     {
         $className = $arguments->at(0);
 
-        $file_contents = <<<PHP
+        $fileContents = <<<PHP
 <?php
 
 namespace app\middleware;
@@ -143,7 +143,7 @@ class OnlyAuthenticated extends \\request\\Middlewaree
 PHP;
 
         $filename = root("app", "middleware", "{$className}.php");
-        $this->createFile($file_contents, $filename);
+        $this->createFile($fileContents, $filename);
     }
 
     public function model(CommandArguments $arguments)
@@ -156,7 +156,7 @@ PHP;
             $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', S::create($className)->underscored()), "s") . "s";
         }
 
-        $file_contents = <<<PHP
+        $fileContents = <<<PHP
 <?php
 
 namespace app\models;
@@ -172,7 +172,7 @@ PHP;
 
         $filename = root("app", "models", "{$className}.php");
 
-        $this->createFile($file_contents, $filename);
+        $this->createFile($fileContents, $filename);
     }
 
     public function createFile(string $content, string $filename)

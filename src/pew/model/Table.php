@@ -126,8 +126,8 @@ class Table
         $this->tableData["name"] = $this->table;
 
         if (!isset($this->tableData["primary_key"])) {
-            $primary_key = $this->db->getPrimaryKeys($this->table);
-            $this->tableData["primary_key"] = $primary_key;
+            $primaryKey = $this->db->getPrimaryKeys($this->table);
+            $this->tableData["primary_key"] = $primaryKey;
         }
 
         if (!isset($this->tableData["columns"])) {
@@ -149,13 +149,13 @@ class Table
         }
 
         $shortname = (new \ReflectionClass($this))->getShortName();
-        $table_name = preg_replace('/Model$/', "", $shortname);
+        $tableName = preg_replace('/Model$/', "", $shortname);
 
-        if (!$table_name) {
+        if (!$tableName) {
             throw new TableNotSpecifiedException("Model class must be attached to a database table.");
         }
 
-        return Str::create($table_name)->underscored(true);
+        return Str::create($tableName)->underscored(true);
     }
 
     /**
@@ -174,12 +174,12 @@ class Table
      * If $as_keys is false, the column names will be returned as values in an
      * array, otherwise they will be key names in an associative array.
      *
-     * @param boolean $as_keys Return the column names as keys in an associative array.
+     * @param boolean $asKeys Return the column names as keys in an associative array.
      * @return array
      */
-    public function columnNames($as_keys = true)
+    public function columnNames($asKeys = true)
     {
-        return $as_keys
+        return $asKeys
             ? $this->tableData["column_names"]
             : array_keys($this->tableData["column_names"]);
     }
@@ -535,12 +535,12 @@ class Table
     /**
      * Check if the field exists in the table.
      *
-     * @param string $column_name
+     * @param string $columnName
      * @return boolean
      */
-    public function hasColumn(string $column_name)
+    public function hasColumn(string $columnName)
     {
-        return array_key_exists($column_name, $this->tableData["column_names"]);
+        return array_key_exists($columnName, $this->tableData["column_names"]);
     }
 
     /**
@@ -601,14 +601,14 @@ class Table
         $depth++;
 
         if ($models && $depth < 5) {
-            $class_name = get_class($models[0]);
-            $ref = new $class_name;
+            $className = get_class($models[0]);
+            $ref = new $className;
 
-            foreach ($this->relationships as $relationship_field_name) {
-                $getter_method_name = "get" . Str::create($relationship_field_name)->uppercamelize();
+            foreach ($this->relationships as $relationshipFieldName) {
+                $getterMethodName = "get" . Str::create($relationshipFieldName)->uppercamelize();
 
                 /** @var Relationship $relationship */
-                $relationship = $ref->$getter_method_name();
+                $relationship = $ref->$getterMethodName();
                 $groupingField = $relationship->getGroupingField();
 
                 if ($relationship instanceof Relationship) {
@@ -622,7 +622,7 @@ class Table
                         $keyValue = $model->{$groupingField};
 
                         if (isset($grouped[$keyValue])) {
-                            $model->attachRelated($getter_method_name, $grouped[$keyValue]);
+                            $model->attachRelated($getterMethodName, $grouped[$keyValue]);
                         }
                     }
                 }
