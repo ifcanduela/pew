@@ -254,6 +254,6 @@ class FileCache
      */
     public function __unset($key)
     {
-        return $this->delete($key);
+        $this->delete($key);
     }
 }

@@ -359,15 +359,14 @@ if (!function_exists("array_path")) {
      */
     function array_path(array $array, string $path, string $separator = ".")
     {
-        $source = (array) $array;
         $steps = explode($separator, $path);
         $step = array_shift($steps);
 
-        if (array_key_exists($step, $source)) {
+        if (array_key_exists($step, $array)) {
             if (count($steps)) {
-                return array_path($source[$step], join($separator, $steps), $separator);
+                return array_path($array[$step], join($separator, $steps), $separator);
             } else {
-                return $source[$step];
+                return $array[$step];
             }
         }
 

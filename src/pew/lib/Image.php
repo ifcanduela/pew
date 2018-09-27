@@ -146,8 +146,6 @@ class Image
             $error = error_get_last();
             throw new \Exception("The file {$filename} is not a valid image resouce. " . $error["message"]);
         }
-
-        return false;
     }
 
     /**
@@ -213,7 +211,7 @@ class Image
      * @param string $destination Destination folder or filename
      * @param int $imageType One of the IMAGETYPE_* constants
      * @param int $quality Output quality (0 - 100)
-     * @return int Result of the image* functions
+     * @return bool Result of the image* functions
      * @throws \Exception
      */
     public function save($destination, $imageType = null, $quality = null)
@@ -499,8 +497,8 @@ class Image
     /**
      * Resize and crop an image to create a thumbnail.
      *
-     * @param $width
-     * @param $height
+     * @param int $width
+     * @param int $height
      * @param string $anchor Anchor location for the resizing
      * @return self
      * @throws \Exception

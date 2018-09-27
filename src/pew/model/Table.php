@@ -155,7 +155,7 @@ class Table
             throw new TableNotSpecifiedException("Model class must be attached to a database table.");
         }
 
-        return Str::create($tableName)->underscored(true);
+        return Str::create($tableName)->underscored();
     }
 
     /**

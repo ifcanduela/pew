@@ -121,7 +121,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      *
      * @param string $query
      * @param array $parameters
-     * @return array
+     * @return Collection
      */
     public static function fromQuery(string $query, array $parameters = [])
     {
@@ -141,7 +141,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function toArray()
     {
-        return array_merge($this->record, call_user_func("get_object_vars", $this));
+        return array_merge($this->record, get_object_vars($this)));
     }
 
     /**
@@ -299,7 +299,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $record = new static();
         $table = $record->tableManager;
         $table->createUpdate();
-
         $table->set($values);
 
         if ($condition) {
@@ -328,7 +327,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         $result = $table->run();
 
-        return  $result;
+        return $result;
     }
 
     /**

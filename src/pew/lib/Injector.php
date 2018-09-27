@@ -12,7 +12,7 @@ class Injector
     /**
      * Create an injector.
      *
-     * @param array $containers One or more arrays or array-like objects.
+     * @param array|array[] $containers One or more arrays or array-like objects.
      */
     public function __construct(...$containers)
     {

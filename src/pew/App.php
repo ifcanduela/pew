@@ -137,11 +137,9 @@ class App
 
         try {
             $injector = $this->container["injector"];
-            $route = $this->container["route"];
-
-            App::log("Matched route " . $route->getPath());
             $request = $this->container["request"];
-
+            $route = $this->container["route"];
+            App::log("Matched route " . $route->getPath());
             $response = $this->runBeforeMiddleware($route, $injector);
 
             if ($response instanceof Response) {

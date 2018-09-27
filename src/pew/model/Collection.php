@@ -119,7 +119,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Specify data to serialize as JSON.
      *
-     * @return string
+     * @return array
      */
     public function jsonSerialize()
     {
@@ -448,7 +448,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * Add an item to the end of the collection.
      *
      * @param mixed $item
-     * @return null
+     * @return static
      */
     public function push($item)
     {
@@ -727,18 +727,6 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
             $this->items,
             ...$arrays
         );
-
-        return new static($items);
-    }
-
-    /**
-     * Clone the collection.
-     *
-     * @return static
-     */
-    public function __clone()
-    {
-        $items = $this->items;
 
         return new static($items);
     }

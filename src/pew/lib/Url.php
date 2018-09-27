@@ -22,11 +22,11 @@ class Url
     /** @var string */
     public $scheme = "http";
 
-    /** @var string */
-    public $user = "";
+    /** @var string|null */
+    public $user;
 
-    /** @var string */
-    public $password = "";
+    /** @var string|null */
+    public $password;
 
     /** @var string */
     public $host = "";
@@ -34,7 +34,7 @@ class Url
     /** @var int */
     public $port = 80;
 
-    /** @var string */
+    /** @var array */
     public $path = [];
 
     /** @var array */
@@ -274,7 +274,7 @@ class Url
      * If $asNumber is true, the actual port number will be returned as an number.
      *
      * @param boolean $asNumber Avoid prefixing the port number with a `:`
-     * @return string
+     * @return string|int
      */
     public function getPort($asNumber = false)
     {

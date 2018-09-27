@@ -4,6 +4,7 @@ namespace pew;
 
 use SplStack;
 use pew\lib\FileCache;
+use Stringy\Stringy as S;
 
 /**
  * This class encapsulates the template rendering functionality.
@@ -16,8 +17,8 @@ class View implements \ArrayAccess
     /** @var string Template name */
     protected $template = "index";
 
-    /** @var string Layout name */
-    protected $layout = false;
+    /** @var string|null Layout name */
+    protected $layout;
 
     /** @var string View title */
     protected $title;
@@ -89,7 +90,7 @@ class View implements \ArrayAccess
      */
     public function has(string $key)
     {
-        return array_key_exists($this->variables, $key);
+        return array_key_exists($key, $this->variables);
     }
 
     /**
@@ -122,7 +123,6 @@ class View implements \ArrayAccess
 
         # make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
-
         $this->output = $output = $this->_render($templateFile, $this->variables);
 
         if ($this->layout) {
@@ -180,7 +180,7 @@ class View implements \ArrayAccess
      */
     protected function resolve(string $templateFile)
     {
-        $templateFileName = $templateFile . $this->extension();
+        $templateFileName = S::create($templateFile)->ensureRight($this->extension());
 
         foreach ($this->folderStack as $folder) {
             if (file_exists($folder . DIRECTORY_SEPARATOR . $templateFileName)) {
@@ -236,7 +236,8 @@ class View implements \ArrayAccess
     public function extension(string $extension = null)
     {
         if ($extension !== null) {
-            $this->extension = "." . ltrim($extension, ".");
+            $this->extension = S::create($extension)->ensureLeft(".");
+
             return $this;
         }
 
@@ -370,7 +371,6 @@ class View implements \ArrayAccess
      * Save a fragment to the cache.
      *
      * @param string $key Name key for the cached fragment
-     * @return string
      */
     public function save(string $key)
     {
@@ -381,8 +381,6 @@ class View implements \ArrayAccess
 
             echo $output;
         }
-
-        return null;
     }
 
     /**
