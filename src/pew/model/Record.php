@@ -166,6 +166,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         }
 
         $include = array_merge(get_object_vars($this), $this->record);
+
         $exclude = [
             "connectionName" => true,
             "createdFieldName" => true,
@@ -197,61 +198,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function hasAttribute($key)
     {
         return array_key_exists($key, $this->record) || property_exists($this, $key);
-    }
-
-    /**
-     * Add an error for a field.
-     *
-     * @param string $field
-     * @param string $message
-     */
-    public function addError(string $field, string $message)
-    {
-        $this->errors[] = (object) compact("field", "message");
-    }
-
-    /**
-     * Check if the record passed validation.
-     *
-     * @return boolean
-     */
-    public function hasErrors()
-    {
-        return !empty($this->errors);
-    }
-
-    /**
-     * Get an array of all errors per field.
-     *
-     * @param string|null $field
-     * @return array
-     */
-    public function getErrors(string $field = null)
-    {
-        if (isset($field)) {
-            return $this->getErrorsForField($field);
-        }
-
-        return $this->errors;
-    }
-
-    /**
-     * Get a list of all errors for a field.
-     *
-     * @param string $field
-     * @return array
-     */
-    public function getErrorsForField(string $field)
-    {
-        $errors = [];
-
-        foreach ($this->errors as $error) {
-            if ($error->field == $field) {
-                $errors[] = $error->message;
-            }
-        }
-
-        return $errors;
     }
 
     /**
@@ -681,7 +627,14 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string|null $farKeyName
      * @return HasAndBelongsToMany
      */
-    public function hasAndBelongsToMany(string $className, $associationTableName = null, $nearKeyName = null, $nearForeignKeyName = null, $farForeignKeyName = null, $farKeyName = null)
+    public function hasAndBelongsToMany(
+        string $className,
+        string $associationTableName = null,
+        string $nearKeyName = null,
+        string $nearForeignKeyName = null,
+        string $farForeignKeyName = null,
+        string $farKeyName = null
+    )
     {
         $nearTableName = $this->tableName;
         $farTableName = (new $className)->tableName;
