@@ -141,7 +141,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function toArray()
     {
-        return array_merge($this->record, get_object_vars($this)));
+        return array_merge($this->record, get_object_vars($this));
     }
 
     /**
