@@ -75,7 +75,12 @@ class MessageBox extends Message
         $formattedLines = [];
 
         foreach ($lines as $line) {
-            $str = str_pad(str_repeat(" ", $this->padding) . $line . str_repeat(" ", $this->padding), $this->width, " ", STR_PAD_RIGHT);
+            $str = str_pad(
+                str_repeat(" ", $this->padding) . $line . str_repeat(" ", $this->padding),
+                $this->width,
+                " ",
+                STR_PAD_RIGHT
+            );
 
             $formattedLines[] = str_repeat(" ", $this->margin) . parent::format($str);
         }

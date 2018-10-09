@@ -2,12 +2,17 @@
 
 namespace pew\router;
 
-use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
+use FastRoute\RouteCollector;
 
-class RouteNotFound extends \RuntimeException {}
-class InvalidHttpMethod extends \RuntimeException {}
+class RouteNotFound extends \RuntimeException
+{
+}
+
+class InvalidHttpMethod extends \RuntimeException
+{
+}
 
 /**
  * The Router class wraps the `nikic\FastRoute` library for slightly
@@ -32,12 +37,13 @@ class Router
     {
         $routes = $this->processRouteData($routeData);
 
-        $this->dispatcher = simpleDispatcher(function ($r) use ($routes) {
-            /** @var RouteCollector $r */
-            foreach ($routes as $data) {
-                $r->addRoute($data->getMethods(), $data->getPath(), $data);
+        $this->dispatcher = simpleDispatcher(
+            function (RouteCollector $r) use ($routes) {
+                foreach ($routes as $data) {
+                    $r->addRoute($data->getMethods(), $data->getPath(), $data);
+                }
             }
-        });
+        );
     }
 
     /**

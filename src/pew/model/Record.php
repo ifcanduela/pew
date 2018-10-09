@@ -236,8 +236,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Update all records that match a condition.
      *
-     * @param  array      $values
-     * @param  array|null $condition
+     * @param array $values
+     * @param array|null $condition
      * @return int Number of affected rows.
      */
     public static function updateAll(array $values, array $condition = null)
@@ -259,7 +259,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Delete all records that match a condition.
      *
-     * @param  array|null $condition
+     * @param array|null $condition
      * @return int Number of affected rows.
      */
     public static function deleteAll(array $condition = null)
@@ -501,9 +501,9 @@ class Record implements \JsonSerializable, \IteratorAggregate
      *
      * All arguments except `$className` can be guessed.
      *
-     * @param  string      $className
-     * @param  string|null $localKeyName
-     * @param  string|null $foreignKeyName
+     * @param string $className
+     * @param string|null $localKeyName
+     * @param string|null $foreignKeyName
      * @return BelongsTo
      */
     public function belongsTo(string $className, string $localKeyName = null, string $foreignKeyName = null)
@@ -634,8 +634,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         string $nearForeignKeyName = null,
         string $farForeignKeyName = null,
         string $farKeyName = null
-    )
-    {
+    ) {
         $nearTableName = $this->tableName;
         $farTableName = (new $className)->tableName;
 
@@ -676,8 +675,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Check if a model has a relationship method for a field.
      *
-     * @param  string       $key
-     * @return string|bool  False if the relationship does not exist, the getter name otherwise.
+     * @param string $key
+     * @return string|bool False if the relationship does not exist, the getter name otherwise.
      */
     public function hasRelationship($key)
     {
@@ -704,7 +703,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     }
 
     /**
-     * @param string       $getter Name of the getter method
+     * @param string $getter Name of the getter method
      * @param array|Record $values Value of the related property
      */
     public function attachRelated($getter, $values)

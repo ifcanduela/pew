@@ -90,7 +90,7 @@ class Table
      */
     public $query;
 
-	/**
+    /**
      * List of relationships to fetch eagerly.
      *
      * @var array

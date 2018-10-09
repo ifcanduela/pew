@@ -2,7 +2,9 @@
 
 namespace pew\lib;
 
-class KeyNotFoundException extends \Exception {}
+class KeyNotFoundException extends \Exception
+{
+}
 
 class Injector
 {
@@ -146,8 +148,13 @@ class Injector
      */
     public function callMethod($object, string $methodName)
     {
+        if (is_string($object)) {
+            $object = $this->createInstance($object);
+        }
+
         if (!is_object($object)) {
-            throw new \InvalidArgumentException("Invalid argument supplied to " . __METHOD__. ": \$object must be an object.");
+            $method = __METHOD__;
+            throw new \InvalidArgumentException("Invalid argument supplied to {$method}: \$object must be an object.");
         }
 
         $method = new \ReflectionMethod($object, $methodName);

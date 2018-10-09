@@ -103,7 +103,9 @@ class Image
     public function upload(array $file)
     {
         if (!file_exists($file["tmp_name"]) || !is_uploaded_file($file["tmp_name"])) {
-            throw new \Exception("Uploaded file " . $file["filename"] . " not found [temp=" . $file["tmp_name"] . "]");
+            $filename = $file["filename"];
+            $tmpname = $file["tmp_name"];
+            throw new \Exception("Uploaded file {$filename} not found [temp={$tmpname}]");
         }
 
         $this->sourceFileName = $file["tmp_name"];
@@ -144,7 +146,8 @@ class Image
 
         if (!$this->resource) {
             $error = error_get_last();
-            throw new \Exception("The file {$filename} is not a valid image resouce. " . $error["message"]);
+            $message = $error["message"];
+            throw new \Exception("The file {$filename} is not a valid image resouce. {$message}");
         }
     }
 
@@ -245,7 +248,8 @@ class Image
                 return imagegif($this->resource, $destination);
 
             default:
-                throw new \Exception("The image format of file {$this->sourceFileName} ({$imageType}) is not supported");
+                $filename = $this->sourceFileName;
+                throw new \Exception("The image format of file {$filename} ({$imageType}) is not supported");
         }
     }
 
@@ -355,13 +359,9 @@ class Image
     public function quality($quality = null)
     {
         if (!is_null($quality)) {
-            $quality = (int) $quality;
+            $quality = max(0, min(100, (int) $quality));
 
-            if ($quality >= 0 && $quality <= 100) {
-                $this->quality = $quality;
-            } else {
-                throw new \BadMethodCallException("The quality for Image::quality must be an integer between 0 and 100");
-            }
+            $this->quality = $quality;
 
             return $this;
         }
@@ -398,7 +398,18 @@ class Image
         }
 
         $resized = imagecreatetruecolor($newWidth, $newHeight);
-        imagecopyresampled($resized, $this->resource, 0, 0, 0, 0, $newWidth, $newHeight, $this->width, $this->height);
+        imagecopyresampled(
+            $resized,
+            $this->resource,
+            0,
+            0,
+            0,
+            0,
+            $newWidth,
+            $newHeight,
+            $this->width,
+            $this->height
+        );
 
         imagedestroy($this->resource);
         $this->resource = $resized;

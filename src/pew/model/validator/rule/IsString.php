@@ -13,7 +13,7 @@ class IsString extends Rule
                 return false;
             }
         }
-var_dump(__METHOD__);
+
         return null;
     }
 }

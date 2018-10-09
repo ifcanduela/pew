@@ -63,7 +63,7 @@ abstract class Relationship
      * Get the field the records are grouped around.
      *
      * This field must be from the "near" table, the one that starts the relationship.
-     * 
+     *
      * @return string
      */
     abstract public function getGroupingField();
