@@ -62,7 +62,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function __construct()
     {
         if (!$this->tableName) {
-            $this->tableName = Str::create(basename(get_class($this)))->underscored() . "s";
+            $className = new \ReflectionClass(get_class($this))->getShortName();
+            $this->tableName = Str::create($className)->underscored() . "s";
         }
 
         $this->tableManager = $this->table();
