@@ -3,6 +3,7 @@
 namespace pew;
 
 use Monolog\Logger;
+use pew\model\TableManager;
 use pew\router\InvalidHttpMethod;
 use pew\router\RouteNotFound;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,6 +65,7 @@ class App
         $this->loadAppBootstrap();
 
         static::$instance = $this;
+        TableManager::instance($this->container["tableManager"]);
 
         App::log("App path set to {$appPath}", Logger::INFO);
     }

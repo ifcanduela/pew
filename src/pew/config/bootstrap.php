@@ -9,7 +9,7 @@ use pew\lib\FileCache;
 use pew\lib\Injector;
 use pew\lib\Session;
 use pew\lib\Url;
-use pew\model\TableFactory;
+use pew\model\TableManager;
 use pew\request\Request;
 use pew\router\Route;
 use pew\router\Router;
@@ -74,6 +74,14 @@ return (function () {
         return (string) S::create($actionSlug)->camelize();
     };
 
+    $container["app_log"] = function (Container $c) {
+        $logger = new Logger("App log");
+        $logfile = $c["app_path"] . "/logs/app.log";
+        $logger->pushHandler(new StreamHandler($logfile, $c["log_level"]));
+
+        return $logger;
+    };
+
     $container["controller"] = function (Container $c) {
         $route = $c["route"];
         $handler = $route->getHandler();
@@ -113,39 +121,19 @@ return (function () {
 
     $container["db"] = function (Container $c) {
         $dbConfig = $c["db_config"];
-
-        if (isset($c["use_db"])) {
-            $useDb = $c["use_db"];
-        } else {
-            $useDb = "default";
-        }
+        $useDb = $c["use_db"] ?? "default";
 
         if (!array_key_exists($useDb, $dbConfig)) {
             throw new RuntimeException("Database configuration preset '{$useDb}' does not exist");
         }
 
-        $connectionSettings = $dbConfig[$useDb];
+        $tableManager = $c["tableManager"];
 
-        if (!isset($connectionSettings)) {
-            throw new RuntimeException("Database is disabled.");
-        }
-
-        $db = Database::fromArray($connectionSettings);
-
-        if (isset($dbConfig["log_queries"]) && $dbConfig["log_queries"]) {
-            $logger = $c["db_log"];
-            $db->setLogger($logger);
-        }
-
-        return $db;
+        return $tableManager->getConnection($useDb);
     };
 
-    $container["app_log"] = function (Container $c) {
-        $logger = new Logger("App log");
-        $logfile = $c["app_path"] . "/logs/app.log";
-        $logger->pushHandler(new StreamHandler($logfile, $c["log_level"]));
-
-        return $logger;
+    $container["db_config"] = function (Container $c) {
+        return require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
     };
 
     $container["db_log"] = function (Container $c) {
@@ -154,10 +142,6 @@ return (function () {
         $logger->pushHandler(new StreamHandler($logfile, Monolog\Logger::DEBUG));
 
         return $logger;
-    };
-
-    $container["db_config"] = function (Container $c) {
-        return require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
     };
 
     $container["file_cache"] = function (Container $c) {
@@ -285,6 +269,33 @@ return (function () {
         return new Session();
     };
 
+    $container["tableManager"] = function (Container $c) {
+        $dbConfig = $c["db_config"];
+        $tableManager = new \pew\model\TableManager();
+        $tableManager->setDefaultConnection($c["use_db"]);
+        $logger = null;
+
+        if (isset($dbConfig["log_queries"]) && $dbConfig["log_queries"]) {
+            $logger = $c["db_log"];
+        }
+
+        foreach ($dbConfig as $name => $connectionSettings) {
+            if (isset($connectionSettings["engine"])) {
+                $tableManager->setConnection($name, function () use ($connectionSettings, $logger) {
+                    $db = Database::fromArray($connectionSettings);
+
+                    if ($logger) {
+                        $db->setLogger($logger);
+                    }
+
+                    return $db;
+                });
+            }
+        }
+
+        return $tableManager;
+    };
+
     $container["url"] = function (Container $c) {
         $request = $c["request"];
         $routes = $c["routes"];
@@ -315,10 +326,6 @@ return (function () {
     $whoops = new Run();
     $whoops->pushHandler($container["whoops_handler"]);
     $whoops->register();
-
-    TableFactory::setConnection("default", null, function () use ($container) {
-        return $container["db"];
-    });
 
     return $container;
 })();

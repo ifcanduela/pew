@@ -139,7 +139,6 @@ class OnlyAuthenticated extends \\request\\Middlewaree
     }
 }
 
-
 PHP;
 
         $filename = root("app", "middleware", "{$className}.php");

@@ -2,6 +2,8 @@
 
 namespace pew\model;
 
+use ReflectionClass;
+
 use pew\model\relation\BelongsTo;
 use pew\model\relation\HasMany;
 use pew\model\relation\HasOne;
@@ -15,10 +17,13 @@ use Stringy\Stringy as Str;
 class Record implements \JsonSerializable, \IteratorAggregate
 {
     /** @var string Database table for the subject of the model. */
-    protected $tableName;
+    public $tableName;
+
+    /** @var string Database connection name. */
+    public $connectionName;
 
     /** @var string Name of the primary key fields of the table the Model manages. */
-    protected $primaryKey = "id";
+    public $primaryKey = "id";
 
     /** @var array List of class properties to serialize as JSON. */
     public $serialize = [];
@@ -41,14 +46,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /** @var Table Table data manager. */
     protected $tableManager;
 
-    /** @var string Database connection name. */
-    protected $connectionName = "default";
-
     /** @var bool Flag for new records. */
     public $isNew = false;
 
-    /** @var array List of validation errors. */
-    public $errors = [];
+    /** @var Validator Record validation object. */
+    public $validator;
 
     /** @var string Name of the column holding the record creation timestamp. */
     public static $createdFieldName = "created";
@@ -61,14 +63,17 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function __construct()
     {
-        if (!$this->tableName) {
-            $className = new \ReflectionClass(get_class($this))->getShortName();
-            $this->tableName = Str::create($className)->underscored() . "s";
-        }
-
-        $this->tableManager = $this->table();
+        # Initialize the table manager
+        $this->tableManager = $this->getTableManager();
+        # Initialize the record fields
         $this->record = $this->columns();
+        // @todo: This might not be working as expected
         $this->isNew = true;
+
+        # Update the table name if it's empty
+        if (!$this->tableName) {
+            $this->tableName = $this->tableManager->table();
+        }
     }
 
     /**
@@ -76,9 +81,9 @@ class Record implements \JsonSerializable, \IteratorAggregate
      *
      * @return Table
      */
-    public function table()
+    public function getTableManager()
     {
-        return TableFactory::create($this->tableName, static::class);
+        return TableManager::instance()->create(static::class);
     }
 
     /**
@@ -313,12 +318,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public static function find()
     {
-        $record = new static();
-        $table = $record->table();
+        $table = TableManager::instance()->create(static::class);
 
         $table->createSelect()
-            ->columns($record->tableName . ".*")
-            ->from($record->tableName);
+            ->columns($table->tableName() . ".*")
+            ->from($table->tableName());
 
         return $table;
     }
@@ -331,12 +335,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public static function findOne($id)
     {
-        $record = new static();
-        $table = $record->table();
+        $table = TableManager::instance()->create(static::class);
 
         $table->createSelect()
-            ->columns($record->tableName . ".*")
-            ->from($record->tableName);
+            ->columns($table->tableName() . ".*")
+            ->from($table->tableName());
 
         return $table->where([$table->primaryKey() => $id])->one();
     }
@@ -348,9 +351,9 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public static function update()
     {
-        $record = new static();
+        $table = TableManager::instance()->create(static::class);
 
-        return $record->tableManager->createUpdate();
+        return $table->createUpdate();
     }
 
     /**
@@ -482,7 +485,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function __wakeup()
     {
-        $this->tableManager = $this->table();
+        $this->tableManager = $this->getTableManager();
     }
 
     /**
@@ -510,12 +513,13 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function belongsTo(string $className, string $localKeyName = null, string $foreignKeyName = null)
     {
         if (!$localKeyName) {
-            $otherClass = basename($className);
+            $reflectionClass = new ReflectionClass($className);
+            $otherClass = $reflectionClass->getShortName();
             $localKeyName = Str::create($otherClass)->underscored() . "_id";
         }
 
         if (!$foreignKeyName) {
-            $foreignKeyName = (new $className())->tableManager->primaryKey();
+            $foreignKeyName = TableManager::instance()->create($className)->primaryKey();
         }
 
         $matchValue = $this->$localKeyName;
@@ -548,7 +552,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function hasMany(string $className, string $foreignKeyName = null, string $localKeyName = null)
     {
         if (!$foreignKeyName) {
-            $thisClass = basename(get_class($this));
+            $reflectionClass = new ReflectionClass($this);
+            $thisClass = $reflectionClass->getShortName();
             $foreignKeyName = Str::create($thisClass)->underscored() . "_id";
         }
 
@@ -586,7 +591,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function hasOne(string $className, string $foreignKeyName = null, string $localKeyName = null)
     {
         if (!$foreignKeyName) {
-            $thisClass = basename(get_class($this));
+            $reflectionClass = new ReflectionClass($this);
+            $thisClass = $reflectionClass->getShortName();
             $foreignKeyName = Str::create($thisClass)->underscored() . "_id";
         }
 
@@ -654,12 +660,14 @@ class Record implements \JsonSerializable, \IteratorAggregate
         }
 
         if (!$nearForeignKeyName) {
-            $thisClass = basename(get_class($this));
+            $reflectionClass = new ReflectionClass($this);
+            $thisClass = $reflectionClass->getShortName();
             $nearForeignKeyName = Str::create($thisClass)->underscored() . "_id";
         }
 
         if (!$farForeignKeyName) {
-            $farClass = basename($className);
+            $reflectionClass = new ReflectionClass($className);
+            $farClass = $reflectionClass->getShortName();
             $farForeignKeyName = Str::create($farClass)->underscored() . "_id";
         }
 
@@ -710,5 +718,32 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function attachRelated($getter, $values)
     {
         $this->getterResults[$getter] = $values;
+    }
+
+    /**
+     * Apply validation rules to the model.
+     *
+     * The error list is available via $model->validator->getErrors()
+     *
+     * @return bool
+     */
+    public function validate()
+    {
+        $this->validator = Validator::object($this->validationRules());
+
+        return $this->validator->validate($this);
+    }
+
+    /**
+     * Get the validation rules for the model.
+     *
+     * The returl value must be an array with field names as keys and Validator
+     * instances as values.
+     *
+     * @return Validator[]
+     */
+    public function validationRules()
+    {
+        return [];
     }
 }
