@@ -168,8 +168,8 @@ class App
             $result = $this->handleError($e);
         }
 
-        $response = $this->transformActionResult($result);
-        $this->container["response"] = $response;
+        $response = $this->container["response"];
+        $response = $this->transformActionResult($result, $response);
 
         try {
             $response = $this->runAfterMiddleware($route, $response, $injector);
@@ -297,11 +297,11 @@ class App
      * @return Response
      * @throws \InvalidArgumentException
      */
-    protected function transformActionResult($actionResult)
+    protected function transformActionResult($actionResult, Response $response)
     {
         # if $actionResult is false, return an empty response
         if ($actionResult === false) {
-            return new Response();
+            return $response;
         }
 
         # if it's already a response, return it
@@ -318,7 +318,9 @@ class App
 
         # if the action result is a string, use as the content of the response
         if (is_string($actionResult)) {
-            return new Response($actionResult);
+            $response->setContent($actionResult);
+
+            return $response;
         }
 
         # if the action result is not an array, make it into one
@@ -329,8 +331,9 @@ class App
         # use the action result to render the view
         $view = $this->container["view"];
         $output = $view->render(null, $actionResult);
+        $response->setContent($output);
 
-        return new Response($output);
+        return $response;
     }
 
     /**

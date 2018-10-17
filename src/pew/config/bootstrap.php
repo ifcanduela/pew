@@ -16,6 +16,7 @@ use pew\router\Router;
 use pew\View;
 use Pimple\Container;
 use Stringy\Stringy as S;
+use Symfony\Component\HttpFoundation\Response;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -172,8 +173,12 @@ return (function () {
         return "/" . trim($pathInfo, "/");
     };
 
-    $container["request"] = function () {
+    $container["request"] = function (Container $c) {
         return Request::createFromGlobals();
+    };
+
+    $container["response"] = function (Container $c) {
+        return new Response();
     };
 
     $container["route"] = function (Container $c) {
