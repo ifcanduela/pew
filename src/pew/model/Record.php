@@ -72,7 +72,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         # Update the table name if it's empty
         if (!$this->tableName) {
-            $this->tableName = $this->tableManager->table();
+            $this->tableName = $this->tableManager->tableName();
         }
     }
 

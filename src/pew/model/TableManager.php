@@ -138,6 +138,8 @@ class TableManager
         $reflectionClass = new ReflectionClass($className);
         $classShortName = $reflectionClass->getShortName();
 
-        return Stringy::create($classShortName)->underscored() . "s";
+        return Stringy::create($classShortName)
+            ->removeRight("Model")
+            ->underscored() . "s";
     }
 }

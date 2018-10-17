@@ -8,7 +8,7 @@ use pew\model\relation\Relationship;
 
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
-
+use ReflectionClass;
 use Stringy\Stringy as Str;
 
 /**
@@ -48,7 +48,7 @@ class Table
      *
      * @var string
      */
-    protected $table = null;
+    protected $tableName = null;
 
     /**
      * Name of the primary key fields of the table the Model manages.
@@ -100,13 +100,13 @@ class Table
     /**
      * Create a table gateway object.
      *
-     * @param string $table Name of the table
+     * @param string $tableName Name of the table
      * @param Database $db Database instance to use
      * @param string|null $recordClass
      */
-    public function __construct($table, Database $db, $recordClass = null)
+    public function __construct(string $tableName, Database $db, string $recordClass = null)
     {
-        $this->table = $table;
+        $this->tableName = $tableName;
         $this->db = $db;
         $this->recordClass = $recordClass;
 
@@ -118,20 +118,20 @@ class Table
      */
     public function init()
     {
-        if (!$this->db->tableExists($this->table)) {
-            throw new TableNotFoundException("Table {$this->table} for model {$this->recordClass} not found.");
+        if (!$this->db->tableExists($this->tableName)) {
+            throw new TableNotFoundException("Table {$this->tableName} for model {$this->recordClass} not found.");
         }
 
         # some metadata about the table
-        $this->tableData["name"] = $this->table;
+        $this->tableData["name"] = $this->tableName;
 
         if (!isset($this->tableData["primary_key"])) {
-            $primaryKey = $this->db->getPrimaryKeys($this->table);
+            $primaryKey = $this->db->getPrimaryKeys($this->tableName);
             $this->tableData["primary_key"] = $primaryKey;
         }
 
         if (!isset($this->tableData["columns"])) {
-            $columns = $this->db->getColumnNames($this->table);
+            $columns = $this->db->getColumnNames($this->tableName);
             $this->tableData["columns"] = $columns;
             $this->tableData["column_names"] = array_combine($columns, array_fill(0, count($columns), null));
         }
@@ -142,20 +142,13 @@ class Table
      *
      * @return string
      */
-    public function tableName()
+    public function tableName(string $tableName = null)
     {
-        if (!is_null($this->table)) {
-            return $this->table;
+        if (isset($tableName)) {
+            $this->tableName = $tableName;
         }
 
-        $shortname = (new \ReflectionClass($this))->getShortName();
-        $tableName = preg_replace('/Model$/', "", $shortname);
-
-        if (!$tableName) {
-            throw new TableNotSpecifiedException("Model class must be attached to a database table.");
-        }
-
-        return Str::create($tableName)->underscored();
+        return $this->tableName;
     }
 
     /**
@@ -185,21 +178,6 @@ class Table
     }
 
     /**
-     * Get or set the table name for the model.
-     *
-     * @param string $table Table name
-     * @return string Table name
-     */
-    public function table($table = null)
-    {
-        if (!is_null($table)) {
-            $this->table = $table;
-        }
-
-        return $this->table;
-    }
-
-    /**
      * Initialize a SELECT query.
      *
      * @return self
@@ -207,7 +185,7 @@ class Table
     public function createSelect()
     {
         $this->query = Query::select();
-        $this->query->from($this->tableName());
+        $this->query->from($this->tableName);
 
         return $this;
     }
@@ -220,7 +198,7 @@ class Table
     public function createUpdate()
     {
         $this->query = Query::update();
-        $this->query->table($this->tableName());
+        $this->query->table($this->tableName);
 
         return $this;
     }
@@ -233,7 +211,7 @@ class Table
     public function createInsert()
     {
         $this->query = Query::insert();
-        $this->query->into($this->tableName());
+        $this->query->into($this->tableName);
 
         return $this;
     }
@@ -246,7 +224,7 @@ class Table
     public function createDelete()
     {
         $this->query = Query::delete();
-        $this->query->table($this->tableName());
+        $this->query->table($this->tableName);
 
         return $this;
     }
@@ -407,7 +385,7 @@ class Table
             $model->afterSave();
         }
 
-        $model = $this->createSelect()->from($this->tableName())->where([$primaryKeyName => $id])->one();
+        $model = $this->createSelect()->from($this->tableName)->where([$primaryKeyName => $id])->one();
 
 
         return $model->attributes();
@@ -456,7 +434,7 @@ class Table
 
         # if $id is set, perform an UPDATE
         $where = [$primaryKeyName => $record[$primaryKeyName]];
-        $query = Query::update($this->tableName())->set($record)->where($where);
+        $query = Query::update($this->tableName)->set($record)->where($where);
         $this->db->run($query);
 
         return $record[$primaryKeyName];
@@ -476,7 +454,7 @@ class Table
      */
     public function delete($id = null)
     {
-        $query = Query::delete($this->table());
+        $query = Query::delete($this->tableName);
 
         if (is_array($id)) {
             # use the $id as an array of conditions
