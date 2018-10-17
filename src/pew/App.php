@@ -243,8 +243,7 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
-        $shortName = (new \ReflectionClass($controllerClass))->getShortName();
-        $controllerSlug = Str::create($shortName)->removeRight("Controller")->underscored()->slugify();
+        $controllerSlug = $this->container["controller_slug"];
         $actionName = $this->container["action"];
 
         $view = $this->container["view"];

@@ -110,10 +110,11 @@ return (function () {
         $controller = $c["controller"];
 
         if ($controller) {
-            $controllerClass = basename($c["controller"]);
+            $shortName = (new \ReflectionClass($controller))->getShortName();
 
-            return (string) S::create($controllerClass)
+            return (string) S::create($shortName)
                 ->removeRight("Controller")
+                ->underscored()
                 ->slugify();
         }
 
