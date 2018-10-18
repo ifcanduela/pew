@@ -363,16 +363,20 @@ if (!function_exists("url")) {
         static $base_url;
 
         if (!isset($base_url)) {
-            $base_url = pew("request")->appUrl();
-            $base_url = rtrim($base_url, "/") . "/";
+            $base_url = pew('request')->appUrl();
+            $base_url = rtrim($base_url, '/') . '/';
         }
 
         $params = array_filter($path, "is_array");
         $query = count($params) ? array_merge(...$params) : [];
-        $path = preg_replace('~\/+~', "/", join("/", array_filter($path, "is_string")));
+        $segments = array_filter($path, function ($segment) {
+            return is_scalar($segment) || method_exists($segment, "__tostring");
+        });
+        $path = preg_replace('~\/+~', '/', join('/', $segments));
+
         $query_string = http_build_query($query);
 
-        return $base_url . trim($path, "/") . ($query_string ? "?{$query_string}" : "");
+        return $base_url . trim($path, '/') . ($query_string ? "?{$query_string}" : "");
     }
 }
 
