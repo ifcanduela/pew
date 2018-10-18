@@ -21,7 +21,7 @@ abstract class Base
     /**
      * Create a base validator.
      *
-     * @param string $fieldName
+     * @param array $options
      */
     public function __construct(array $options = [])
     {

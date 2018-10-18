@@ -54,6 +54,7 @@ class Validator
     /**
      * Create a string validator.
      *
+     * @param bool $strict
      * @return StringValidator
      */
     public static function string(bool $strict = false)
@@ -64,6 +65,7 @@ class Validator
     /**
      * Create an array validator.
      *
+     * @param array $keyRules
      * @return ArrayValidator
      */
     public static function array(array $keyRules = [])
@@ -74,6 +76,7 @@ class Validator
     /**
      * Create an object validator.
      *
+     * @param array $propRules
      * @return ObjectValidator
      */
     public static function object(array $propRules)

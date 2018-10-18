@@ -293,8 +293,8 @@ class App
      * Convert the result of an action into a Response object.
      *
      * @param mixed $actionResult
+     * @param Response $response
      * @return Response
-     * @throws \InvalidArgumentException
      */
     protected function transformActionResult($actionResult, Response $response)
     {

@@ -14,8 +14,8 @@ use Stringy\Stringy as Str;
 /**
  * Table gateway class.
  *
- * @method Table columns(...$columns)
- * @method Table from(...$columns)
+ * @method Table columns(string ...$columns)
+ * @method Table from(string ...$columns)
  * @method Table where(array $conditions)
  * @method Table andWhere(array $conditions)
  * @method Table orWhere(array $conditions)
@@ -26,13 +26,13 @@ use Stringy\Stringy as Str;
  * @method Table rightJoin(string $through, array $on)
  * @method Table outerJoin(string $through, array $on)
  * @method Table fullOuterJoin(string $through, array $on)
- * @method Table groupBy()
- * @method Table having()
- * @method Table andHaving()
- * @method Table orHaving()
- * @method Table orderBy()
- * @method Table limit()
- * @method Table offset()
+ * @method Table groupBy(string ...$columns)
+ * @method Table having(array $conditionss)
+ * @method Table andHaving(array $conditionss)
+ * @method Table orHaving(array $conditionss)
+ * @method Table orderBy(string $fieldAndDirection)
+ * @method Table limit(int $limit)
+ * @method Table offset(int $offset)
  */
 class Table
 {
@@ -140,6 +140,7 @@ class Table
     /**
      * Auto-resolve the table name for the current model.
      *
+     * @param string $tableName
      * @return string
      */
     public function tableName(string $tableName = null)
