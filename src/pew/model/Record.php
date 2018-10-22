@@ -22,22 +22,22 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /** @var string Database connection name. */
     public $connectionName;
 
-    /** @var string Name of the primary key fields of the table the Model manages. */
+    /** @var string|string[] Name of the primary key fields of the table the Model manages. */
     public $primaryKey = "id";
 
-    /** @var array List of class properties to serialize as JSON. */
+    /** @var string[] List of class properties to serialize as JSON. */
     public $serialize = [];
 
-    /** @var array List of database columns to exclude from JSON serialization. */
+    /** @var string[] List of database columns to exclude from JSON serialization. */
     public $doNotSerialize = [];
 
     /** @var array Cached results for model get methods. */
     protected $getterResults = [];
 
-    /** @var array List of getter method names. */
+    /** @var string[] List of getter method names. */
     protected static $getterMethods = [];
 
-    /** @var array List of setter method names. */
+    /** @var string[] List of setter method names. */
     protected static $setterMethods = [];
 
     /** @var array Current record data. */
@@ -45,9 +45,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
     /** @var Table Table data manager. */
     protected $tableManager;
-
-    /** @var bool Flag for new records. */
-    public $isNew = false;
 
     /** @var Validator Record validation object. */
     public $validator;
@@ -67,9 +64,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $this->tableManager = $this->getTableManager();
         # Initialize the record fields
         $this->record = $this->columns();
-        // @todo: This might not be working as expected
-        $this->isNew = true;
-
         # Update the table name if it's empty
         if (!$this->tableName) {
             $this->tableName = $this->tableManager->tableName();
@@ -180,7 +174,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
             "errors" => true,
             "getterMethods" => true,
             "getterResults" => true,
-            "isNew" => true,
             "primaryKey" => true,
             "record" => true,
             "serialize" => true,
@@ -217,7 +210,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         if ($result) {
             $this->attributes($result);
-            $this->isNew = false;
 
             return true;
         }
@@ -737,7 +729,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Get the validation rules for the model.
      *
-     * The returl value must be an array with field names as keys and Validator
+     * The return value must be an array with field names as keys and Validator
      * instances as values.
      *
      * @return Validator[]
