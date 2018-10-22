@@ -368,15 +368,20 @@ if (!function_exists("url")) {
         }
 
         $params = array_filter($path, "is_array");
-        $query = count($params) ? array_merge(...$params) : [];
         $segments = array_filter($path, function ($segment) {
             return is_scalar($segment) || method_exists($segment, "__tostring");
         });
         $path = preg_replace('~\/+~', '/', join('/', $segments));
 
-        $query_string = http_build_query($query);
+        $url = $base_url . ltrim($path, '/');
 
-        return $base_url . trim($path, '/') . ($query_string ? "?{$query_string}" : "");
+        if ($params) {
+            $query = count($params) ? array_merge(...$params) : [];
+            $query_string = http_build_query($query);
+            $url .= $query_string;
+        }
+
+        return $url;
     }
 }
 
