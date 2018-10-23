@@ -243,12 +243,12 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
-        $controllerSlug = $this->container["controller_slug"];
+        $controllerPath = $this->container["controller_path"];
         $actionName = $this->container["action"];
 
         $view = $this->container["view"];
 
-        $view->template("{$controllerSlug}/{$actionName}");
+        $view->template($controllerPath . DIRECTORY_SEPARATOR . $actionName);
         $view->layout("default.layout");
 
         $controller = $injector->createInstance($controllerClass);

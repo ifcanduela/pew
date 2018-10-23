@@ -22,11 +22,14 @@ class Route implements \ArrayAccess
     /** @var array */
     protected $params = [];
 
-    /** @ver array */
+    /** @var array */
     protected $before = [];
 
-    /** @ver array */
+    /** @var array */
     protected $after = [];
+
+    /** @var string */
+    protected $handlerNamespace;
 
     /**
      * Create an empty route object.
@@ -94,6 +97,14 @@ class Route implements \ArrayAccess
     public function getHandler()
     {
         return $this->handler;
+    }
+
+    /**
+     * Get the namespace for the handler class.
+     */
+    public function getNamespace()
+    {
+        return $this->handlerNamespace;
     }
 
     /**
@@ -287,12 +298,25 @@ class Route implements \ArrayAccess
      * This method is an alias for handler()
      *
      * @param string|callable $handler
-     * @return Route
+     * @return self
      * @throws \Exception
      */
     public function to($handler)
     {
         return $this->handler($handler);
+    }
+
+    /**
+     * Set a namespace for the handler.
+     *
+     * @param string|null $namespace
+     * @return self|string
+     */
+    public function namespace(string $namespace)
+    {
+        $this->handlerNamespace = $namespace;
+
+        return $this;
     }
 
     /**

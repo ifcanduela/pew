@@ -86,6 +86,7 @@ return (function () {
     $container["controller"] = function (Container $c) {
         $route = $c["route"];
         $handler = $route->getHandler();
+        $namespace = $c["route_namespace"];
 
         if (is_callable($handler)) {
             return $handler;
@@ -93,10 +94,12 @@ return (function () {
 
         if ($handler) {
             $parts = explode("@", $handler);
-            return $c["controller_namespace"] . $parts[0];
+
+            return  $namespace . $parts[0];
         } elseif ($route->checkParam("controller")) {
             $handler = S::create($route->getParam("controller"))->upperCamelize();
-            return $c["controller_namespace"] . $handler;
+
+            return $namespace . $handler;
         }
 
         return null;
@@ -104,6 +107,20 @@ return (function () {
 
     $container["controller_namespace"] = function (Container $c) {
         return $c["app_namespace"] . "controllers\\";
+    };
+
+    $container["controller_path"] = function (Container $c) {
+        $controllerNamespace = $c["controller_namespace"];
+        $routeNamespace = $c["route_namespace"];
+        $controllerSlug = $c["controller_slug"];
+
+        $path = str_replace(
+                [$controllerNamespace, "\\"],
+                ["", DIRECTORY_SEPARATOR],
+                $routeNamespace)
+            . $controllerSlug;
+
+        return $path;
     };
 
     $container["controller_slug"] = function (Container $c) {
@@ -188,6 +205,22 @@ return (function () {
         $pathInfo = $c["path"];
 
         return $router->route($pathInfo, $request->getMethod());
+    };
+
+    $container["route_namespace"] = function (Container $c) {
+        $route = $c["route"];
+
+        $namespace = S::create($c["controller_namespace"])
+            ->ensureLeft("\\")
+            ->ensureRight("\\");
+
+        if ($routeNamespace = $route->getNamespace()) {
+            $namespace .= S::create($routeNamespace)
+                ->removeLeft("\\")
+                ->ensureRight("\\");
+        }
+
+        return $namespace;
     };
 
     $container["router"] = function (Container $c) {
