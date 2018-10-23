@@ -181,6 +181,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             "tableManager" => true,
             "tableName" => true,
             "updatedFieldName" => true,
+            "validator" => true,
         ];
 
         $record = array_diff_key($include, $exclude);
