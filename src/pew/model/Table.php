@@ -411,7 +411,7 @@ class Table
             $record[$fieldName] = time();
         }
 
-        $query = Query::insert()->into($this->table)->values($record);
+        $query = Query::insert()->into($this->tableName)->values($record);
         $this->db->run($query);
 
         return $this->db->lastInsertId();
