@@ -184,7 +184,7 @@ return (function () {
         $pathInfo = $request->getPathInfo();
 
         $ignore_url_suffixes = join("|", $c["ignore_url_suffixes"]);
-        $ignore_url_separator = join("|", $c["ignore_url_separator"]);
+        $ignore_url_separator = join("", $c["ignore_url_separator"]);
 
         $pathInfo = preg_replace('/[' . $ignore_url_separator. '](' . $ignore_url_suffixes . ')$/', "", $pathInfo);
 
