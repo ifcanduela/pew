@@ -34,7 +34,11 @@ return (function () {
     $container["default_action"] = "index";
     $container["env"] = "dev";
     $container["log_level"] = Logger::WARNING;
-    $container["use_db"] = $container["env"];
+
+    $container["use_db"] = function (Container $c) {
+        return $c["env"];
+    };
+
     $container["www_path"] = getcwd();
 
     $container["root_path"] = function (Container $c) {
@@ -350,21 +354,23 @@ return (function () {
         return new View($viewsFolder, $fileCache);
     };
 
-    # setup the Whoops error handler
+    # create an application-wide error handler
 
-    $container["whoops_handler"] = function (Container $c) {
+    $container["error_handler"] = function (Container $c) {
         $request = $c["request"];
+        $handler = null;
 
         if (php_sapi_name() === "cli" || $request->isJson()) {
-            return new PlainTextHandler();
+            $handler = new PlainTextHandler();
+        } else {
+            $handler = new PrettyPageHandler();
         }
 
-        return new PrettyPageHandler();
-    };
+        $whoops = new Run();
+        $whoops->pushHandler($handler);
 
-    $whoops = new Run();
-    $whoops->pushHandler($container["whoops_handler"]);
-    $whoops->register();
+        return $whoops;
+    };
 
     return $container;
 })();

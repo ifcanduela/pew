@@ -133,8 +133,15 @@ class App
      * @return null
      * @throws \Exception
      */
-    public function run()
+    public function run(Request $request = null)
     {
+        if ($request) {
+            $this->container["request"] = $request;
+        }
+
+        $errorHandler = $this->container["error_handler"];
+        $errorHandler->register();
+
         $result = false;
 
         try {
