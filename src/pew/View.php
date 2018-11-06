@@ -247,10 +247,10 @@ class View implements \ArrayAccess
     /**
      * Set and get the layout to use.
      *
-     * @param string $layout Name of the layout
+     * @param string|bool $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
      */
-    public function layout(string $layout = null)
+    public function layout($layout = null)
     {
         if ($layout !== null) {
             $this->layout = $layout;
