@@ -47,7 +47,7 @@ class App
         if (realpath($appFolder)) {
             $appPathPre = $appFolder;
         } else {
-            $appPathPre = getcwd() . DIRECTORY_SEPARATOR . $appFolder;
+            $appPathPre = getcwd() . "/" . $appFolder;
         }
 
         $appPath = realpath($appPathPre);
@@ -133,12 +133,8 @@ class App
      * @return null
      * @throws \Exception
      */
-    public function run(Request $request = null)
+    public function run()
     {
-        if ($request) {
-            $this->container["request"] = $request;
-        }
-
         $errorHandler = $this->container["error_handler"];
         $errorHandler->register();
 
@@ -254,12 +250,10 @@ class App
         $actionName = $this->container["action"];
 
         $view = $this->container["view"];
-
-        $view->template($controllerPath . DIRECTORY_SEPARATOR . $actionName);
+        $view->template($controllerPath . "/" . $actionName);
         $view->layout("default.layout");
 
         $controller = $injector->createInstance($controllerClass);
-
         $response = null;
 
         if (method_exists($controller, "beforeAction")) {

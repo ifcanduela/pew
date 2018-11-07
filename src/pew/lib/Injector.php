@@ -18,7 +18,7 @@ class Injector
      */
     public function __construct(...$containers)
     {
-        $this->containers = $containers;
+        $this->containers = array_reverse($containers);
     }
 
     /**
