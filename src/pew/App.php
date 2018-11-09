@@ -3,14 +3,14 @@
 namespace pew;
 
 use Monolog\Logger;
+use pew\lib\Injector;
 use pew\model\TableManager;
 use pew\router\InvalidHttpMethod;
-use pew\router\RouteNotFound;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Stringy\Stringy as Str;
-use pew\lib\Injector;
 use pew\router\Route;
+use pew\router\RouteNotFound;
+use Stringy\Stringy as Str;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The App class is a request/response processor.
@@ -40,14 +40,14 @@ class App
      * @throws \RuntimeException
      * @throws \InvalidArgumentException
      */
-    public function __construct($appFolder, $configFileName = "config")
+    public function __construct(string $appFolder, string $configFileName = "config")
     {
         $this->container = require __DIR__ . "/config/bootstrap.php";
 
         if (realpath($appFolder)) {
             $appPathPre = $appFolder;
         } else {
-            $appPathPre = getcwd() . "/" . $appFolder;
+            $appPathPre = getcwd() . "/{$appFolder}";
         }
 
         $appPath = realpath($appPathPre);
@@ -56,16 +56,15 @@ class App
             throw new \InvalidArgumentException("The app path does not exist: {$appPathPre}");
         }
 
-        $configFolder = $this->container["config_folder"];
-        $this->container["app_path"] = $appPath;
-        $this->container["config_file_name"] = $configFileName;
+        $this->set("app_path", $appPath);
+        $this->set("config_file_name", $configFileName);
 
-        # import app config and services
-        $this->loadAppConfig("{$appPath}/{$configFolder}/{$configFileName}.php");
+        # import app-defined configuration
+        $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
 
         static::$instance = $this;
-        TableManager::instance($this->container["tableManager"]);
+        TableManager::instance($this->get("tableManager"));
 
         App::log("App path set to {$appPath}", Logger::INFO);
     }
@@ -83,21 +82,25 @@ class App
     /**
      * Import the application configuration.
      *
-     * @param string $configFilename The file name, relative to the base path
+     * @param string $configFileName The file name, relative to the base path
      * @return bool TRUE when the file exists, FALSE otherwise
      * @throws \RuntimeException
      */
-    protected function loadAppConfig($configFilename)
+    protected function loadAppConfig(string $configFileName)
     {
-        if (file_exists($configFilename)) {
-            $appConfig = require $configFilename;
+        $appPath = $this->get("app_path");
+        $configFolder = $this->get("config_folder");
+        $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
+
+        if (file_exists($filename)) {
+            $appConfig = require $filename;
 
             if (!is_array($appConfig)) {
-                throw new \RuntimeException("Configuration file {$configFilename} must return an array");
+                throw new \RuntimeException("Configuration file {$filename} must return an array");
             }
 
             foreach ($appConfig as $key => $value) {
-                $this->container[$key] = $value;
+                $this->set($key, $value);
             }
 
             return true;
@@ -113,9 +116,12 @@ class App
      */
     protected function loadAppBootstrap()
     {
-        # load app/config/bootstrap.php
-        if (file_exists($this->container["app_path"] . "/config/bootstrap.php")) {
-            require_once $this->container["app_path"] . "/config/bootstrap.php";
+        $appPath = $this->get("app_path");
+        $configFolder = $this->get("config_folder");
+        $filename = "{$appPath}/{$configFolder}/bootstrap.php";
+
+        if (file_exists($filename)) {
+            require_once $filename;
 
             return true;
         }
@@ -135,43 +141,56 @@ class App
      */
     public function run()
     {
-        $errorHandler = $this->container["error_handler"];
+        $errorHandler = $this->get("error_handler");
         $errorHandler->register();
 
-        $result = false;
-
         try {
-            $injector = $this->container["injector"];
-            $request = $this->container["request"];
-            $route = $this->container["route"];
-            App::log("Matched route " . $route->getPath());
-            $response = $this->runBeforeMiddleware($route, $injector);
-
-            if ($response instanceof Response) {
-                App::log("Middleware returned response");
-                $result = $response;
-            } else {
-                $handler = $this->container["controller"];
-
-                if (!$handler) {
-                    throw new \RuntimeException("No handler specified for route (" . $request->getPathInfo() . ")");
-                }
-
-                if (is_callable($handler)) {
-                    $result = $this->handleCallback($handler, $injector);
-                } else {
-                    $result = $this->handleAction($handler, $injector);
-                }
-            }
+            $response = $this->handle();
         } catch (RouteNotFound $e) {
-            $result = $this->handleError($e);
+            # Bad route
+            $response = $this->handleError($e);
         } catch (InvalidHttpMethod $e) {
-            $result = $this->handleError($e);
+            # Bad method
+            $response = $this->handleError($e);
         } catch (\Exception $e) {
-            $result = $this->handleError($e);
+            # Other exceptions
+            $response = $this->handleError($e);
         }
 
-        $response = $this->container["response"];
+        $response->send();
+    }
+
+    /**
+     * Handle the current request.
+     *
+     * @return Response
+     */
+    protected function handle()
+    {
+        $injector = $this->get("injector");
+        $request = $this->get("request");
+        $route = $this->get("route");
+        App::log("Matched route " . $route->getPath());
+
+        $result = $this->runBeforeMiddleware($route, $injector);
+
+        if ($result instanceof Response) {
+            App::log("Middleware returned response");
+        } else {
+            $handler = $this->get("controller");
+
+            if (!$handler) {
+                throw new \RuntimeException("No handler specified for route (" . $request->getPathInfo() . ")");
+            }
+
+            if (is_callable($handler)) {
+                $result = $this->handleCallback($handler, $injector);
+            } else {
+                $result = $this->handleAction($handler, $injector);
+            }
+        }
+
+        $response = $this->get("response");
         $response = $this->transformActionResult($result, $response);
 
         try {
@@ -180,9 +199,16 @@ class App
             $response = $this->handleError($e);
         }
 
-        $response->send();
+        return $response;
     }
 
+    /**
+     * Run configured middleware callbacks before the controller action.
+     *
+     * @param Route $route
+     * @param Injector $injector
+     * @return Response|null
+     */
     protected function runBeforeMiddleware(Route $route, Injector $injector)
     {
         $middlewareClasses = $route->getBefore() ?: [];
@@ -198,6 +224,14 @@ class App
         }
     }
 
+    /**
+     * Run configured middleware callbacks after the controller action.
+     *
+     * @param Route $route
+     * @param Response $response
+     * @param Injector $injector
+     * @return Response
+     */
     protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
     {
         $middlewareClasses = $route->getAfter() ?: [];
@@ -229,7 +263,6 @@ class App
     protected function handleCallback(callable $handler, Injector $injector)
     {
         App::log("Request handler is anonymous callback");
-
         $controller = $injector->createinstance(Controller::class);
 
         return $injector->callFunction($handler, $controller);
@@ -246,27 +279,29 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
-        $controllerPath = $this->container["controller_path"];
-        $actionName = $this->container["action"];
+        $controllerPath = $this->get("controller_path");
+        $actionName = $this->get("action");
 
-        $view = $this->container["view"];
+        App::log("Request handler is {$controllerPath}/{$actionName}");
+
+        $view = $this->get("view");
         $view->template($controllerPath . "/" . $actionName);
         $view->layout("default.layout");
 
         $controller = $injector->createInstance($controllerClass);
-        $response = null;
+        $result = null;
 
         if (method_exists($controller, "beforeAction")) {
-            $response = $injector->callMethod($controller, "beforeAction");
+            $result = $injector->callMethod($controller, "beforeAction");
         }
 
-        if (!($response instanceof Response)) {
-            $response = $injector->callMethod($controller, $actionName);
+        if (!($result instanceof Response)) {
+            $result = $injector->callMethod($controller, $actionName);
         }
 
         App::log("Request handler is {$handler}@{$actionName}");
 
-        return $response;
+        return $result;
     }
 
     /**
@@ -278,11 +313,11 @@ class App
      */
     protected function handleError(\Exception $e)
     {
-        if ($this->container["debug"]) {
+        if ($this->get("debug")) {
             throw $e;
         }
 
-        $view = $this->container["view"];
+        $view = $this->get("view");
         $view->layout(false);
 
         $output = $view->render("errors/404", ["exception" => $e]);
@@ -310,7 +345,7 @@ class App
         }
 
         # check if the request is JSON and return an appropriate response
-        $request = $this->container["request"];
+        $request = $this->get("request");
 
         if ($request->isJson()) {
             return new JsonResponse($actionResult);
@@ -329,7 +364,7 @@ class App
         }
 
         # use the action result to render the view
-        $view = $this->container["view"];
+        $view = $this->get("view");
         $output = $view->render(null, $actionResult);
         $response->setContent($output);
 
@@ -361,13 +396,16 @@ class App
     /**
      * Log a message to the application log file.
      *
+     * The available log levels are constants of the Monolog\Logger class:
+     * DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT and EMERGENCY.
+     *
      * @param string $message
      * @param int $level
      */
-    public static function log($message, $level = Logger::DEBUG)
+    public static function log(string $message, $level = Logger::DEBUG)
     {
         /** @var Logger $logger */
-        $logger = static::$instance->container["app_log"];
+        $logger = static::$instance->get("app_log");
         $logger->log($level, $message);
     }
 }

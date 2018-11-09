@@ -93,7 +93,7 @@ class Injector
 
             if (!$found) {
                 $paramName = $param->getName() . " (" . $param->getType() . ")";
-                throw new KeyNotFoundException("Could not find a definition for $paramName.");
+                throw new KeyNotFoundException("Could not find a definition for {$paramName}.");
             }
 
             $injections[] = $injection;

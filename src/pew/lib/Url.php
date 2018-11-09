@@ -2,8 +2,8 @@
 
 namespace pew\lib;
 
-use Stringy\Stringy as S;
 use pew\request\Request;
+use Stringy\Stringy as S;
 
 /**
  * Class to manipulate URLs.

@@ -2,8 +2,8 @@
 
 namespace pew\lib;
 
-use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 use ArrayAccess;
+use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 
 /**
  * Wrapper around Symfony Session.

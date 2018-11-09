@@ -2,8 +2,8 @@
 
 namespace pew;
 
-use SplStack;
 use pew\lib\FileCache;
+use SplStack;
 use Stringy\Stringy as S;
 
 /**

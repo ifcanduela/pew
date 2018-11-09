@@ -3,7 +3,6 @@
 namespace pew\request;
 
 use pew\View;
-
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
