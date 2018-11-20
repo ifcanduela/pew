@@ -3,25 +3,35 @@
 namespace pew\router;
 
 /**
- * The Route class is a Value Object representing a matched route.
+ * The Group class represents a gropuing of routes with common properties.
  */
 class Group extends Route
 {
-    /** @var array */
+    /** @var Route[] */
     protected $routes = [];
 
     /** @var string */
-    protected $prefix;
+    protected $prefix = "";
+
+    /**
+     * Build a route group.
+     *
+     * @param Route[] $routes
+     */
+    public function __construct(array $routes = [])
+    {
+        $this->routes = $routes;
+    }
 
     /**
      * Set the routes in the group.
      *
-     * @param  Route[] $routes
+     * @param Route[] $routes
      * @return self
      */
     public function routes(array $routes)
     {
-        $this->routes = $routes;
+        $this->routes += $routes;
 
         return $this;
     }
@@ -40,27 +50,14 @@ class Group extends Route
                 $route = Route::fromArray($route);
             }
 
-            if ($this->prefix) {
-                $route->path(preg_replace('~/+~', "/", "{$this->prefix}{$route->path}"));
-            }
+            $routes = ($route instanceof static)
+                    ? $route->getRoutes()
+                    : [$route];
 
-            if ($this->before) {
-                $route->before = array_unique(array_merge($this->before, $route->before));
+            foreach ($routes as $r) {
+                $r = $this->mergeRoute($r);
+                $processedRoutes[] = $r;
             }
-
-            if ($this->after) {
-                $route->after = array_unique(array_merge($this->after, $route->after));
-            }
-
-            if ($this->handler) {
-                $route->handler = $this->handler;
-            }
-
-            if ($this->methods && $route->methods === ["*"]) {
-                $route->methods = $this->methods;
-            }
-
-            $processedRoutes[] = $route;
         }
 
         return $processedRoutes;
@@ -69,7 +66,7 @@ class Group extends Route
     /**
      * Set a prefix for all routes in the group.
      *
-     * @param  string $prefix
+     * @param string $prefix
      * @return self
      */
     public function prefix(string $prefix)
@@ -77,5 +74,36 @@ class Group extends Route
         $this->prefix = $prefix;
 
         return $this;
+    }
+
+    /**
+     * Merge group properties into a route.
+     *
+     * @param Route $route
+     * @return Route
+     */
+    protected function mergeRoute(Route $route)
+    {
+        if ($this->prefix) {
+            $route->path(preg_replace("~/+~", "/", "{$this->prefix}{$route->path}"));
+        }
+
+        if ($this->before) {
+            $route->before = array_unique(array_merge($this->before, $route->before));
+        }
+
+        if ($this->after) {
+            $route->after = array_unique(array_merge($this->after, $route->after));
+        }
+
+        if ($this->handler) {
+            $route->handler = $this->handler;
+        }
+
+        if ($this->methods && $route->methods === ["*"]) {
+            $route->methods = $this->methods;
+        }
+
+        return $route;
     }
 }
