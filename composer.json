@@ -9,15 +9,15 @@
     ],
     "homepage": "http://pew.ifcanduela.com",
     "require": {
-        "php": ">=7.0.0",
-        "symfony/http-foundation": "*",
-        "nikic/fast-route": "^1.0",
-        "pimple/pimple": "^3.0",
-        "filp/whoops": "^2.1",
-        "danielstjules/stringy": "3.1.0",
-        "ifcanduela/abbrev": "*",
-        "ifcanduela/db": "*",
-        "monolog/monolog": "^1.23"
+        "php": ">=7.1.0",
+        "symfony/http-foundation": "^4.1",
+        "nikic/fast-route": "^1.3",
+        "pimple/pimple": "^3.2",
+        "filp/whoops": "^2.3",
+        "danielstjules/stringy": "^3.1",
+        "ifcanduela/abbrev": "^1.0",
+        "ifcanduela/db": "^1.0",
+        "monolog/monolog": "^1.24"
     },
     "autoload": {
         "psr-0": {
@@ -26,6 +26,6 @@
         "exclude-from-classmap": ["/Tests/", "/test/", "/tests/"]
     },
     "require-dev": {
-        "phpunit/phpunit": "^6.3"
+        "phpunit/phpunit": "^7.4"
     }
 }
