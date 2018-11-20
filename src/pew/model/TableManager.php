@@ -21,14 +21,10 @@ class TableManager
     protected $cachedRecordClasses = [];
 
     /** @var string */
-    protected $defaultConnection;
+    protected $defaultConnection = "default";
 
     /** @var static  */
     protected static $instance;
-
-    public function __construct()
-    {
-    }
 
     /**
      * Get a singleton instance of the TableManager.
@@ -117,7 +113,7 @@ class TableManager
         list($tableName, $connectionName) = $this->cachedRecordClasses[$recordClass];
 
         # Fetch the connection
-        $db = static::getConnection($connectionName);
+        $db = $this->getConnection($connectionName);
 
         # Cache the table definition for future uses
         if (!isset($this->cachedTableDefinitions[$tableName])) {
