@@ -4,9 +4,16 @@ namespace pew\console;
 
 class MessageBox extends Message
 {
+    /** @var integer */
     public $width = 80;
+
+    /** @var integer */
     public $margin = 0;
+
+    /** @var integer */
     public $padding = 1;
+
+    /** @var bool */
     public $newLine = true;
 
     /**

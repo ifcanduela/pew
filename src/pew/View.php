@@ -15,13 +15,13 @@ class View implements \ArrayAccess
     protected $folderStack;
 
     /** @var string Template name */
-    protected $template = "index";
+    protected $template = "";
 
-    /** @var string|null Layout name */
-    protected $layout;
+    /** @var string Layout name */
+    protected $layout = "";
 
     /** @var string View title */
-    protected $title;
+    protected $title = "";
 
     /** @var string Templates file extension */
     protected $extension = ".php";
@@ -39,15 +39,15 @@ class View implements \ArrayAccess
     protected $variables = [];
 
     /** @var FileCache */
-    protected $fileCache;
+    protected $fileCache = null;
 
     /**
      * Creates a View object based on a folder.
      *
      * If no folder is provided, the current working directory is used.
      *
-     * @param string $templatesFolder
-     * @param FileCache $fileCache
+     * @param string|null $templatesFolder
+     * @param FileCache|null $fileCache
      */
     public function __construct(string $templatesFolder = null, FileCache $fileCache = null)
     {
@@ -63,11 +63,13 @@ class View implements \ArrayAccess
      *
      * @param string $key
      * @param mixed $value
-     * @return mixed
+     * @return self
      */
-    public function set(string $key, $value)
+    public function set(string $key, $value): self
     {
         $this->variables[$key] = $value;
+
+        return $this;
     }
 
     /**
@@ -98,7 +100,7 @@ class View implements \ArrayAccess
      *
      * Template names are resolved using the configured template directories and template file extension.
      *
-     * @param string $template Template name, relative to one of the template directories.
+     * @param null|string $template Template name, relative to one of the template directories.
      * @param array $data Template data
      * @return string
      * @throws \Exception
@@ -107,11 +109,11 @@ class View implements \ArrayAccess
     public function render(string $template = null, array $data = [])
     {
         if (!$template) {
-            $template = $this->template;
-        }
+            if (!$this->template) {
+                throw new \RuntimeException("No template specified");
+            }
 
-        if ($template === null) {
-            throw new \RuntimeException("No template specified");
+            $template = $this->template;
         }
 
         # find the template file
@@ -141,7 +143,7 @@ class View implements \ArrayAccess
     /**
      * Check if a template file exists.
      *
-     * @param string $template Base file name (without extension)
+     * @param string|null $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
      */
     public function exists(string $template = null)
@@ -211,9 +213,9 @@ class View implements \ArrayAccess
     }
 
     /**
-     * Set and get the template to render.
+     * Set or get the template to render.
      *
-     * @param string $template Name of the template
+     * @param string|null $template Name of the template
      * @return self|string Name of the template
      */
     public function template(string $template = null)
@@ -228,7 +230,7 @@ class View implements \ArrayAccess
     }
 
     /**
-     * Set and get the view file extension.
+     * Set or get the view file extension.
      *
      * @param string $extension View file extension
      * @return self|string View file extension
@@ -245,12 +247,12 @@ class View implements \ArrayAccess
     }
 
     /**
-     * Set and get the layout to use.
+     * Set or get the layout to use.
      *
-     * @param string|bool $layout Name of the layout, or `false` to disable.
+     * @param string|null $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
      */
-    public function layout($layout = null)
+    public function layout(string $layout = null)
     {
         if ($layout !== null) {
             $this->layout = $layout;
@@ -371,6 +373,7 @@ class View implements \ArrayAccess
      * Save a fragment to the cache.
      *
      * @param string $key Name key for the cached fragment
+     * @return void
      */
     public function save(string $key)
     {
@@ -414,6 +417,7 @@ class View implements \ArrayAccess
      *
      * @param string $blockName
      * @param bool $replace
+     * @return void
      */
     public function beginBlock(string $blockName, bool $replace = false)
     {
@@ -423,6 +427,8 @@ class View implements \ArrayAccess
 
     /**
      * Closes the current block.
+     *
+     * @return void
      */
     public function endBlock()
     {

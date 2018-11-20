@@ -6,6 +6,7 @@ use ifcanduela\abbrev\Abbrev;
 
 class App extends \pew\App
 {
+    /** @var string[] */
     public $availableCommands = [];
 
     /**
@@ -64,13 +65,13 @@ class App extends \pew\App
         return $injector->callMethod($command, $action);
     }
 
-    private function commandMissing($command)
+    private function commandMissing(string $commandName)
     {
-        echo "Command {$command} not found" . PHP_EOL;
+        echo "Command {$commandName} not found" . PHP_EOL;
         echo "Did you mean:" . PHP_EOL;
 
-        if ($command) {
-            $suggestions = $command;
+        if ($commandName) {
+            $suggestions = $commandName;
         } else {
             $suggestions = array_keys($this->availableCommands);
         }

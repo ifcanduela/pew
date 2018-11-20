@@ -8,40 +8,60 @@ use Stringy\Stringy as S;
 
 class CreateCommand extends Command
 {
+    /**
+     * Command name.
+     *
+     * @return string
+     */
     public function name()
     {
         return "create";
     }
 
+    /**
+     * Command description.
+     *
+     * @return string
+     */
     public function description()
     {
         return "Generates app files.";
     }
 
+    /**
+     * Run the command.
+     *
+     * @param CommandArguments $arguments
+     * @return void
+     */
     public function run(CommandArguments $arguments)
     {
         if ($arguments->has("type")) {
             $type = $arguments->get("type");
 
-            return $this->{$type}($arguments);
+            $this->{$type}($arguments);
+        } else {
+            echo $this->infoBox("Create application files");
+
+            echo $this->messageBox(
+                "  - create:command <ClassName>",
+                "    Generates a console command. The suffix `Command` will be added if it's not present.",
+                "  - create:controller <ClassName>",
+                "    Generate an action class. The suffix `Controller` is optional.",
+                "  - create:middleware <ClassName>",
+                "    Generate a middleware controller with stubs for `before()` and `after()`.",
+                "  - create:model <ClassName> [table_name]",
+                "    Generate a database Model class. The table name can be inferred from the class name."
+            );
         }
-
-        echo $this->infoBox("Create application files");
-
-        echo $this->messageBox(
-            "  - create:command <ClassName>",
-            "    Generates a console command. The suffix `Command` will be added if it's not present.",
-            "  - create:controller <ClassName>",
-            "    Generate an action class. The suffix `Controller` is optional.",
-            "  - create:middleware <ClassName>",
-            "    Generate a middleware controller with stubs for `before()` and `after()`.",
-            "  - create:model <ClassName> [table_name]",
-            "    Generate a database Model class. The table name can be inferred from the class name."
-        );
-
-        return false;
     }
 
+    /**
+     * Create a command file.
+     *
+     * @param CommandArguments $arguments
+     * @return void
+     */
     public function command(CommandArguments $arguments)
     {
         $arg = $arguments->at(0);
@@ -89,6 +109,12 @@ PHP;
         $this->createFile($fileContents, $filename);
     }
 
+    /**
+     * Create a controller file.
+     *
+     * @param CommandArguments $arguments
+     * @return void
+     */
     public function controller(CommandArguments $arguments)
     {
         $className = $arguments->at(0);
@@ -116,6 +142,12 @@ PHP;
         $this->createFile($fileContents, $filename);
     }
 
+    /**
+     * Create a middelware file.
+     *
+     * @param CommandArguments $arguments
+     * @return void
+     */
     public function middleware(CommandArguments $arguments)
     {
         $className = $arguments->at(0);
@@ -144,6 +176,12 @@ PHP;
         $this->createFile($fileContents, $filename);
     }
 
+    /**
+     * Create a model file.
+     *
+     * @param CommandArguments $arguments
+     * @return void
+     */
     public function model(CommandArguments $arguments)
     {
         $className = $arguments->at(0);
@@ -151,7 +189,7 @@ PHP;
         if ($arguments->has(1)) {
             $tableName = $arguments->at(1);
         } else {
-            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', S::create($className)->underscored()), "s") . "s";
+            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', (string) S::create($className)->underscored()), "s") . "s";
         }
 
         $fileContents = <<<PHP
@@ -173,6 +211,13 @@ PHP;
         $this->createFile($fileContents, $filename);
     }
 
+    /**
+     * Create an app file.
+     *
+     * @param string $content
+     * @param string $filename
+     * @return void
+     */
     public function createFile(string $content, string $filename)
     {
         if (!file_exists($filename)) {

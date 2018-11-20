@@ -3,7 +3,7 @@
 require_once dirname(__DIR__) . '/fixtures/models/Project.php';
 require_once dirname(__DIR__) . '/fixtures/models/User.php';
 
-use pew\model\TableFactory;
+use pew\model\TableManager;
 use ifcanduela\db\Database;
 use tests\fixtures\models\Project;
 use tests\fixtures\models\User;
@@ -39,7 +39,8 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $db->run('INSERT INTO users (username, project_id) VALUES ("User 5", 3)');
 
         $this->db = $db;
-        TableFactory::setConnection("default", $db);
+
+        TableManager::instance()->setConnection("default", $db);
     }
 
     public function testNewRecord()
@@ -63,8 +64,6 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $this->assertTrue($model->save());
         # the primary key is now populated
         $this->assertNotNull($model->id);
-        # the record is flagged as saved
-        $this->assertFalse($model->isNew);
 
         $fields = [];
 
@@ -75,10 +74,10 @@ class RecordTest extends PHPUnit\Framework\TestCase
         # check the iterated fields
         $this->assertEquals(['id', 'name'], $fields);
         # check the fields serialized into JSON
-        $this->assertEquals(["id"=>"4","name"=>"Project Zeta","extraField"=>"extraValue"], json_decode(json_encode($model), true));
+        $this->assertEquals(["id" => "4", "name" => "Project Zeta", "extraField" => "extraValue"], json_decode(json_encode($model), true));
         # check the fields excluded from JSON serialization
         $model->doNotSerialize = ['name'];
-        $this->assertEquals(["id"=>"4","extraField"=>"extraValue"], json_decode(json_encode($model), true));
+        $this->assertEquals(["id" => "4", "extraField" => "extraValue"], json_decode(json_encode($model), true));
     }
 
     public function testRecordFromQuery()
@@ -98,8 +97,6 @@ class RecordTest extends PHPUnit\Framework\TestCase
                 'name' => 'test project',
             ]);
 
-        # record is flagged as new
-        $this->assertTrue($model->isNew);
         # record fields are populated
         $this->assertEquals(99, $model->id);
         $this->assertEquals('test project', $model->name);

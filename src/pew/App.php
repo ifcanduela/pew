@@ -72,7 +72,9 @@ class App
     /**
      * Get the application instance.
      *
-     * @return static
+     * Will return null if the application has not been initialized.
+     *
+     * @return static|null
      */
     public static function instance()
     {
@@ -387,6 +389,7 @@ class App
      *
      * @param string $key
      * @param mixed $value
+     * @return void
      */
     public function set(string $key, $value)
     {
@@ -401,6 +404,7 @@ class App
      *
      * @param string $message
      * @param int $level
+     * @return void
      */
     public static function log(string $message, $level = Logger::DEBUG)
     {

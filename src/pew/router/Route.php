@@ -3,7 +3,7 @@
 namespace pew\router;
 
 /**
- * The Route class is a Value Object representing a matched route.
+ * The Route class specifies the properties of a routable URL.
  */
 class Route implements \ArrayAccess
 {
@@ -29,14 +29,7 @@ class Route implements \ArrayAccess
     protected $after = [];
 
     /** @var string */
-    protected $handlerNamespace;
-
-    /**
-     * Create an empty route object.
-     */
-    public function __construct()
-    {
-    }
+    protected $handlerNamespace = "";
 
     /**
      * Create a Route from an array.
@@ -101,6 +94,8 @@ class Route implements \ArrayAccess
 
     /**
      * Get the namespace for the handler class.
+     *
+     * @return string
      */
     public function getNamespace()
     {
@@ -141,6 +136,7 @@ class Route implements \ArrayAccess
      * Set the 'before' middleware class list.
      *
      * @param string[] $before
+     * @return void
      */
     public function setBefore(array $before)
     {
@@ -161,6 +157,7 @@ class Route implements \ArrayAccess
      * Set the 'after' middleware class list.
      *
      * @param string[] $after
+     * @return void
      */
     public function setAfter(array $after)
     {
@@ -195,6 +192,7 @@ class Route implements \ArrayAccess
      * Set the route params.
      *
      * @param array $params
+     * @return void
      */
     public function setParams(array $params)
     {
@@ -309,7 +307,7 @@ class Route implements \ArrayAccess
     /**
      * Set a namespace for the handler.
      *
-     * @param string|null $namespace
+     * @param string $namespace
      * @return self|string
      */
     public function namespace(string $namespace)
@@ -402,10 +400,11 @@ class Route implements \ArrayAccess
     /**
      * Create a route group.
      *
+     * @param Route[] $routes
      * @return Group
      */
-    public static function group()
+    public static function group(array $routes = [])
     {
-        return new Group();
+        return new Group($routes);
     }
 }

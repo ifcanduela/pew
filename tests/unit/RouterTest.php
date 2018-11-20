@@ -96,4 +96,22 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(['BeforeMiddleware1', 'BeforeMiddleware2'], $routes[0]->getBefore());
         $this->assertEquals(['AfterMiddleware1', 'AfterMiddleware2'], $routes[0]->getAfter());
     }
+
+    public function testNestedRouteGroup()
+    {
+        $routes = [
+            Route::group()->routes([
+                Route::group([
+                    Route::from("/nested/{action}")
+                ]),
+                Route::from('[/{action}]'),
+            ])->to('AdminController')->prefix('/admin'),
+        ];
+
+        $router = new Router($routes);
+        $destination = $router->route('/admin/nested/index', 'GET');
+
+        $this->assertInstanceOf(Route::class, $destination);
+        $this->assertEquals('AdminController', $destination->getHandler());
+    }
 }
