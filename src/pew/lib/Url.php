@@ -112,19 +112,19 @@ class Url
         # arrange all the named routes
         if (!$this->namedRoutes) {
             foreach ($this->routes as $route) {
-                if (isset($route["name"]) && $route["name"]) {
-                    $this->namedRoutes[$route["name"]] = $route;
+                if ($route->getName()) {
+                    $this->namedRoutes[$route->getName()] = $route;
                 }
             }
         }
 
         if (isset($this->namedRoutes[$routeName])) {
             $route = $this->namedRoutes[$routeName];
-            $path = $route["path"];
+            $path = $route->getPath();
 
             # merge the defaults with the passed params
-            if (isset($route["defaults"])) {
-                $params = array_merge($route["defaults"], $params);
+            if ($route->getDefaults()) {
+                $params = array_merge($route->getDefaults(), $params);
             }
 
             # replace all available params
