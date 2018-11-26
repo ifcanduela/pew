@@ -381,6 +381,7 @@ class Route implements \ArrayAccess
      *
      * @param string $key
      * @param mixed $value
+     * @return void
      * @throws \BadMethodCallException
      */
     public function offsetSet($key, $value)
@@ -394,6 +395,7 @@ class Route implements \ArrayAccess
      * Route parameters are read-only and cannot be unset.
      *
      * @param string $key
+     * @return void
      * @throws \BadMethodCallException
      */
     public function offsetUnset($key)

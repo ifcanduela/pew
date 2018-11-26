@@ -528,7 +528,7 @@ class Table
      * This method should be used after creating a query with createSelect(), createUpdate(),
      * createInsert() or createDelete().
      *
-     * @return array
+     * @return array|int|\PdoStatement
      */
     public function run()
     {
@@ -540,7 +540,6 @@ class Table
      *
      * @param string $method
      * @param array $arguments
-     *
      * @return self
      */
     public function __call($method, $arguments)
@@ -558,8 +557,12 @@ class Table
         throw new \BadMethodCallException("Invalid method '{$method}'");
     }
 
-
-
+    /**
+     * Specify relationships to eager-load.
+     *
+     * @param string|string[] ...$relationships
+     * @return self
+     */
     public function with(...$relationships)
     {
         $this->relationships = $relationships;
@@ -570,8 +573,8 @@ class Table
     /**
      * Eager-load relationships.
      *
-     * @param  array  $models
-     * @return null
+     * @param array $models
+     * @return void
      */
     protected function loadRelationships(array $models)
     {

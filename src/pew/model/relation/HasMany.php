@@ -2,6 +2,9 @@
 
 namespace pew\model\relation;
 
+/**
+ * A one-to-many relationship.
+ */
 class HasMany extends Relationship
 {
     /**

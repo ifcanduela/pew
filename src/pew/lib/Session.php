@@ -82,7 +82,7 @@ class Session extends SymfonySession implements ArrayAccess
      *
      * @param string $key
      * @param mixed $value
-     * @return null
+     * @return void
      */
     public function offsetSet($key, $value)
     {
@@ -104,7 +104,7 @@ class Session extends SymfonySession implements ArrayAccess
      * Unset a session variable.
      *
      * @param string $key
-     * @return null
+     * @return void
      */
     public function offsetUnset($key)
     {

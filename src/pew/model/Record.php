@@ -96,6 +96,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
         return $columns;
     }
 
+    /**
+     * Get the value of the primary key for the current record.
+     *
+     * @return string
+     */
     public function primaryKeyValue()
     {
         return $this->record[$this->primaryKey];
@@ -220,9 +225,12 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
     /**
      * Deletes the current record.
+     *
+     * @return int
      */
     public function delete()
     {
+        /** @var Table */
         $table = $this->tableManager->createDelete();
 
         $table->where([
@@ -475,6 +483,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
     /**
      * Restore the database manager after deserialization.
+     *
+     * @return void
      */
     public function __wakeup()
     {
@@ -707,6 +717,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * @param string $getter Name of the getter method
      * @param array|Record $values Value of the related property
+     * @return void
      */
     public function attachRelated($getter, $values)
     {

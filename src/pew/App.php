@@ -142,7 +142,7 @@ class App
      * Controller class and calling its action() method, which will handle
      * the controller call.
      *
-     * @return null
+     * @return void
      * @throws \Exception
      */
     public function run()
@@ -219,7 +219,7 @@ class App
      *
      * @param Route $route
      * @param Injector $injector
-     * @return Response|null
+     * @return Response|void
      */
     protected function runBeforeMiddleware(Route $route, Injector $injector)
     {
@@ -231,7 +231,7 @@ class App
             $result = $injector->callMethod($mw, "before");
 
             if ($result instanceof Response) {
-                return $result->send();
+                return $result;
             }
         }
     }
@@ -328,6 +328,7 @@ class App
      */
     protected function handleError(\Exception $e)
     {
+        # If debug mode is on, let the error handler take care of the error
         if ($this->get("debug")) {
             throw $e;
         }

@@ -4,6 +4,9 @@ namespace pew\console;
 
 use Stringy\Stringy as S;
 
+/**
+ * The CommandArguments class represents arguments passed to a command.
+ */
 class CommandArguments
 {
     /** @var array Arguments preceded by a nametag (-n or --name) */
@@ -26,6 +29,7 @@ class CommandArguments
      * Populate the CommandArguments object with data.
      *
      * @param array $commandLineArguments The list of command-line arguments
+     * @return void
      */
     public function loadConsoleArguments(array $commandLineArguments)
     {

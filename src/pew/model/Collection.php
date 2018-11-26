@@ -74,7 +74,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      *
      * @param mixed $offset
      * @param mixed $value
-     * @return null
+     * @return void
      */
     public function offsetSet($offset, $value = null)
     {
@@ -89,7 +89,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * Remove an item by key.
      *
      * @param mixed $offset
-     * @return null
+     * @return void
      */
     public function offsetUnset($offset)
     {
@@ -636,7 +636,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      * Add an item to the beginning of the collection.
      *
      * @param mixed $item
-     * @return null
+     * @return self
      */
     public function unshift($item)
     {

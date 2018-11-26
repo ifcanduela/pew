@@ -53,6 +53,7 @@ class TableManager
      *
      * @param string $connectionName
      * @param Database|callable $databaseConnection
+     * @return void
      */
     public function setConnection(string $connectionName, $databaseConnection)
     {

@@ -28,26 +28,16 @@ $container = new Container();
 #
 
 $container["app_namespace"] = "\\app\\";
+$container["cache_duration"] = 15 * 60;
 $container["config_folder"] = "config";
 $container["debug"] = false;
 $container["default_action"] = "index";
 $container["env"] = "dev";
-$container["log_level"] = Logger::WARNING;
-
-$container["www_path"] = getcwd();
-
-$container["root_path"] = function (Container $c) {
-    return dirname($c["app_path"]);
-};
-
-$container["cache_path"] = function (Container $c) {
-    return $c["root_path"] . "/cache";
-};
-
-$container["cache_duration"] = 15 * 60;
-
 $container["ignore_url_separator"] = ["\\", ".", "|"];
 $container["ignore_url_suffixes"] = ["json", "html", "php"];
+$container["log_level"] = Logger::WARNING;
+$container["root_path"] = dirname(getcwd());
+$container["www_path"] = getcwd();
 
 #
 # FACTORIES
@@ -80,6 +70,10 @@ $container["app_log"] = function (Container $c) {
     $logger->pushHandler(new StreamHandler($logfile, $c["log_level"]));
 
     return $logger;
+};
+
+$container["cache_path"] = function (Container $c) {
+    return $c["root_path"] . "/cache";
 };
 
 $container["controller"] = function (Container $c) {
@@ -116,8 +110,8 @@ $container["controller_path"] = function (Container $c) {
     $path = str_replace(
             [$controllerNamespace, "\\"],
             ["", DIRECTORY_SEPARATOR],
-            $routeNamespace)
-        . $controllerSlug;
+            $routeNamespace
+        ) . $controllerSlug;
 
     return $path;
 };
@@ -160,6 +154,22 @@ $container["db_log"] = function (Container $c) {
     $logger->pushHandler(new StreamHandler($logfile, Monolog\Logger::DEBUG));
 
     return $logger;
+};
+
+$container["error_handler"] = function (Container $c) {
+    $request = $c["request"];
+    $handler = null;
+
+    if (php_sapi_name() === "cli" || $request->isJson()) {
+        $handler = new PlainTextHandler();
+    } else {
+        $handler = new PrettyPageHandler();
+    }
+
+    $whoops = new Run();
+    $whoops->pushHandler($handler);
+
+    return $whoops;
 };
 
 $container["file_cache"] = function (Container $c) {
@@ -302,24 +312,6 @@ $container["view"] = function (Container $c) {
     $viewsFolder = $app_path . "/views/";
 
     return new View($viewsFolder, $fileCache);
-};
-
-# create an application-wide error handler
-
-$container["error_handler"] = function (Container $c) {
-    $request = $c["request"];
-    $handler = null;
-
-    if (php_sapi_name() === "cli" || $request->isJson()) {
-        $handler = new PlainTextHandler();
-    } else {
-        $handler = new PrettyPageHandler();
-    }
-
-    $whoops = new Run();
-    $whoops->pushHandler($handler);
-
-    return $whoops;
 };
 
 return $container;

@@ -499,6 +499,7 @@ class View implements \ArrayAccess
      * Unset a template variable.
      *
      * @param string $key
+     * @return void
      */
     public function offsetUnset($key)
     {

@@ -2,6 +2,9 @@
 
 namespace pew\model\relation;
 
+/**
+ * A meny-to-one relationship.
+ */
 class BelongsTo extends Relationship
 {
     /**

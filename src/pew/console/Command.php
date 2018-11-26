@@ -15,6 +15,8 @@ abstract class Command implements CommandInterface
 {
     /**
      * Setup the command before running.
+     *
+     * @return void
      */
     public function init()
     {
@@ -22,6 +24,8 @@ abstract class Command implements CommandInterface
 
     /**
      * Clean up after the command runs.
+     *
+     * @return void
      */
     public function finish()
     {

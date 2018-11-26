@@ -4,6 +4,9 @@ namespace pew\model\relation;
 
 use pew\model\Collection;
 
+/**
+ * A many-to-many relationship.
+ */
 class HasAndBelongsToMany extends Relationship
 {
     /** @var string Association table name */
