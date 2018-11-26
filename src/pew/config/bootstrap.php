@@ -230,69 +230,18 @@ $container["router"] = function (Container $c) {
 
 $container["routes"] = function (Container $c) {
     $appFolder = $c["app_path"];
-    $routesPath = $appFolder . "/". $c["config_folder"] . "/routes.php";
+    $configFolder = $c["config_folder"];
+    $routesPath = "{$appFolder}/{$configFolder}/routes.php";
+    $routes = [];
 
     $definitions = require $routesPath;
-
-    $routes = [];
 
     foreach ($definitions as $path => $handler) {
         if ($handler instanceof Route) {
             $routes[] = $handler;
         } elseif (is_string($handler) || is_callable($handler)) {
             // convert simple route to array route
-            $handler = Route::from($path)->handler($handler)->methods("GET", "POST");
-            $routes[] = $handler;
-        } elseif (is_array($handler) && isset($handler["resource"])) {
-            // create CRUD routes from resource route
-            $controllerClass = $handler["resource"];
-
-            if (isset($handler["path"])) {
-                $slug = S::create($handler["path"]);
-            } else {
-                $slug = S::create($controllerClass)->humanize()->slugify();
-            }
-
-            $underscored = $slug->underscored();
-
-            $routes[] = [
-                    "path" => "/{$slug}/{id}/edit",
-                    "handler" => "{$controllerClass}@edit",
-                    "methods" => "GET POST",
-                    "name"=> "{$underscored}_edit",
-                    "defaults" => $handler["defaults"] ?? [],
-                    "conditions" => $handler["conditions"] ?? [],
-                ];
-            $routes[] = [
-                    "path" => "/{$slug}/{id}/delete",
-                    "handler" => "{$controllerClass}@delete",
-                    "methods" => "GET POST",
-                    "name"=> "{$underscored}_delete",
-                    "defaults" => $handler["defaults"] ?? [],
-                    "conditions" => $handler["conditions"] ?? [],
-                ];
-            $routes[] = [
-                    "path" => "/{$slug}/add",
-                    "handler" => "{$controllerClass}@add",
-                    "methods" => "GET POST",
-                    "name"=> "{$underscored}_add",
-                    "defaults" => $handler["defaults"] ?? [],
-                    "conditions" => $handler["conditions"] ?? [],
-                ];
-            $routes[] = [
-                    "path" => "/{$slug}/{id}",
-                    "handler" => "{$controllerClass}@view",
-                    "name"=> "{$underscored}_view",
-                    "defaults" => $handler["defaults"] ?? [],
-                    "conditions" => $handler["conditions"] ?? [],
-                ];
-            $routes[] = [
-                    "path" => "/{$slug}",
-                    "handler" => "{$controllerClass}@index",
-                    "name"=> "{$underscored}_index",
-                    "defaults" => $handler["defaults"] ?? [],
-                    "conditions" => $handler["conditions"] ?? [],
-                ];
+            $routes[] = Route::from($path)->handler($handler)->methods("GET", "POST");
         } elseif (isset($handler["handler"], $handler["path"])) {
             $routes[] = $handler;
         } else {
