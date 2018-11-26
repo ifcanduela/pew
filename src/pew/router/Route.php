@@ -31,6 +31,9 @@ class Route implements \ArrayAccess
     /** @var string */
     protected $handlerNamespace = "";
 
+    /** @var string */
+    protected $name = "";
+
     /**
      * Create a Route from an array.
      *
@@ -49,27 +52,59 @@ class Route implements \ArrayAccess
         $path = $data["path"] ?? $data["from"];
 
         $route = new Route();
-        $route
-            ->path($path)
-            ->methods(...$methods);
+        $route->setPath($path);
+        $route->setMethods(...$methods);
 
         if (isset($data["handler"]) || isset($data["to"])) {
-            $route->handler($data["handler"] ?? $data["to"]);
+            $route->setHandler($data["handler"] ?? $data["to"]);
         }
 
         if (isset($data["defaults"])) {
-            $route->defaults($data["defaults"]);
+            $route->setDefaults($data["defaults"]);
         }
 
         if (isset($data["before"])) {
-            $route->before($data["before"]);
+            $route->setBefore($data["before"]);
         }
 
         if (isset($data["after"])) {
-            $route->after($data["after"]);
+            $route->setAfter($data["after"]);
+        }
+
+        if (isset($data["namespace"])) {
+            $route->setNamespace($data["namespace"]);
+        }
+
+        if (isset($data["name"])) {
+            $route->setName($data["name"]);
         }
 
         return $route;
+    }
+
+    /**
+     * Create a route for a path.
+     *
+     * @param string $path
+     * @return Route
+     */
+    public static function from(string $path)
+    {
+        $r = new static;
+        $r->setPath($path);
+
+        return $r;
+    }
+
+    /**
+     * Create a route group.
+     *
+     * @param Route[] $routes
+     * @return Group
+     */
+    public static function group(array $routes = [])
+    {
+        return new Group($routes);
     }
 
     /**
@@ -83,6 +118,17 @@ class Route implements \ArrayAccess
     }
 
     /**
+     * Set the route path.
+     *
+     * @param string $path
+     * @return void
+     */
+    public function setPath(string $path)
+    {
+        $this->path = $path;
+    }
+
+    /**
      * Get the handler associated to the route.
      *
      * @return mixed
@@ -90,6 +136,36 @@ class Route implements \ArrayAccess
     public function getHandler()
     {
         return $this->handler;
+    }
+
+    /**
+     * Set the route handler.
+     *
+     * @param string|callable $handler
+     * @return void
+     * @throws \Exception
+     */
+    public function setHandler($handler)
+    {
+        if (!$handler) {
+            throw new \Exception("Route handler cannot be empty");
+        }
+
+        $this->handler = $handler;
+    }
+
+    /**
+     * Set the route handler.
+     *
+     * This method is an alias for setHandler()
+     *
+     * @param string|callable $handler
+     * @return void
+     * @throws \Exception
+     */
+    public function setTo($handler)
+    {
+        $this->setHandler($handler);
     }
 
     /**
@@ -103,6 +179,38 @@ class Route implements \ArrayAccess
     }
 
     /**
+     * Set a namespace for the handler.
+     *
+     * @param string $namespace
+     * @return void
+     */
+    public function setNamespace(string $namespace)
+    {
+        $this->handlerNamespace = $namespace;
+    }
+
+    /**
+     * Get the ruote name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Set a name for the route.
+     *
+     * @param string $name
+     * @return void
+     */
+    public function setName(string $name)
+    {
+        $this->name = $name;
+    }
+
+    /**
      * Get the applicable methods for the route.
      *
      * @return array
@@ -113,6 +221,17 @@ class Route implements \ArrayAccess
     }
 
     /**
+     * Set the route methods.
+     *
+     * @param string|string[] ...$methods
+     * @return void
+     */
+    public function setMethods(string ...$methods)
+    {
+        $this->methods = array_map("strtoupper", $methods);
+    }
+
+    /**
      * Get the default values for path placeholders.
      *
      * @return array
@@ -120,6 +239,29 @@ class Route implements \ArrayAccess
     public function getDefaults()
     {
         return $this->defaults;
+    }
+
+    /**
+     * Set the route placeholder default values.
+     *
+     * @param array $defaults
+     * @return void
+     */
+    public function setDefaults(array $defaults)
+    {
+        $this->defaults = $defaults;
+    }
+
+    /**
+     * Set a default value for a route placeholder.
+     *
+     * @param string $placeholderName
+     * @param mixed $value
+     * @return void
+     */
+    public function setDefault($placeholderName, $value = null)
+    {
+        $this->defaults[$placeholderName] = $value;
     }
 
     /**
@@ -260,151 +402,21 @@ class Route implements \ArrayAccess
     }
 
     /**
-     * Set the route path.
+     * Provides a fluent interface for defining routes.
      *
-     * @param string $path
+     * @param string $method
+     * @param array  $arguments
      * @return self
      */
-    public function path(string $path)
+    public function __call(string $method, array $arguments)
     {
-        $this->path = $path;
+        $methodName = "set" . ucfirst($method);
 
-        return $this;
-    }
-
-    /**
-     * Set the route handler.
-     *
-     * @param string|callable $handler
-     * @return self
-     * @throws \Exception
-     */
-    public function handler($handler)
-    {
-        if (!$handler) {
-            throw new \Exception("Route handler cannot be empty");
+        if (method_exists($this, $methodName)) {
+            $this->$methodName(...$arguments);
+            return $this;
         }
 
-        $this->handler = $handler;
-
-        return $this;
-    }
-
-    /**
-     * Set the route handler.
-     *
-     * This method is an alias for handler()
-     *
-     * @param string|callable $handler
-     * @return self
-     * @throws \Exception
-     */
-    public function to($handler)
-    {
-        return $this->handler($handler);
-    }
-
-    /**
-     * Set a namespace for the handler.
-     *
-     * @param string $namespace
-     * @return self|string
-     */
-    public function namespace(string $namespace)
-    {
-        $this->handlerNamespace = $namespace;
-
-        return $this;
-    }
-
-    /**
-     * Set the route methods.
-     *
-     * @param string|string[] ...$methods
-     * @return self
-     */
-    public function methods(string ...$methods)
-    {
-        $this->methods = array_map("strtoupper", $methods);
-
-        return $this;
-    }
-
-    /**
-     * Set the route placeholder default values.
-     *
-     * @param array $defaults
-     * @return self
-     */
-    public function defaults(array $defaults)
-    {
-        $this->defaults = $defaults;
-
-        return $this;
-    }
-
-    /**
-     * Set the 'before' middleware class list.
-     *
-     * @param string[] $before
-     * @return self
-     */
-    public function before(array $before)
-    {
-        $this->before = $before;
-
-        return $this;
-    }
-
-    /**
-     * Set the 'after' middleware class list.
-     *
-     * @param string[] $after
-     * @return self
-     */
-    public function after(array $after)
-    {
-        $this->after = $after;
-
-        return $this;
-    }
-
-    /**
-     * Set a default value for a route placeholder.
-     *
-     * @param string $placeholderName
-     * @param mixed $value
-     * @return self
-     */
-    public function default($placeholderName, $value = null)
-    {
-        $this->defaults[$placeholderName] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Create a route for a path.
-     *
-     * @param string $path
-     * @return Route
-     */
-    public static function from(string $path)
-    {
-        $r = new static;
-        $r->path($path);
-
-        return $r;
-    }
-
-    /**
-     * Create a route group.
-     *
-     * @param Route[] $routes
-     * @return Group
-     */
-    public static function group(array $routes = [])
-    {
-        return new Group($routes);
+        throw \InvalidArgumentException("Method $method does not exist.");
     }
 }
