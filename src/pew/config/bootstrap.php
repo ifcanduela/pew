@@ -34,10 +34,6 @@ $container["default_action"] = "index";
 $container["env"] = "dev";
 $container["log_level"] = Logger::WARNING;
 
-$container["use_db"] = function (Container $c) {
-    return $c["env"];
-};
-
 $container["www_path"] = getcwd();
 
 $container["root_path"] = function (Container $c) {
@@ -340,9 +336,15 @@ $container["tableManager"] = function (Container $c) {
 
 $container["url"] = function (Container $c) {
     $request = $c["request"];
-    $routes = $c["routes"];
+    $router = $c["router"];
 
-    return new Url($request, $routes);
+    return new Url($request, $router->routes);
+};
+
+$container["use_db"] = function (Container $c) {
+    $db_config = $c["db_config"];
+
+    return $db_config["use_db"] ?? $c["env"] ?? "default";
 };
 
 $container["view"] = function (Container $c) {
