@@ -5,6 +5,7 @@ namespace pew;
 use Monolog\Logger;
 use pew\lib\Injector;
 use pew\model\TableManager;
+use pew\request\Request;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
@@ -64,7 +65,6 @@ class App
         $this->loadAppBootstrap();
 
         static::$instance = $this;
-        TableManager::instance($this->get("tableManager"));
 
         App::log("App path set to {$appPath}", Logger::INFO);
     }
@@ -90,7 +90,9 @@ class App
      */
     protected function loadAppConfig(string $configFileName)
     {
+        /** @var string */
         $appPath = $this->get("app_path");
+        /** @var string */
         $configFolder = $this->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
 
@@ -118,7 +120,9 @@ class App
      */
     protected function loadAppBootstrap()
     {
+        /** @var string */
         $appPath = $this->get("app_path");
+        /** @var string */
         $configFolder = $this->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/bootstrap.php";
 
@@ -147,6 +151,9 @@ class App
         $errorHandler->register();
 
         try {
+            # Initialize the database manager
+            TableManager::instance($this->get("tableManager"));
+            # Process the request
             $response = $this->handle();
         } catch (RouteNotFound $e) {
             # Bad route
@@ -169,9 +176,13 @@ class App
      */
     protected function handle()
     {
+        /** @var Injector */
         $injector = $this->get("injector");
+        /** @var Request */
         $request = $this->get("request");
+        /** @var Route */
         $route = $this->get("route");
+
         App::log("Matched route " . $route->getPath());
 
         $result = $this->runBeforeMiddleware($route, $injector);
@@ -192,8 +203,7 @@ class App
             }
         }
 
-        $response = $this->get("response");
-        $response = $this->transformActionResult($result, $response);
+        $response = $this->transformActionResult($result);
 
         try {
             $response = $this->runAfterMiddleware($route, $response, $injector);
@@ -281,11 +291,14 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
+        /** @var string */
         $controllerPath = $this->get("controller_path");
+        /** @var string */
         $actionName = $this->get("action");
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
 
+        /** @var View */
         $view = $this->get("view");
         $view->template($controllerPath . "/" . $actionName);
         $view->layout("default.layout");
@@ -331,11 +344,16 @@ class App
      * Convert the result of an action into a Response object.
      *
      * @param mixed $actionResult
-     * @param Response $response
      * @return Response
      */
-    protected function transformActionResult($actionResult, Response $response)
+    protected function transformActionResult($actionResult)
     {
+        /** @var Request */
+        $request = $this->get("request");
+
+        /** @var Response */
+        $response = $this->get("response");
+
         # if $actionResult is false, return an empty response
         if ($actionResult === false) {
             return $response;
@@ -347,8 +365,6 @@ class App
         }
 
         # check if the request is JSON and return an appropriate response
-        $request = $this->get("request");
-
         if ($request->isJson()) {
             return new JsonResponse($actionResult);
         }
