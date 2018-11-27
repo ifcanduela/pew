@@ -46,10 +46,10 @@ class View implements \ArrayAccess
      *
      * If no folder is provided, the current working directory is used.
      *
-     * @param string|null $templatesFolder
-     * @param FileCache|null $fileCache
+     * @param string $templatesFolder
+     * @param FileCache $fileCache
      */
-    public function __construct(string $templatesFolder = null, FileCache $fileCache = null)
+    public function __construct(string $templatesFolder = "", FileCache $fileCache = null)
     {
         $this->blockStack = new SplStack();
         $this->folderStack = new SplStack();
@@ -65,7 +65,7 @@ class View implements \ArrayAccess
      * @param mixed $value
      * @return self
      */
-    public function set(string $key, $value): self
+    public function set(string $key, $value)
     {
         $this->variables[$key] = $value;
 
@@ -106,7 +106,7 @@ class View implements \ArrayAccess
      * @throws \Exception
      * @throws \RuntimeException
      */
-    public function render(string $template = null, array $data = [])
+    public function render(string $template = "", array $data = [])
     {
         if (!$template) {
             if (!$this->template) {
@@ -125,7 +125,7 @@ class View implements \ArrayAccess
 
         # make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
-        $this->output = $output = $this->_render($templateFile, $this->variables);
+        $this->output = $output = $this->renderFile($templateFile, $this->variables);
 
         if ($this->layout) {
             $layoutFile = $this->resolve($this->layout);
@@ -134,7 +134,7 @@ class View implements \ArrayAccess
                 throw new \RuntimeException("Layout {$this->layout} not found");
             }
 
-            $output = $this->_render($layoutFile, ["output" => $output]);
+            $output = $this->renderFile($layoutFile, ["output" => $output]);
         }
 
         return $output;
@@ -146,10 +146,10 @@ class View implements \ArrayAccess
      * @param string|null $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
      */
-    public function exists(string $template = null)
+    public function exists(string $template = "")
     {
-        if ($template === null) {
-            if ($this->template === null) {
+        if (!$template) {
+            if (!$this->template) {
                 throw new \RuntimeException("No template specified");
             }
 
@@ -162,16 +162,14 @@ class View implements \ArrayAccess
     }
 
     /**
-     * Add a template folder to the current stack.
+     * Add a template folder to the top of the stack.
      *
      * @param string $folder Folder location
-     * @return self
+     * @return void
      */
-    protected function addFolder(string $folder)
+    public function addFolder(string $folder)
     {
-        $this->folderStack->push(rtrim($folder, "\\/"));
-
-        return $this;
+        $this->folder($folder);
     }
 
     /**
@@ -201,10 +199,10 @@ class View implements \ArrayAccess
      * @param string $folder Folder where templates should be located
      * @return self|string Folder where templates should be located
      */
-    public function folder(string $folder = null)
+    public function folder(string $folder = "")
     {
-        if ($folder !== null) {
-            $this->folderStack->push($folder);
+        if ($folder) {
+            $this->folderStack->push(rtrim($folder, "\\/"));
 
             return $this;
         }
@@ -218,9 +216,9 @@ class View implements \ArrayAccess
      * @param string|null $template Name of the template
      * @return self|string Name of the template
      */
-    public function template(string $template = null)
+    public function template(string $template = "")
     {
-        if ($template !== null) {
+        if ($template) {
             $this->template = $template;
 
             return $this;
@@ -235,9 +233,9 @@ class View implements \ArrayAccess
      * @param string $extension View file extension
      * @return self|string View file extension
      */
-    public function extension(string $extension = null)
+    public function extension(string $extension = "")
     {
-        if ($extension !== null) {
+        if ($extension) {
             $this->extension = S::create($extension)->ensureLeft(".");
 
             return $this;
@@ -252,9 +250,9 @@ class View implements \ArrayAccess
      * @param string|null $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
      */
-    public function layout(string $layout = null)
+    public function layout(string $layout = "")
     {
-        if ($layout !== null) {
+        if ($layout) {
             $this->layout = $layout;
 
             return $this;
@@ -269,9 +267,9 @@ class View implements \ArrayAccess
      * @param string $title The title of the view
      * @return self|string The title of the view
      */
-    public function title(string $title = null)
+    public function title(string $title = "")
     {
-        if ($title !== null) {
+        if ($title) {
             $this->title = $title;
 
             return $this;
@@ -303,14 +301,14 @@ class View implements \ArrayAccess
      */
     public function insert(string $template, array $data = [])
     {
-        $elementFile = $this->resolve($template);
+        $templateFile = $this->resolve($template);
 
-        if ($elementFile === false) {
+        if ($templateFile === false) {
             throw new \RuntimeException("The partial template file $template could not be found.");
         }
 
         # Render the element.
-        return $this->_render($elementFile, $data);
+        return $this->renderFile($templateFile, $data);
     }
 
     /**
@@ -324,7 +322,7 @@ class View implements \ArrayAccess
      * @return string
      * @throws \Exception
      */
-    protected function _render()
+    protected function renderFile()
     {
         extract(func_get_arg(1), EXTR_PREFIX_INVALID, "v_");
         ob_start();
