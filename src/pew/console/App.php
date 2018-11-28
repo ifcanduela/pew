@@ -60,7 +60,7 @@ class App extends \pew\App
             $this->commandMissing($commandName);
         }
 
-        $this->container["arguments"] = new CommandArguments($arguments["arguments"]);
+        $this->container["arguments"] = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
 
         return $injector->callMethod($command, $action);
     }
@@ -92,9 +92,7 @@ class App extends \pew\App
     {
         $argv = $_SERVER["argv"];
         $scriptName = $_SERVER["SCRIPT_NAME"];
-
         $scriptNamePos = array_search($scriptName, $argv, true);
-
         $arguments = array_slice($argv, $scriptNamePos + 1);
 
         if ($arguments) {

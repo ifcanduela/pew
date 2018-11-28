@@ -23,4 +23,9 @@ interface CommandInterface
      * @return void
      */
     public function finish();
+
+    /**
+     * @return array
+     */
+    public function getDefaultArguments();
 }

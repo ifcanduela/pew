@@ -15,14 +15,17 @@ class CommandArguments
     /** @var array Arguments given without a nametag */
     protected $anonymousArguments = [];
 
+    protected $defaultArguments = [];
+
     /**
      * Create a CommandArguments object.
      *
      * @param array $commandLineArguments The list of command-line arguments
      */
-    public function __construct(array $commandLineArguments = [])
+    public function __construct(array $commandLineArguments = [], array $defaultArguments = [])
     {
         $this->loadConsoleArguments($commandLineArguments);
+        $this->defaultArguments = $defaultArguments;
     }
 
     /**
@@ -56,7 +59,11 @@ class CommandArguments
         }
 
         if ($keyName) {
-            $this->namedArguments[$keyName] = true;
+            if (substr($keyName, 0, 3) === "no-") {
+                $this->namedArguments[substr($keyName, 0, 3)] = false;
+            } else {
+                $this->namedArguments[$keyName] = true;
+            }
         }
     }
 
@@ -72,7 +79,7 @@ class CommandArguments
             return array_key_exists($key, $this->anonymousArguments);
         }
 
-        return array_key_exists($key, $this->namedArguments);
+        return array_key_exists($key, $this->namedArguments) || array_key_exists($key, $this->defaultArguments);
     }
 
     /**
@@ -108,10 +115,14 @@ class CommandArguments
         $keyList = func_get_args();
 
         foreach ($keyList as $key) {
-            $argumentName = S::create($key)->dasherize();
+            $argumentName = (string) S::create($key)->dasherize();
 
             if (array_key_exists($argumentName, $this->namedArguments)) {
                 return $this->namedArguments[$argumentName];
+            }
+
+            if (array_key_exists($key, $this->defaultArguments)) {
+                return $this->defaultArguments[$key];
             }
         }
 

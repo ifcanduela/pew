@@ -308,7 +308,6 @@ class Image
         return $this->width / $this->height;
     }
 
-
     /**
      * Get the width nof the loaded image.
      *

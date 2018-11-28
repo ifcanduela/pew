@@ -32,6 +32,16 @@ abstract class Command implements CommandInterface
     }
 
     /**
+     * Specify default values for command-line arguments.
+     *
+     * @return array
+     */
+    public function getDefaultArguments()
+    {
+        return [];
+    }
+
+    /**
      * Create a command-line message to be printed.
      *
      * @param string $text
