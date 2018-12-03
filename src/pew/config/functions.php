@@ -109,7 +109,7 @@ if (!function_exists("root")) {
         static $root_path;
 
         if (!isset($root_path)) {
-             $root_path = pew("root_path");
+            $root_path = pew("root_path");
         }
 
         array_unshift($path, $root_path);
