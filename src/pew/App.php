@@ -291,16 +291,14 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
-        /** @var string */
         $controllerPath = $this->get("controller_path");
-        /** @var string */
         $actionName = $this->get("action");
+        $templateName = Str::create($actionName)->underscored();
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
 
-        /** @var View */
         $view = $this->get("view");
-        $view->template($controllerPath . "/" . $actionName);
+        $view->template($controllerPath . "/" . $templateName);
         $view->layout("default.layout");
 
         $controller = $injector->createInstance($controllerClass);

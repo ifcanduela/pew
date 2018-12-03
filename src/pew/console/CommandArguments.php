@@ -60,7 +60,7 @@ class CommandArguments
 
         if ($keyName) {
             if (substr($keyName, 0, 3) === "no-") {
-                $this->namedArguments[substr($keyName, 0, 3)] = false;
+                $this->namedArguments[substr($keyName, 3)] = false;
             } else {
                 $this->namedArguments[$keyName] = true;
             }
@@ -91,7 +91,6 @@ class CommandArguments
      * @param int $position Argument position
      * @return string|bool|null The value of the argument, or NULL if it does not exist.
      */
-
     public function at($position)
     {
         if (!array_key_exists($position, $this->anonymousArguments)) {
