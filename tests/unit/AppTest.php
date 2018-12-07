@@ -13,7 +13,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     /**
      * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage The app path does not exist: C:\Dropbox\sites\github\ifcanduela\pew\./non-existing-folder
+     * @expectedExceptionMessage The app path does not exist:
      */
     public function testAppRequiresExistingFolder()
     {
@@ -102,5 +102,27 @@ class AppTest extends PHPUnit\Framework\TestCase
         $response = ob_get_clean();
 
         $this->assertEquals('callback response', $response);
+    }
+
+    public function testConfigurationValues()
+    {
+        $app = new App(__DIR__ . '/../fixtures/', 'test');
+
+        $this->assertEquals(realpath(__DIR__ . '/../fixtures/'), $app->get("app_path"));
+
+        $wwwPath = realpath(dirname(dirname(__DIR__)));
+        $rootPath = dirname($wwwPath);
+
+        $this->assertEquals("\\app\\", $app->get("app_namespace"));
+        $this->assertEquals(15 * 60, $app->get("cache_duration"));
+        $this->assertEquals("config", $app->get("config_folder"));
+        $this->assertEquals(false, $app->get("debug"));
+        $this->assertEquals("index", $app->get("default_action"));
+        $this->assertEquals("dev", $app->get("env"));
+        $this->assertEquals(["\\", ".", "|"], $app->get("ignore_url_separator"));
+        $this->assertEquals(["json", "html", "php"], $app->get("ignore_url_suffixes"));
+        $this->assertEquals(300, $app->get("log_level"));
+        $this->assertEquals($rootPath, $app->get("root_path"));
+        $this->assertEquals($wwwPath, $app->get("www_path"));
     }
 }

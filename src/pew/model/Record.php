@@ -9,7 +9,7 @@ use pew\model\relation\HasMany;
 use pew\model\relation\HasOne;
 use pew\model\relation\HasAndBelongsToMany;
 
-use Stringy\Stringy as Str;
+use Stringy\Stringy as S;
 
 /**
  * Active Record-like class.
@@ -367,7 +367,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function __set($key, $value)
     {
         if (!array_key_exists($key, static::$setterMethods)) {
-            $methodName = "set" . Str::create($key)->upperCamelize();
+            $methodName = "set" . S::create($key)->upperCamelize();
             static::$setterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
@@ -452,7 +452,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public static function __callStatic($method, $arguments)
     {
-        $methodStr = Str::create($method);
+        $methodStr = S::create($method);
 
         if ($methodStr->startsWith("findAllBy")) {
             $field = $methodStr->removeLeft("findAllBy")->underscored()->__toString();
@@ -518,7 +518,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if (!$localKeyName) {
             $reflectionClass = new ReflectionClass($className);
             $otherClass = $reflectionClass->getShortName();
-            $localKeyName = Str::create($otherClass)->underscored() . "_id";
+            $localKeyName = S::create($otherClass)->underscored() . "_id";
         }
 
         if (!$foreignKeyName) {
@@ -557,7 +557,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if (!$foreignKeyName) {
             $reflectionClass = new ReflectionClass($this);
             $thisClass = $reflectionClass->getShortName();
-            $foreignKeyName = Str::create($thisClass)->underscored() . "_id";
+            $foreignKeyName = S::create($thisClass)->underscored() . "_id";
         }
 
         if (!$localKeyName) {
@@ -596,7 +596,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if (!$foreignKeyName) {
             $reflectionClass = new ReflectionClass($this);
             $thisClass = $reflectionClass->getShortName();
-            $foreignKeyName = Str::create($thisClass)->underscored() . "_id";
+            $foreignKeyName = S::create($thisClass)->underscored() . "_id";
         }
 
         if (!$localKeyName) {
@@ -665,13 +665,13 @@ class Record implements \JsonSerializable, \IteratorAggregate
         if (!$nearForeignKeyName) {
             $reflectionClass = new ReflectionClass($this);
             $thisClass = $reflectionClass->getShortName();
-            $nearForeignKeyName = Str::create($thisClass)->underscored() . "_id";
+            $nearForeignKeyName = S::create($thisClass)->underscored() . "_id";
         }
 
         if (!$farForeignKeyName) {
             $reflectionClass = new ReflectionClass($className);
             $farClass = $reflectionClass->getShortName();
-            $farForeignKeyName = Str::create($farClass)->underscored() . "_id";
+            $farForeignKeyName = S::create($farClass)->underscored() . "_id";
         }
 
         if (!$farKeyName) {
@@ -694,7 +694,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
     {
         # generate a getter method name if it does not yet exist
         if (!array_key_exists($key, static::$getterMethods)) {
-            $methodName = "get" . Str::create($key)->upperCamelize();
+            $methodName = "get" . S::create($key)->upperCamelize();
             static::$getterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
@@ -709,7 +709,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     protected function hasGetterResults($key)
     {
-        $methodName = "get" . Str::create($key)->upperCamelize();
+        $methodName = "get" . S::create($key)->upperCamelize();
 
         return array_key_exists($methodName, $this->getterResults);
     }

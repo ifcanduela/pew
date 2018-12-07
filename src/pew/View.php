@@ -106,8 +106,15 @@ class View implements \ArrayAccess
      * @throws \Exception
      * @throws \RuntimeException
      */
-    public function render(string $template = "", array $data = [])
+    public function render($template = null, array $data = [])
     {
+        if (count(func_get_args()) === 1) {
+            if (is_array($template)) {
+                $data = $template;
+                $template = null;
+            }
+        }
+
         if (!$template) {
             if (!$this->template) {
                 throw new \RuntimeException("No template specified");
@@ -216,9 +223,9 @@ class View implements \ArrayAccess
      * @param string|null $template Name of the template
      * @return self|string Name of the template
      */
-    public function template(string $template = "")
+    public function template($template = null)
     {
-        if ($template) {
+        if ($template !== null) {
             $this->template = $template;
 
             return $this;
@@ -230,12 +237,12 @@ class View implements \ArrayAccess
     /**
      * Set or get the view file extension.
      *
-     * @param string $extension View file extension
+     * @param string|null $extension View file extension
      * @return self|string View file extension
      */
-    public function extension(string $extension = "")
+    public function extension($extension = null)
     {
-        if ($extension) {
+        if ($extension !== null) {
             $this->extension = S::create($extension)->ensureLeft(".");
 
             return $this;
@@ -250,9 +257,9 @@ class View implements \ArrayAccess
      * @param string|null $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
      */
-    public function layout(string $layout = "")
+    public function layout($layout = null)
     {
-        if ($layout) {
+        if ($layout !== null) {
             $this->layout = $layout;
 
             return $this;
@@ -264,10 +271,10 @@ class View implements \ArrayAccess
     /**
      * Set and get the view title.
      *
-     * @param string $title The title of the view
+     * @param string|null $title The title of the view
      * @return self|string The title of the view
      */
-    public function title(string $title = "")
+    public function title($title = null)
     {
         if ($title) {
             $this->title = $title;

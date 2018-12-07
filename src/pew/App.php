@@ -9,7 +9,7 @@ use pew\request\Request;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
-use Stringy\Stringy as Str;
+use Stringy\Stringy as S;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -293,7 +293,7 @@ class App
         $controllerClass = $handler;
         $controllerPath = $this->get("controller_path");
         $actionName = $this->get("action");
-        $templateName = Str::create($actionName)->underscored();
+        $templateName = S::create($actionName)->underscored();
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
 
@@ -382,7 +382,7 @@ class App
 
         # use the action result to render the view
         $view = $this->get("view");
-        $output = $view->render(null, $actionResult);
+        $output = $view->render($actionResult);
         $response->setContent($output);
 
         return $response;

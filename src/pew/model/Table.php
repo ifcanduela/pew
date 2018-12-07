@@ -9,7 +9,7 @@ use pew\model\relation\Relationship;
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
 use ReflectionClass;
-use Stringy\Stringy as Str;
+use Stringy\Stringy as S;
 
 /**
  * Table gateway class.
@@ -587,7 +587,7 @@ class Table
             $ref = new $className;
 
             foreach ($this->relationships as $relationshipFieldName) {
-                $getterMethodName = "get" . Str::create($relationshipFieldName)->uppercamelize();
+                $getterMethodName = "get" . S::create($relationshipFieldName)->uppercamelize();
 
                 /** @var Relationship $relationship */
                 $relationship = $ref->$getterMethodName();
