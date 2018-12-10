@@ -36,4 +36,19 @@ class UrlTest extends PHPUnit\Framework\TestCase
         $url = new Url(Request::create('/path/to/route'));
         $this->assertEquals("http://localhost/other/route", $url->to('/other/route'));
     }
+
+    public function testQueryParameters()
+    {
+        $url = new Url(Request::create('/path/to/route?one=1'));
+
+        $this->assertEquals(['one' => '1'], $url->getQuery());
+        $this->assertEquals('1', $url->getQueryParam('one'));
+
+        $url2 = $url->setQueryParam('two', 2);
+        $this->assertEquals(['one' => '1', 'two' => '2'], $url2->getQuery());
+        $this->assertEquals('2', $url2->getQueryParam('two'));
+
+        $url3 = $url->mergeQueryParams(['two' => 'dos', 'three' => 'tres']);
+        $this->assertEquals(['one' => '1', 'two' => 'dos', 'three' => 'tres'], $url3->getQuery());
+    }
 }

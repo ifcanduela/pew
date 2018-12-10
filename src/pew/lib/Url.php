@@ -7,6 +7,9 @@ use Stringy\Stringy as S;
 
 /**
  * Class to manipulate URLs.
+ *
+ * Objects of this class are immutable, and `set` operations will always return
+ * a new instance.
  */
 class Url
 {
@@ -422,6 +425,20 @@ class Url
     public function getQueryParam(string $param, $default = null)
     {
         return $this->query[$param] ?? $default;
+    }
+
+    /**
+     * Merge multiple query params with the current params.
+     *
+     * @param array $query
+     * @return Url
+     */
+    public function mergeQueryParams(array $query)
+    {
+        $url = clone $this;
+        $url->query = array_merge($url->query, $query);
+
+        return $url;
     }
 
     /**
