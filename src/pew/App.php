@@ -90,9 +90,7 @@ class App
      */
     protected function loadAppConfig(string $configFileName)
     {
-        /** @var string */
         $appPath = $this->get("app_path");
-        /** @var string */
         $configFolder = $this->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
 
@@ -176,15 +174,14 @@ class App
      */
     protected function handle()
     {
-        /** @var Injector */
         $injector = $this->get("injector");
-        /** @var Request */
         $request = $this->get("request");
-        /** @var Route */
-        $route = $this->get("route");
-
+        # Add get and post parameters to the injection container
         $injector->appendContainer($request->request->all());
         $injector->appendContainer($request->query->all());
+
+        $route = $this->get("route");
+        # Add route parameters to the injection container
         $injector->appendContainer($route);
 
         App::log("Matched route " . $route->getPath());
