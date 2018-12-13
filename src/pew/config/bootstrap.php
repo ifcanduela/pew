@@ -180,12 +180,7 @@ $container["file_cache"] = function (Container $c) {
 };
 
 $container["injector"] = function (Container $c) {
-    return new Injector(
-        $c["request"]->request->all(),
-        $c["request"]->query->all(),
-        $c["route"],
-        $c
-    );
+    return new Injector($c);
 };
 
 $container["path"] = function (Container $c) {

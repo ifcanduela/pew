@@ -183,6 +183,10 @@ class App
         /** @var Route */
         $route = $this->get("route");
 
+        $injector->appendContainer($request->request->all());
+        $injector->appendContainer($request->query->all());
+        $injector->appendContainer($route);
+
         App::log("Matched route " . $route->getPath());
 
         $result = $this->runBeforeMiddleware($route, $injector);
