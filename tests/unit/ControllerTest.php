@@ -2,6 +2,8 @@
 
 require_once dirname(__DIR__) . '/fixtures/controllers/TestController.php';
 
+use tests\fixtures\controllers\TestController;
+
 class ControllerTest extends PHPUnit\Framework\TestCase
 {
     public function getRequestMock($action, $args)
@@ -29,7 +31,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $view = new \pew\View();
 
-        $controller = new \tests\fixtures\controllers\TestController($request, $view);
+        $controller = new TestController($request, $view);
 
         $response = $controller->myAction();
 

@@ -97,9 +97,12 @@ if (!function_exists("root")) {
      * A quick way to get the filesystem root directory or any file below it.
      *
      * If the framework files reside in C:\htdocs\pewexample, this call
-     *     echo root('app\libs\my_lib.php');
+     *     `echo root('app\libs\my_lib.php');`
      * will print
-     *     C:\htdocs\pewexample\app\libs\my_lib.php
+     *     `C:\htdocs\pewexample\app\libs\my_lib.php`
+     *
+     * This function does not handle `.` and `..` in any special way and is not
+     * concerned with whether the path exists or not.
      *
      * @param string ...$path A path to include in the output
      * @return string The resulting path

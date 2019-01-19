@@ -8,6 +8,7 @@ abstract class Rule
 {
     public $value;
     public $result;
+    public $ruleName;
 
     /**
      * Validate a value.

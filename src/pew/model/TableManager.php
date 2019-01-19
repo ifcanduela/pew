@@ -98,7 +98,7 @@ class TableManager
     public function create(string $recordClass, $connectionName = null)
     {
         # Check if the information is cached
-        if (!isset($this->tableNames[$recordClass])) {
+        if (!isset($this->cachedRecordClasses[$recordClass])) {
             # Fetch default properties (tableName and connectionName)
             $reflectionClass = new ReflectionClass($recordClass);
             $defaultProperties = $reflectionClass->getDefaultProperties();

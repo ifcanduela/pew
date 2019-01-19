@@ -99,7 +99,7 @@ abstract class Base
      */
     public function isUnique(string $modelClass)
     {
-        $this->addRule(new IsUnique($modelClass));
+        $this->addRule(new IsUnique($modelClass, "id"));
 
         return $this;
     }

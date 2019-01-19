@@ -13,6 +13,13 @@ class ViewTest extends PHPUnit\Framework\TestCase
 
     }
 
+    public function testVoidConstructor()
+    {
+        $v = new View();
+
+        $this->assertEquals(getcwd(), $v->folder());
+    }
+
     public function testBasics()
     {
         $v = new View(__DIR__ . '/../fixtures/views');

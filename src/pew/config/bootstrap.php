@@ -16,6 +16,7 @@ use pew\router\Router;
 use pew\View;
 use Pimple\Container;
 use Stringy\Stringy as S;
+use Symfony\Component\Cache\Simple\FilesystemCache;
 use Symfony\Component\HttpFoundation\Response;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -70,6 +71,16 @@ $container["app_log"] = function (Container $c) {
     $logger->pushHandler(new StreamHandler($logfile, $c["log_level"]));
 
     return $logger;
+};
+
+$container["cache"] = function (Container $c) {
+    $cache = new FilesystemCache(
+        "pew",
+        $c["cache_duration"],
+        $c["cache_path"]
+    );
+
+    return $cache;
 };
 
 $container["cache_path"] = function (Container $c) {
@@ -228,9 +239,21 @@ $container["route_namespace"] = function (Container $c) {
 };
 
 $container["router"] = function (Container $c) {
-    $routes = $c["routes"];
+    $debug = $c["debug"];
+    $cache = $c["cache"];
 
-    return new Router($routes);
+    if (!$debug && $cache->has("pew.router")) {
+        $router = $cache->get("pew.router");
+    } else {
+        $routes = $c["routes"];
+        $router = new Router($routes);
+
+        if (!$debug) {
+            $cache->set("pew.router", $router);
+        }
+    }
+
+    return $router;
 };
 
 $container["routes"] = function (Container $c) {

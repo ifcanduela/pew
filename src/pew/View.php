@@ -55,7 +55,7 @@ class View implements \ArrayAccess
         $this->folderStack = new SplStack();
         $this->fileCache = $fileCache;
 
-        $this->addFolder($templatesFolder ?? getcwd());
+        $this->addFolder($templatesFolder ?: getcwd());
     }
 
     /**
@@ -106,7 +106,7 @@ class View implements \ArrayAccess
      * @throws \Exception
      * @throws \RuntimeException
      */
-    public function render($template = null, array $data = [])
+    public function render(string $template = "", array $data = [])
     {
         if (count(func_get_args()) === 1) {
             if (is_array($template)) {
@@ -223,9 +223,9 @@ class View implements \ArrayAccess
      * @param string|null $template Name of the template
      * @return self|string Name of the template
      */
-    public function template($template = null)
+    public function template(string $template = "")
     {
-        if ($template !== null) {
+        if ($template) {
             $this->template = $template;
 
             return $this;
@@ -240,9 +240,9 @@ class View implements \ArrayAccess
      * @param string|null $extension View file extension
      * @return self|string View file extension
      */
-    public function extension($extension = null)
+    public function extension(string $extension = "")
     {
-        if ($extension !== null) {
+        if ($extension) {
             $this->extension = S::create($extension)->ensureLeft(".");
 
             return $this;
@@ -254,7 +254,7 @@ class View implements \ArrayAccess
     /**
      * Set or get the layout to use.
      *
-     * @param string|null $layout Name of the layout, or `false` to disable.
+     * @param string|bool|null $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
      */
     public function layout($layout = null)
@@ -276,7 +276,7 @@ class View implements \ArrayAccess
      */
     public function title($title = null)
     {
-        if ($title) {
+        if ($title !== null) {
             $this->title = $title;
 
             return $this;

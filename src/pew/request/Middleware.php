@@ -6,10 +6,12 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 abstract class Middleware
 {
     /**
-     * @param $uri
+     * Redirect to a URL.
+     *
+     * @param string $uri
      * @return RedirectResponse
      */
-    public function redirect($uri)
+    public function redirect(string $uri)
     {
         return new RedirectResponse($uri);
     }

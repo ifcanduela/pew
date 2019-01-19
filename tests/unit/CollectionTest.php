@@ -286,52 +286,88 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
     public function testLast()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $this->assertEquals(3, $c->last());
+        $this->assertEquals([2, 3], $c->last(2)->toArray());
     }
 
     public function testMap()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $this->assertEquals([0, 2, 4, 6], $c->map(function ($n) {
+            return $n * 2;
+        })->toArray());
     }
 
     public function testOnly()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([10, 11, 12, 13]);
+
+        $this->assertEquals([0 => 10, 2 => 12], $c->only(0, 2)->toArray());
     }
 
     public function testPop()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $pop = $c->pop();
+        $this->assertEquals(3, $pop);
+        $this->assertEquals([0, 1, 2], $c->toArray());
     }
 
     public function testPrepend()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $c2 = $c->prepend([-1]);
+        $this->assertEquals([-1, 0, 1, 2, 3], $c2->toArray());
     }
 
     public function testPush()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $c2 = $c->push(4);
+        $this->assertEquals([0, 1, 2, 3, 4], $c2->toArray());
     }
 
     public function testRandom()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $r1= $c->random();
+        $this->assertEquals("integer", gettype($r1));
+        $r2= $c->random();
+        $this->assertEquals("integer", gettype($r2));
+        $r3= $c->random();
+        $this->assertEquals("integer", gettype($r3));
     }
 
     public function testReduce()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $this->assertEquals(6, $c->reduce(function ($acc, $curr) {
+            $acc += $curr;
+            return $acc;
+        }));
     }
 
     public function testReverse()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $this->assertEquals([3, 2, 1, 0], $c->reverse()->toArray());
     }
 
     public function testShift()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+        $s = $c->shift();
+        $this->assertEquals(0, $s);
+        $this->assertEquals([1, 2, 3], $c->toArray());
     }
 
     public function testShuffle()
@@ -400,7 +436,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $this->assertEquals([[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]], $c->toArray());
     }
 
-    public function testTestClone()
+    public function testClone()
     {
         $this->markTestIncomplete("Not yet implemented");
     }

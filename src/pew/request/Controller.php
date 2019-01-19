@@ -29,7 +29,7 @@ class Controller
     }
 
     /**
-     * Redirect to another app path.
+     * Redirect to a URL.
      *
      * @param string $uri
      * @return RedirectResponse

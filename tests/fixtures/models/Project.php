@@ -4,8 +4,8 @@ namespace tests\fixtures\models;
 
 class Project extends \pew\Model
 {
+    public $connectionName = 'test';
     public $tableName = 'projects';
-
     public $extraField = 'extraValue';
 
     public function getUsers()

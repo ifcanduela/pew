@@ -40,7 +40,7 @@ class RecordTest extends PHPUnit\Framework\TestCase
 
         $this->db = $db;
 
-        TableManager::instance()->setConnection("default", $db);
+        TableManager::instance()->setConnection("test", $db);
     }
 
     public function testNewRecord()
