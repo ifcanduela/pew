@@ -297,7 +297,7 @@ class Table
 
         if (isset($records[0])) {
             $record = array_shift($records);
-            $model = $className ? $className::fromArray($record) : $record;
+            $model = $className ? $className::fromArray($record, false) : $record;
         }
 
         if ($this->relationships) {
@@ -319,7 +319,7 @@ class Table
         $records = $this->db->run($this->query);
 
         foreach ($records as $record) {
-            $models[] = $className ? $className::fromArray($record) : $record;
+            $models[] = $className ? $className::fromArray($record, false) : $record;
         }
 
         if ($this->relationships) {
@@ -373,7 +373,7 @@ class Table
 
         $primaryKeyName = $this->primaryKey();
 
-        if (empty($record[$primaryKeyName])) {
+        if ($model->isNew/*empty($record[$primaryKeyName])*/) {
             $id = $this->insertRecord($record, $model::$createdFieldName);
         } else {
             $id = $this->updateRecord($record, $model::$updatedFieldName);
@@ -384,7 +384,6 @@ class Table
         }
 
         $model = $this->createSelect()->from($this->tableName)->where([$primaryKeyName => $id])->one();
-
 
         return $model->attributes();
     }

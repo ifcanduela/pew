@@ -55,6 +55,9 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /** @var string Name of the column holding the record update  timestamp. */
     public static $updatedFieldName = "updated";
 
+    /** @var bool Flag to signify a record not retrieved from or yet stored into the database  */
+    public $isNew = true;
+
     /**
      * Create an empty, new record.
      */
@@ -112,11 +115,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param array $data
      * @return static
      */
-    public static function fromArray(array $data)
+    public static function fromArray(array $data, bool $isNew = true)
     {
         $record = new static;
-
         $record->attributes($data);
+        $record->isNew = $isNew;
 
         return $record;
     }
@@ -179,6 +182,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             "errors" => true,
             "getterMethods" => true,
             "getterResults" => true,
+            "isNew" => true,
             "primaryKey" => true,
             "record" => true,
             "serialize" => true,
@@ -216,6 +220,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         if ($result) {
             $this->attributes($result);
+            $this->isNew = false;
 
             return true;
         }

@@ -127,6 +127,18 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(3, Project::find()->count());
     }
 
+    public function testRecordIsNew()
+    {
+        $new = new Project();
+        $this->assertTrue($new->isNew);
+
+        $old = Project::find()->one();
+        $this->assertFalse($old->isNew);
+
+        $new->save();
+        $this->assertFalse($new->isNew);
+    }
+
     public function testDeleteAll()
     {
         # delete one record in the table
