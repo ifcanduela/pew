@@ -231,12 +231,9 @@ $container["route_namespace"] = function (Container $c) {
 
 $container["router"] = function (Container $c) {
     $debug = $c["debug"];
-
     $routes = $c["routes"];
-    $cacheFile = $debug
-               ? null
-               : ($c["cache_path"] . DIRECTORY_SEPARATOR . "routes.cache");
-    $router = new Router($routes, $cacheFile);
+
+    $router = new Router($routes);
 
     return $router;
 };
