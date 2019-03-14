@@ -29,16 +29,14 @@ class TableManagerTest extends PHPUnit\Framework\TestCase
         $db->run('INSERT INTO users (username, project_id) VALUES ("User 5", 3)');
 
         $this->db = $db;
-
-        TableManager::instance()->setConnection("default", $db);
     }
 
     public function testSetAndGetConnections()
     {
         $tm = new TableManager();
+        $tm->setConnection("default", $this->db);
 
         $this->assertInstanceOf(TableManager::class, $tm);
-
         $conn = null;
 
         try {
@@ -47,6 +45,23 @@ class TableManagerTest extends PHPUnit\Framework\TestCase
             $this->assertEquals("Connection `nothing here` not found", $e->getMessage());
             $this->assertNull($conn);
         }
+
+        $tm->setConnection("lazy", function () {
+            return Database::sqlite(":memory:");
+        });
+
+        $conn = $tm->getConnection("lazy");
+        $this->assertTrue($conn instanceof Database);
+    }
+
+    public function testDefaultConnection()
+    {
+        $tm = new TableManager();
+
+        $this->assertEquals("default", $tm->getDefaultConnection());
+
+        $tm->setDefaultConnection("dev");
+        $this->assertEquals("dev", $tm->getDefaultConnection());
     }
 
     public function testInstance()
@@ -79,6 +94,15 @@ class TableManagerTest extends PHPUnit\Framework\TestCase
         } catch (\InvalidArgumentException $e) {
             $this->assertEquals("Connection `one` not found", $e->getMessage());
         }
+    }
+
+    public function testGuessTablename()
+    {
+        $tm = new TableManager();
+
+        $this->assertEquals("users", $tm->guessTableName(\models\User::class));
+        $this->assertEquals("photo_tags", $tm->guessTableName(\models\PhotoTag::class));
+        $this->assertEquals("plant_layouts", $tm->guessTableName(\models\Plant_Layout::class));
     }
 
     // __construct

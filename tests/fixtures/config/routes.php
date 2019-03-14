@@ -7,6 +7,8 @@ return [
         return 'callback response';
     },
 
+    Route::from("/admin/index")->to("admin@index")->namespace("admin"),
+
     Route::from('/middleware')
         ->to('TestController@useMiddleware')
         ->before([\fixtures\services\MiddlewareTest::class])

@@ -47,6 +47,69 @@ class ViewTest extends PHPUnit\Framework\TestCase
 '), rn($result));
     }
 
+    public function testRenderExceptions()
+    {
+        $v = new View(__DIR__ . "/../fixtures/views");
+
+        try {
+            $v->render(null, []);
+        } catch (\RuntimeException $e) {
+            $this->assertEquals($e->getMessage(), "No template specified");
+        }
+
+        $v->layout("missing");
+
+        try {
+            $v->render("missing", ["parameter" => 1, "property" => 2]);
+        } catch (\RuntimeException $e) {
+            $this->assertEquals($e->getMessage(), "Template missing not found");
+        }
+
+        $v->template("view1");
+
+        try {
+            $v->render(null, ["parameter" => 1, "property" => 2]);
+        } catch (\RuntimeException $e) {
+            $this->assertEquals($e->getMessage(), "Layout missing not found");
+        }
+
+        try {
+            $v->render("throws");
+        } catch (\Exception $e) {
+            $this->assertEquals("thrown", $e->getMessage());
+            $this->assertEquals("", ob_get_contents());
+        }
+    }
+
+    public function testRenderPartial()
+    {
+        $v = new View(__DIR__ . "/../fixtures/views");
+
+        try {
+            $v->insert("missing");
+        } catch (\RuntimeException $e) {
+            $this->assertEquals($e->getMessage(), "Partial template `missing` not found");
+        }
+
+        $html = $v->insert("partial", ["value" => 1]);
+        $this->assertEquals("1", $html);
+    }
+
+    public function testEscape()
+    {
+        $v = new View();
+
+        $this->assertNotEquals(
+            "Hello, my name is <script>Pew</script>",
+            $v->escape("Hello, my name is <script>Pew</script>")
+        );
+
+        $this->assertEquals(
+            "Hello, my name is &lt;script&gt;Pew&lt;/script&gt;",
+            $v->escape("Hello, my name is <script>Pew</script>")
+        );
+    }
+
     public function testFluentInterface()
     {
         $v = new View(__DIR__ . "/../fixtures/views");
@@ -64,5 +127,97 @@ class ViewTest extends PHPUnit\Framework\TestCase
 <div>PROPERTY</div>
 <div>PROPERTY</div>
 '), rn($result));
+    }
+
+    public function testDataPropertyHandling()
+    {
+        $v = new View();
+        $v["alpha"] = "ALPHA";
+        $v->set("beta", "BETA");
+
+        $this->assertTrue($v->has("alpha"));
+        $this->assertEquals($v->get("alpha"), "ALPHA");
+
+        $this->assertTrue(isset($v["beta"]));
+        $this->assertEquals($v["beta"], "BETA");
+
+        unset($v["beta"]);
+        $this->assertFalse($v->has("beta"));
+        $this->assertFalse(isset($v["beta"]));
+    }
+
+    public function testTemplateExists()
+    {
+        $v = new View(__DIR__ . "/../fixtures/views");
+
+        $this->assertTrue($v->exists("view1"));
+        $this->assertTrue($v->exists("view1"));
+
+        $v = new View(__DIR__ . "/../fixtures/views");
+
+        try {
+            $v->exists();
+        } catch (\Exception $e) {
+            $this->assertEquals($e->getMessage(), "No template specified");
+        }
+
+        $v->template("not");
+        $this->assertFalse($v->exists());
+    }
+
+    public function testBlocks()
+    {
+        $v = new View();
+
+        // test a non-existing block
+        $this->assertFalse($v->hasBlock("alpha"));
+        $this->assertEquals($v->block("alpha"), "");
+
+        // test a basic block
+        $v->beginBlock("alpha");
+        echo "ALPHA";
+        $v->endBlock();
+
+        $this->assertTrue($v->hasBlock("alpha"));
+        $this->assertFalse($v->hasBlock("beta"));
+        $this->assertEquals($v->block("alpha"), "ALPHA");
+        $this->assertEquals($v->block("alpha"), "ALPHA");
+
+        // test appending content to a block
+        $v->beginBlock("alpha");
+        echo "BETA";
+        $v->endBlock();
+
+        $this->assertEquals($v->block("alpha"), "ALPHABETA");
+
+        // test replacing the content of a block
+        $v->beginBlock("alpha", true);
+        echo "GAMMA";
+        $v->endBlock();
+
+        $this->assertEquals($v->block("alpha"), "GAMMA");
+    }
+
+    public function testFilenameGettersAndSetters()
+    {
+        $v = new View(__DIR__ . "/../fixtures/views");
+
+        $v->template("view1");
+        $this->assertTrue($v->exists());
+        $this->assertEquals($v->extension(), ".php");
+
+        $v->extension("tpl");
+        $this->assertFalse($v->exists());
+        $this->assertEquals($v->template(), "view1");
+        $this->assertEquals($v->extension(), ".tpl");
+
+        $v->template("view2");
+        $this->assertTrue($v->exists());
+        $this->assertEquals($v->template(), "view2");
+        $this->assertEquals($v->extension(), ".tpl");
+
+        $this->assertEquals($v->layout(), "");
+        $v->layout("layout");
+        $this->assertEquals($v->layout(), "layout");
     }
 }

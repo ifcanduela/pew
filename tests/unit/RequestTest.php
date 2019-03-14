@@ -4,10 +4,45 @@ use pew\request\Request;
 
 class RequestTest extends PHPUnit\Framework\TestCase
 {
+    public function makeRequest($path = "/", $get = [], $post = [])
+    {
+        $server = [
+                "REQUEST_TIME_FLOAT" => microtime(true),
+                "REQUEST_TIME" => time(),
+                "SERVER_NAME" => "localhost",
+                "SERVER_ADDR" => "::1",
+                "SERVER_PORT" => "80",
+                "REMOTE_ADDR" => "::1",
+                "DOCUMENT_ROOT" => "  /var/www",
+                "REQUEST_SCHEME" => " http",
+                "SERVER_ADMIN" => "webmaster@localhost",
+                "SCRIPT_FILENAME" => "/var/www/www/index.php",
+                "REMOTE_PORT" => "60034",
+                "SERVER_PROTOCOL" => "HTTP/1.1",
+                "REQUEST_METHOD" => " GET",
+                "REQUEST_URI" => "/index.php",
+                "SCRIPT_NAME" => "/index.php",
+            ];
+
+        if ($path !== "/") {
+            $server["PATH_INFO"] = $path;
+        }
+
+        return new Request(
+            $get,
+            $post,
+            [],
+            [],
+            [],
+            $server,
+            ""
+        );
+    }
     public function testAppUrl()
     {
-        $request = Request::createFromGlobals();
-        $this->assertEquals($request->getSchemeAndHttpHost() . $request->getBaseUrl(), $request->appUrl());
+        $request = $this->makeRequest();
+
+        $this->assertEquals("http://localhost/", $request->appUrl());
     }
 
     public function testIsGet()

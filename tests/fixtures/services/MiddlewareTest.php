@@ -1,14 +1,14 @@
 <?php
 
-namespace tests\fixtures\services;
+namespace app\services;
 
 class MiddlewareTest
 {
-    public $property;
+    public $property = "none";
 
     public function before()
     {
-        $this->property = 'before';
+        $this->property = "before";
     }
 
     public function after()

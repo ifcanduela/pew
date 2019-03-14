@@ -1,12 +1,9 @@
 <?php
 
-require_once dirname(__DIR__) . '/fixtures/models/Project.php';
-require_once dirname(__DIR__) . '/fixtures/models/User.php';
-
 use pew\model\TableManager;
 use ifcanduela\db\Database;
-use tests\fixtures\models\Project;
-use tests\fixtures\models\User;
+use app\models\Project;
+use app\models\User;
 
 class RecordTest extends PHPUnit\Framework\TestCase
 {

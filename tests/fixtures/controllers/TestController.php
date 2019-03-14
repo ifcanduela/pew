@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\fixtures\controllers;
+namespace app\controllers;
 
 class TestController extends \pew\Controller
 {

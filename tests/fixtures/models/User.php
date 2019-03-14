@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\fixtures\models;
+namespace app\models;
 
 class User extends \pew\Model
 {

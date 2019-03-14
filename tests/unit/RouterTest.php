@@ -114,4 +114,21 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Route::class, $destination);
         $this->assertEquals('AdminController', $destination->getHandler());
     }
+
+    public function testControllerAndActionPlaceholders()
+    {
+
+        $routes = [
+            Route::from("/{first}/{second}/{id}")
+                ->to("{first}@{second}"),
+        ];
+
+        $router = new Router($routes);
+
+        $destination = $router->route('/users/profile/1', 'GET');
+
+        $this->assertInstanceOf(Route::class, $destination);
+        $this->assertEquals('users@profile', $destination->getHandler());
+        $this->assertEquals(1, $destination->getParam("id"));
+    }
 }

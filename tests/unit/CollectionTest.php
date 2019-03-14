@@ -123,7 +123,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $chunks = $c->chunk(3);
 
         $this->assertEquals(2, count($chunks));
-        $this->assertEquals([[0, 1, 2], [3]], $chunks->toArray());
+        $this->assertEquals([[0, 1, 2], [3]], $chunks->toArray(true));
     }
 
     public function testField()
@@ -189,7 +189,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
                 ["letter" => "β", "type"=> "lowercase"],
                 ["letter" => "γ", "type"=> "lowercase"],
             ],
-        ], $c->group("type")->toArray());
+        ], $c->group("type")->toArray(true));
 
 
         $this->assertEquals([
@@ -205,7 +205,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
             ],
         ], $c->group(function ($item) {
             return $item["type"][0];
-        })->toArray());
+        })->toArray(true));
     }
 
     public function testHasKey()
@@ -424,7 +424,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
     {
         $c = new Collection([1, 2, 3, 4]);
 
-        $this->assertEquals([0 => 1, 1 => 2, 3 => 4], $c->without(2)->toArray());
+        $this->assertEquals([0 => 1, 1 => 2, 3 => 4], $c->without(2)->toArray(true));
     }
 
     public function testZip()
@@ -433,7 +433,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
         $c = $c->zip([5, 6, 7, 8], [9, 10, 11, 12]);
 
-        $this->assertEquals([[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]], $c->toArray());
+        $this->assertEquals([[1, 5, 9], [2, 6, 10], [3, 7, 11], [4, 8, 12]], $c->toArray(true));
     }
 
     public function testClone()

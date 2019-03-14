@@ -2,7 +2,7 @@
 
 require_once dirname(__DIR__) . '/fixtures/controllers/TestController.php';
 
-use tests\fixtures\controllers\TestController;
+use app\controllers\TestController;
 
 class ControllerTest extends PHPUnit\Framework\TestCase
 {
