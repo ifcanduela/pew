@@ -81,6 +81,7 @@ class Router
      */
     public function route(string $pathInfo, string $httpMethod)
     {
+        # Find the matched route
         $matchedRoute = $this->dispatcher->dispatch($httpMethod, $pathInfo);
 
         if ($matchedRoute[0] === Dispatcher::NOT_FOUND) {
@@ -94,6 +95,18 @@ class Router
         /** @var Route $route */
         $route = $matchedRoute[1];
         $route->setParams($matchedRoute[2]);
+
+        # If the handler is a string, replace placeholders with path params
+        if (is_string($route->getHandler())) {
+            $replacements = [];
+
+            foreach ($route->getParams() as $key => $value) {
+                $replacements["{{$key}}"] = $value;
+            }
+
+            $handler = strtr($route->getHandler(), $replacements);
+            $route->setHandler($handler);
+        }
 
         return $route;
     }
