@@ -90,7 +90,7 @@ $container["cache"] = function (Container $c) {
 };
 
 $container["cache_path"] = function (Container $c) {
-    return $c["root_path"] . "/cache";
+    return $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
 };
 
 $container["controller"] = function (Container $c) {
@@ -231,18 +231,12 @@ $container["route_namespace"] = function (Container $c) {
 
 $container["router"] = function (Container $c) {
     $debug = $c["debug"];
-    $cache = $c["cache"];
 
-    if (!$debug && $cache->has("pew.router")) {
-        $router = $cache->get("pew.router");
-    } else {
-        $routes = $c["routes"];
-        $router = new Router($routes);
-
-        if (!$debug) {
-            $cache->set("pew.router", $router);
-        }
-    }
+    $routes = $c["routes"];
+    $cacheFile = $debug
+               ? null
+               : ($c["cache_path"] . DIRECTORY_SEPARATOR . "routes.cache");
+    $router = new Router($routes, $cacheFile);
 
     return $router;
 };
@@ -317,10 +311,9 @@ $container["use_db"] = function (Container $c) {
 
 $container["view"] = function (Container $c) {
     $app_path = $c["app_path"];
-    $fileCache = $c["file_cache"];
     $viewsFolder = $app_path . "/views/";
 
-    return new View($viewsFolder, $fileCache);
+    return new View($viewsFolder);
 };
 
 return $container;

@@ -2,7 +2,7 @@
 
 namespace pew\router;
 
-use function FastRoute\simpleDispatcher;
+use function FastRoute\cachedDispatcher;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -32,17 +32,21 @@ class Router
      * Routes require a 'path' key and may have optional 'methods' and 'defaults' keys.
      *
      * @param array $routeData Array of routes
+     * @param string|null $cacheFile
      */
-    public function __construct(array $routeData)
+    public function __construct(array $routeData, string $cacheFile = null)
     {
         $routes = $this->processRouteData($routeData);
 
-        $this->dispatcher = simpleDispatcher(
+        $this->dispatcher = cachedDispatcher(
             function (RouteCollector $r) use ($routes) {
                 foreach ($routes as $data) {
                     $r->addRoute($data->getMethods(), $data->getPath(), $data);
                 }
-            }
+            }, [
+                "cacheFile" => $cacheFile ?: __DIR__ . "/routes.cache",
+                "cacheDisabled" => !boolval($cacheFile),
+            ]
         );
     }
 
