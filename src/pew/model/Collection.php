@@ -590,17 +590,19 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * Return the items of the collection.
+     * Convert the collection into a plain array.
      *
-     * If any item has a `toArray` method, it will be called.
+     * If the $callToArrayOnItems parameter is `true` and any item has a
+     * `toArray` method, it will be called.
      *
+     * @param bool $callToArrayOnItems
      * @return array
      */
-    public function toArray()
+    public function toArray(bool $callToArrayOnItems = false)
     {
         $keys = array_keys($this->items);
 
-        $values = array_map(
+        $values = $callToArrayOnItems ? array_map(
             function ($item) {
                 if (method_exists($item, "toArray")) {
                     return $item->toArray();
@@ -609,7 +611,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
                 return $item;
             },
             $this->items
-        );
+        ) : $this->items;
 
         return array_combine($keys, $values);
     }
@@ -672,7 +674,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     }
 
     /**
-     * Get the value of the items in the collection.
+     * Get a new Collection with the values of the current one, discarding keys.
      *
      * @return static
      */
