@@ -177,10 +177,23 @@ class Injector
 
         if (is_object($boundObject)) {
             $callable = \Closure::bind($callable, $boundObject, $boundObject);
-
-            return call_user_func_array($callable, $injections);
         }
 
-        return $function->invokeArgs($injections);
+        return $callable(...$injections);
+    }
+
+    /**
+     * Invoke any type of callable.
+     *
+     * @param callable $callable
+     * @return mixed
+     */
+    public function call(callable $callable)
+    {
+        if (is_string($callable) || $callable instanceof \Closure) {
+            return $this->callFunction($callable);
+        }
+
+        return $this->callMethod(...$callable);
     }
 }
