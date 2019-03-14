@@ -234,7 +234,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $table = $this->tableManager->createDelete();
 
         $table->where([
-            $table->primaryKey() => $this->record[$table->primaryKey()]
+            $table->primaryKey() => $this->primaryKeyValue(),
         ]);
 
         return $table->run();
