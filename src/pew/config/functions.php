@@ -7,15 +7,19 @@ if (!function_exists("array_path")) {
     /**
      * Get an element from an array using a character-delimited list of indexes.
      *
-     * @param array $array
+     * @param array|object $array
      * @param string $path
      * @param string $separator
      * @return mixed
      */
-    function array_path(array $array, string $path, string $separator = ".")
+    function array_path($array, string $path, string $separator = ".")
     {
         $steps = explode($separator, $path);
         $step = array_shift($steps);
+
+        if (is_object($array)) {
+            $array = get_object_vars($array);
+        }
 
         if (array_key_exists($step, $array)) {
             if (count($steps)) {
@@ -66,7 +70,7 @@ if (!function_exists("here")) {
         static $here;
 
         if (!$here) {
-            $here = pew("path");
+            $here = url(pew("path"), pew("request")->query->all());
         }
 
         return $here;
@@ -184,7 +188,7 @@ if (!function_exists("url")) {
         if ($params) {
             $query = count($params) ? array_merge(...$params) : [];
             $query_string = http_build_query($query);
-            $url .= $query_string;
+            $url .= "?" . $query_string;
         }
 
         return $url;

@@ -171,6 +171,7 @@ class App
      * Handle the current request.
      *
      * @return Response
+     * @throws \Exception
      */
     protected function handle()
     {
@@ -191,7 +192,7 @@ class App
         if ($result instanceof Response) {
             App::log("Middleware returned response");
         } else {
-            $handler = $this->get("controller");
+            $handler = $this->resolveController($route);
 
             if (!$handler) {
                 throw new \RuntimeException("No handler specified for route (" . $request->getPathInfo() . ")");
@@ -292,14 +293,14 @@ class App
     protected function handleAction(string $handler, Injector $injector)
     {
         $controllerClass = $handler;
-        $controllerPath = $this->get("controller_path");
+        $controllerPath = $this->getControllerPath($controllerClass, $this->get("controller_namespace"));
         $actionName = $this->get("action");
-        $templateName = S::create($actionName)->underscored();
+        $templateName = $controllerPath . DIRECTORY_SEPARATOR . S::create($actionName)->underscored();
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
 
         $view = $this->get("view");
-        $view->template($controllerPath . "/" . $templateName);
+        $view->template($templateName);
         $view->layout("default.layout");
 
         $controller = $injector->createInstance($controllerClass);
@@ -338,6 +339,65 @@ class App
         $output = $view->render("errors/404", ["exception" => $e]);
 
         return new Response($output, 404);
+    }
+
+    /**
+     * Get a controller from the route.
+     *
+     * @param Route $route
+     * @return mixed|string
+     */
+    public function resolveController(Route $route)
+    {
+        # The handler can be a string like "controller@action" or a callback function
+        $handler = $route->getHandler();
+        # The namespace is the default controller with an optional, additional
+        # namespace set in the route
+        $namespace = S::create($this->get("controller_namespace") . $route->getNamespace())->ensureLeft("\\")->ensureRight("\\");
+
+        if (is_string($handler)) {
+            $parts = explode("@", $handler);
+            $controller = S::create($parts[0])->upperCamelize();
+
+            # Check if the controller class exists -- it may have an optional "Controller" suffix
+            foreach ([$controller, $controller . "Controller"] as $c) {
+                if (class_exists($namespace . $c)) {
+                    # Return the FQCN of the controller
+                    return $namespace . $c;
+                }
+            }
+
+            throw new \RuntimeException("No controller found for handler {$handler}");
+        }
+
+        return $handler;
+    }
+
+    /**
+     * Find the filesystem path to the controller.
+     *
+     * @param string $controllerClass
+     * @param string $baseNamespace
+     * @return string
+     */
+    public function getControllerPath(string $controllerClass, string $baseNamespace)
+    {
+        # Get the namespace of the controller relative to the base controller namespace
+        # by removing \app\controllers (by default) from the beginning
+        $relativeNamespace = S::create($controllerClass)->removeLeft($baseNamespace);
+        $parts = explode("\\", $relativeNamespace);
+        # The last segment is the short class name
+        $controllerClassName = array_pop($parts);
+        # The other segments will be the path to the controller templates in the
+        # `views` folder
+        $controllerPath = implode(DIRECTORY_SEPARATOR, $parts);
+        # Convert the short class name into a slug to use as folder name
+        $controllerSlug = S::create($controllerClassName)->removeRight("Controller")->underscored();
+
+        # Make the controller slug available for use elsewhere
+        $this->set("controller_slug", $controllerSlug);
+
+        return $controllerPath . DIRECTORY_SEPARATOR . $controllerSlug;
     }
 
     /**
@@ -410,6 +470,17 @@ class App
     public function set(string $key, $value)
     {
         $this->container[$key] = $value;
+    }
+
+    /**
+     * Check if a key exists in the container.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key)
+    {
+        return isset($this->container[$key]);
     }
 
     /**

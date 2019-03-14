@@ -37,8 +37,14 @@ $container["env"] = "dev";
 $container["ignore_url_separator"] = ["\\", ".", "|"];
 $container["ignore_url_suffixes"] = ["json", "html", "php"];
 $container["log_level"] = Logger::WARNING;
-$container["root_path"] = dirname(getcwd());
-$container["www_path"] = getcwd();
+
+if (php_sapi_name() === 'cli') {
+    $container["root_path"] =  getcwd();
+    $container["www_path"] = getcwd() . DIRECTORY_SEPARATOR . "www";
+} else {
+    $container["root_path"] =  dirname(getcwd());
+    $container["www_path"] = getcwd();
+}
 
 #
 # FACTORIES
@@ -125,21 +131,6 @@ $container["controller_path"] = function (Container $c) {
         ) . $controllerSlug;
 
     return $path;
-};
-
-$container["controller_slug"] = function (Container $c) {
-    $controller = $c["controller"];
-
-    if ($controller) {
-        $shortName = (new \ReflectionClass($controller))->getShortName();
-
-        return (string) S::create($shortName)
-            ->removeRight("Controller")
-            ->underscored()
-            ->slugify();
-    }
-
-    return null;
 };
 
 $container["db"] = function (Container $c) {
