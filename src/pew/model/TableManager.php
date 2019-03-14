@@ -43,9 +43,24 @@ class TableManager
         return static::$instance;
     }
 
+    /**
+     * Set the default database connection to use.
+     *
+     * @param string $connectionName
+     */
     public function setDefaultConnection(string $connectionName)
     {
         $this->defaultConnection = $connectionName;
+    }
+
+    /**
+     * Get the default database connection to use.
+     *
+     * @return string
+     */
+    public function getDefaultConnection()
+    {
+        return $this->defaultConnection;
     }
 
     /**
@@ -80,6 +95,7 @@ class TableManager
         # Check if the connection can be initialized
         if (isset($this->connectionCallbacks[$connectionName])) {
             $callback = $this->connectionCallbacks[$connectionName];
+            # Initialize the connection
             $this->connections[$connectionName] = $callback();
 
             return $this->connections[$connectionName];
@@ -125,16 +141,20 @@ class TableManager
     }
 
     /**
-     * Guess the table name based on a class name.
+     * Make a naïve guess on a table name based on the class name.
      *
      * @param string $className
      * @return string
      */
     public static function guessTableName(string $className)
     {
-        $reflectionClass = new ReflectionClass($className);
-        $classShortName = $reflectionClass->getShortName();
+        # Split $className into namespaces and class name.
+        $segments = explode("\\", $className);
+        # Get the last item
+        $classShortName = array_pop($segments);
 
+        # Transform the class name into an unders-scored version and make it
+        # plural (naïvely)
         return Stringy::create($classShortName)->underscored() . "s";
     }
 }
