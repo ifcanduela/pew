@@ -300,7 +300,8 @@ class Table
         $records = $this->db->run($this->query);
 
         if (isset($records[0])) {
-            $model = $className::fromArray($records[0]);
+            $record = array_shift($records);
+            $model = $className ? $className::fromArray($record) : $record;
         }
 
         if ($this->relationships) {
@@ -322,7 +323,7 @@ class Table
         $records = $this->db->run($this->query);
 
         foreach ($records as $record) {
-            $models[] = $className::fromArray($record);
+            $models[] = $className ? $className::fromArray($record) : $record;
         }
 
         if ($this->relationships) {
