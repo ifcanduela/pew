@@ -418,40 +418,37 @@ class App
      */
     protected function transformActionResult($actionResult)
     {
-        /** @var Request */
         $request = $this->get("request");
-
-        /** @var Response */
         $response = $this->get("response");
 
-        # if $actionResult is false, return an empty response
+        # If $actionResult is false, return an empty response
         if ($actionResult === false) {
             return $response;
         }
 
-        # if it's already a response, return it
+        # If it's already a response, return it
         if ($actionResult instanceof Response) {
             return $actionResult;
         }
 
-        # check if the request is JSON and return an appropriate response
+        # Check if the request is JSON and return an appropriate response
         if ($request->isJson()) {
             return new JsonResponse($actionResult);
         }
 
-        # if the action result is a string, use as the content of the response
+        # If the action result is a string, use as the content of the response
         if (is_string($actionResult)) {
             $response->setContent($actionResult);
 
             return $response;
         }
 
-        # if the action result is not an array, make it into one
+        # If the action result is not an array, make it into one
         if (!is_array($actionResult)) {
             $actionResult = ["data" => $actionResult];
         }
 
-        # use the action result to render the view
+        # Use the action result to render the view
         $view = $this->get("view");
         $output = $view->render($actionResult);
         $response->setContent($output);
@@ -505,7 +502,6 @@ class App
      */
     public static function log(string $message, $level = Logger::DEBUG)
     {
-        /** @var Logger $logger */
         $logger = static::$instance->get("app_log");
         $logger->log($level, $message);
     }

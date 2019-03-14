@@ -3,6 +3,9 @@ namespace pew\request;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
+/**
+ * Base, optional definition for a middleware service.
+ */
 abstract class Middleware
 {
     /**
