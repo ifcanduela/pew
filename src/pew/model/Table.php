@@ -2,13 +2,11 @@
 
 namespace pew\model;
 
-use pew\model\exception\TableNotSpecifiedException;
 use pew\model\exception\TableNotFoundException;
 use pew\model\relation\Relationship;
 
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
-use ReflectionClass;
 use Stringy\Stringy as S;
 
 /**
@@ -119,7 +117,7 @@ class Table
     public function init()
     {
         if (!$this->db->tableExists($this->tableName)) {
-            throw new TableNotFoundException("Table {$this->tableName} for model {$this->recordClass} not found.");
+            throw new TableNotFoundException("Table `{$this->tableName}` not found");
         }
 
         # some metadata about the table
@@ -138,14 +136,14 @@ class Table
     }
 
     /**
-     * Auto-resolve the table name for the current model.
+     * Get or set the table name for the current model.
      *
-     * @param string $tableName
+     * @param string|null $tableName
      * @return string
      */
     public function tableName(string $tableName = null)
     {
-        if (isset($tableName)) {
+        if ($tableName) {
             $this->tableName = $tableName;
         }
 
@@ -267,8 +265,6 @@ class Table
 
             return $stm->rowCount();
         }
-
-        throw new \RuntimeException("The $clause operation failed");
     }
 
     /**
@@ -341,7 +337,7 @@ class Table
     public function count()
     {
         # query the database
-        $this->query->columns("COUNT(*) as count");
+        $this->createSelect()->columns("COUNT(*) as count");
         $result = $this->db->run($this->query);
 
         return $result[0]["count"];
@@ -397,19 +393,14 @@ class Table
      * Inserts a record into the table.
      *
      * @param array $record An array or array-like object with column names and values
-     * @param string $fieldName The name of the column that stores the creation timestamp
+     * @param string $timestampField The name of the column that stores the creation timestamp
      * @return mixed The primary key value of the inserted item.
      */
-    protected function insertRecord(array $record, string $fieldName)
+    protected function insertRecord(array $record, string $timestampField = null)
     {
-        $primaryKeyName = $this->primaryKey();
-
-        # unset the primary key, just in case
-        unset($record[$primaryKeyName]);
-
         # set creation timestamp
-        if ($this->hasColumn($fieldName)) {
-            $record[$fieldName] = time();
+        if ($timestampField && $this->hasColumn($timestampField)) {
+            $record[$timestampField] = time();
         }
 
         $query = Query::insert()->into($this->tableName)->values($record);
@@ -422,16 +413,16 @@ class Table
      * Updates a record in the table.
      *
      * @param array $record An array or array-like object with column names and values
-     * @param string $fieldName The name of the column that stores the update timestamp
+     * @param string $timestampField The name of the column that stores the update timestamp
      * @return mixed The primary key value of the updated item.
      */
-    protected function updateRecord(array $record, string $fieldName)
+    protected function updateRecord(array $record, string $timestampField = null)
     {
         $primaryKeyName = $this->primaryKey();
 
         # set modification timestamp
-        if ($this->hasColumn($fieldName)) {
-            $record[$fieldName] = time();
+        if ($timestampField && $this->hasColumn($timestampField)) {
+            $record[$timestampField] = time();
         }
 
         # if $id is set, perform an UPDATE
@@ -454,7 +445,7 @@ class Table
      *                  delete every record in the table
      * @return bool True on success, false other wise
      */
-    public function delete($id = null)
+    public function deleteRecord($id = null)
     {
         $query = Query::delete($this->tableName);
 
