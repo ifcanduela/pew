@@ -7,6 +7,9 @@ namespace pew\request;
  */
 class Request extends \Symfony\Component\HttpFoundation\Request
 {
+    /** @var string */
+    public $appUrl;
+
     /**
      * Get the URL from which this request is executed, with scheme, server and base path.
      *
@@ -14,7 +17,15 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function appUrl()
     {
-        return $this->getSchemeAndHttpHost() . $this->getBaseUrl();
+        if (!$this->appUrl) {
+            $appUrl = $this->getSchemeAndHttpHost() . $this->getBaseUrl();
+            # find out the script filename
+            $scriptFileName = preg_quote(pathinfo($this->getScriptName(), PATHINFO_BASENAME));
+            # ensure the URL does not contain the script filename
+            $this->appUrl = preg_replace("/{$scriptFileName}$/", "", $appUrl);
+        }
+
+        return $this->appUrl;
     }
 
     /**
