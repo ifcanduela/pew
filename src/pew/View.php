@@ -2,7 +2,6 @@
 
 namespace pew;
 
-use pew\lib\FileCache;
 use SplStack;
 use Stringy\Stringy as S;
 
@@ -38,22 +37,17 @@ class View implements \ArrayAccess
     /** @var array */
     protected $variables = [];
 
-    /** @var FileCache */
-    protected $fileCache = null;
-
     /**
      * Creates a View object based on a folder.
      *
      * If no folder is provided, the current working directory is used.
      *
      * @param string $templatesFolder
-     * @param FileCache $fileCache
      */
-    public function __construct(string $templatesFolder = "", FileCache $fileCache = null)
+    public function __construct(string $templatesFolder = "")
     {
         $this->blockStack = new SplStack();
         $this->folderStack = new SplStack();
-        $this->fileCache = $fileCache;
 
         $this->addFolder($templatesFolder ?: getcwd());
     }
@@ -106,7 +100,7 @@ class View implements \ArrayAccess
      * @throws \Exception
      * @throws \RuntimeException
      */
-    public function render(string $template = "", array $data = [])
+    public function render($template = "", array $data = [])
     {
         if (count(func_get_args()) === 1) {
             if (is_array($template)) {
@@ -311,7 +305,7 @@ class View implements \ArrayAccess
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new \RuntimeException("The partial template file $template could not be found.");
+            throw new \RuntimeException("Partial template `$template` not found");
         }
 
         # Render the element.
@@ -340,54 +334,6 @@ class View implements \ArrayAccess
         } catch (\Exception $e) {
             ob_end_clean();
             throw $e;
-        }
-    }
-
-    /**
-     * Attempt to insert a cached fragment into the view.
-     *
-     * This method automatically inserts the cached fragment if it's found and
-     * then returns TRUE. If the return value is FALSE, the cached fragment was
-     * not found.
-     *
-     * @param string $key Name key of the cached fragment to load
-     * @param int $duration Time to live of the cache fragment, in seconds
-     * @param bool $openBuffer Set to false to prevent the opening of a buffer
-     * @return bool True if the cached fragment could be inserted, false otherwise
-     * @throws \RuntimeException
-     */
-    public function load(string $key, int $duration, bool $openBuffer = true)
-    {
-        if ($this->fileCache) {
-            if ($this->fileCache->cached($key, $duration)) {
-                $fragment = $this->fileCache->load($key);
-                echo $fragment;
-
-                return true;
-            }
-
-            if ($openBuffer) {
-                ob_start();
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Save a fragment to the cache.
-     *
-     * @param string $key Name key for the cached fragment
-     * @return void
-     */
-    public function save(string $key)
-    {
-        if ($this->fileCache) {
-            # save the output into a cache key
-            $output = ob_end_clean();
-            $this->fileCache->save($key, $output);
-
-            echo $output;
         }
     }
 
