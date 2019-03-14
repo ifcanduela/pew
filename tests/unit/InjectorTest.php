@@ -19,7 +19,7 @@ class Type3 implements Type {
     }
 }
 
-}
+} // namespace types
 
 namespace {
 
@@ -193,6 +193,36 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $functionReflector = new ReflectionFunction('array_map');
         $injections = $injector->getInjections($functionReflector);
     }
-}
 
-}
+    public function testCallGenericFunction()
+    {
+        $injector = new Injector([
+            "alpha" => "ALPHA",
+            "beta" => "BETA",
+        ]);
+
+        $result = $injector->call(function ($alpha, $beta) {
+            return "{$alpha} {$beta}";
+        });
+
+        $this->assertEquals("ALPHA BETA", $result);
+    }
+
+    public function testCallGenericMethod()
+    {
+        $injector = new Injector([]);
+
+        $type1 = $injector->createInstance(\types\Type1::class);
+        $this->assertInstanceOf(\types\Type1::class, $type1);
+
+        $injector->appendContainer([
+            \types\Type1::class => $type1,
+            \types\Type::class => $type1,
+        ]);
+
+        $result = $injector->call([\types\Type3::class, "method"]);
+        $this->assertEquals($type1, $result);
+    }
+} // class InjectorTest
+
+} // namespace /

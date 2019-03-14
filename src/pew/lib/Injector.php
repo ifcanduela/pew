@@ -60,7 +60,6 @@ class Injector
     public function getInjections(\ReflectionFunctionAbstract $method)
     {
         $injections = [];
-
         $parameters = $method->getParameters();
 
         foreach ($parameters as $param) {
@@ -70,7 +69,7 @@ class Injector
             # first try: typehint
             if ($paramType = $param->getType()) {
                 try {
-                    $injection = $this->findKey($paramType);
+                    $injection = $this->findKey($paramType->getName());
                     $found = true;
                 } catch (KeyNotFoundException $e) {
                 }
