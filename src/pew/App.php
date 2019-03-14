@@ -46,15 +46,15 @@ class App
         $this->container = require __DIR__ . "/config/bootstrap.php";
 
         if (realpath($appFolder)) {
-            $appPathPre = $appFolder;
+            $guessedAppPath = $appFolder;
         } else {
-            $appPathPre = getcwd() . "/{$appFolder}";
+            $guessedAppPath = getcwd() . "/{$appFolder}";
         }
 
-        $appPath = realpath($appPathPre);
+        $appPath = realpath($guessedAppPath);
 
         if ($appPath === false) {
-            throw new \InvalidArgumentException("The app path does not exist: {$appPathPre}");
+            throw new \InvalidArgumentException("The app path does not exist: {$guessedAppPath}");
         }
 
         $this->set("app_path", $appPath);
@@ -118,9 +118,7 @@ class App
      */
     protected function loadAppBootstrap()
     {
-        /** @var string */
         $appPath = $this->get("app_path");
-        /** @var string */
         $configFolder = $this->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/bootstrap.php";
 
@@ -192,6 +190,7 @@ class App
         if ($result instanceof Response) {
             App::log("Middleware returned response");
         } else {
+            # Resolve the route to a callable or a controller class
             $handler = $this->resolveController($route);
 
             if (!$handler) {
@@ -205,6 +204,7 @@ class App
             }
         }
 
+        # Process whatever the handler returned into a Response object
         $response = $this->transformActionResult($result);
 
         try {
@@ -225,14 +225,17 @@ class App
      */
     protected function runBeforeMiddleware(Route $route, Injector $injector)
     {
+        # Get the "before" middleware services for the route
         $middlewareClasses = $route->getBefore() ?: [];
 
         foreach ($middlewareClasses as $middlewareClass) {
+            # Create an instance of the service
             $mw = $injector->createInstance($middlewareClass);
             $this->middleware[$middlewareClass] = $mw;
             $result = $injector->callMethod($mw, "before");
 
             if ($result instanceof Response) {
+                # Short-circuit the request if any middleware returns a response
                 return $result;
             }
         }
@@ -248,12 +251,16 @@ class App
      */
     protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
     {
+        # Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
 
         foreach ($middlewareClasses as $middlewareClass) {
+            # Check if the middleware was activated before calling the action
             if (array_key_exists($middlewareClass, $this->middleware)) {
+                # Reuse the instance
                 $mw = $this->middleware[$middlewareClass];
             } else {
+                # Create a new instance
                 $mw = $injector->createInstance($middlewareClass);
             }
 
@@ -277,44 +284,48 @@ class App
     protected function handleCallback(callable $handler, Injector $injector)
     {
         App::log("Request handler is anonymous callback");
+        # Create a basic controller as a host for the callback
         $controller = $injector->createinstance(Controller::class);
 
+        # Call the handler using the basic controller as context
         return $injector->callFunction($handler, $controller);
     }
 
     /**
      * Process the request through a controller action.
      *
-     * @param string $handler
+     * @param string $controllerClass
      * @param Injector $injector
      * @return mixed
      * @throws \InvalidArgumentException
      */
-    protected function handleAction(string $handler, Injector $injector)
+    protected function handleAction(string $controllerClass, Injector $injector)
     {
-        $controllerClass = $handler;
+        # Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->get("controller_namespace"));
         $actionName = $this->get("action");
         $templateName = $controllerPath . DIRECTORY_SEPARATOR . S::create($actionName)->underscored();
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
 
+        # Set up the template
         $view = $this->get("view");
         $view->template($templateName);
         $view->layout("default.layout");
 
+        # Create the controller
         $controller = $injector->createInstance($controllerClass);
         $result = null;
 
+        # Run the before-action function, if present
         if (method_exists($controller, "beforeAction")) {
             $result = $injector->callMethod($controller, "beforeAction");
         }
 
+        # Run the action
         if (!($result instanceof Response)) {
             $result = $injector->callMethod($controller, $actionName);
         }
-
-        App::log("Request handler is {$handler}@{$actionName}");
 
         return $result;
     }
@@ -335,7 +346,6 @@ class App
 
         $view = $this->get("view");
         $view->layout(false);
-
         $output = $view->render("errors/404", ["exception" => $e]);
 
         return new Response($output, 404);
