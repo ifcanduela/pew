@@ -195,6 +195,7 @@ class App implements ContainerInterface
         } else {
             # Resolve the route to a callable or a controller class
             $handler = $this->resolveController($route);
+            $actionName = $this->resolveAction($route);
 
             if (!$handler) {
                 throw new \RuntimeException("No handler specified for route (" . $request->getPathInfo() . ")");
@@ -203,7 +204,7 @@ class App implements ContainerInterface
             if (is_callable($handler)) {
                 $result = $this->handleCallback($handler, $injector);
             } else {
-                $result = $this->handleAction($handler, $injector);
+                $result = $this->handleAction($handler, $actionName, $injector);
             }
         }
 
@@ -302,11 +303,10 @@ class App implements ContainerInterface
      * @return mixed
      * @throws \InvalidArgumentException
      */
-    protected function handleAction(string $controllerClass, Injector $injector)
+    protected function handleAction(string $controllerClass, string $actionName, Injector $injector)
     {
         # Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->get("controller_namespace"));
-        $actionName = $this->get("action");
         $templateName = $controllerPath . DIRECTORY_SEPARATOR . S::create($actionName)->underscored();
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
@@ -325,8 +325,8 @@ class App implements ContainerInterface
             $result = $injector->callMethod($controller, "beforeAction");
         }
 
-        # Run the action
-        if (!($result instanceof Response)) {
+        # Run the action if `beforeAction` did not return a result
+        if ($result === null) {
             $result = $injector->callMethod($controller, $actionName);
         }
 
@@ -364,16 +364,24 @@ class App implements ContainerInterface
     {
         # The handler can be a string like "controller@action" or a callback function
         $handler = $route->getHandler();
-        # The namespace is the default controller with an optional, additional
-        # namespace set in the route
-        $namespace = S::create($this->get("controller_namespace") . $route->getNamespace())->ensureLeft("\\")->ensureRight("\\");
 
         if (is_string($handler)) {
-            $parts = explode("@", $handler);
-            $controller = S::create($parts[0])->upperCamelize();
+            # Separate controller and action
+            $handlerParts = explode("@", $handler);
+            # Separate controller class and namespaces
+            $controllerParts = preg_split("~[\\\/]~", $handlerParts[0]);
+            # Get controller slug
+            $controllerSlug = array_pop($controllerParts);
+            # Turn the controller slug into a class name
+            $controllerParts[] = S::create($controllerSlug)->upperCamelize();
+            # Assemble the controller identifier
+            $controllerId = join("\\", $controllerParts);
+            # The namespace is the default controller namespace with an optional,
+            # additional namespace set in the route
+            $namespace = S::create($this->get("controller_namespace") . $route->getNamespace())->ensureLeft("\\")->ensureRight("\\");
 
             # Check if the controller class exists -- it may have an optional "Controller" suffix
-            foreach ([$controller, $controller . "Controller"] as $c) {
+            foreach ([$controllerId, $controllerId . "Controller"] as $c) {
                 if (class_exists($namespace . $c)) {
                     # Return the FQCN of the controller
                     return $namespace . $c;
@@ -384,6 +392,33 @@ class App implements ContainerInterface
         }
 
         return $handler;
+    }
+
+    /**
+     * Get an action name from the route.
+     *
+     * @param Route $route
+     * @return string|null
+     */
+    public function resolveAction(Route $route)
+    {
+        $handler = $route->getHandler();
+
+        if (is_callable($handler)) {
+            return null;
+        }
+
+        if (is_string($handler)) {
+            $parts = explode("@", $handler);
+
+            if (isset($parts[1])) {
+                return $parts[1];
+            }
+        }
+
+        $actionSlug = $route->getParam("action", $this->get("default_action"));
+
+        return S::create($actionSlug)->camelize();
     }
 
     /**

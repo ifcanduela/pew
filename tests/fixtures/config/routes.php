@@ -8,6 +8,7 @@ return [
     },
 
     Route::from("/admin/index")->to("admin@index")->namespace("admin"),
+    Route::from("/name/index")->to("admin\\admin@index"),
 
     Route::from('/middleware')
         ->to('TestController@useMiddleware')

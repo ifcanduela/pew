@@ -50,27 +50,6 @@ if (php_sapi_name() === 'cli') {
 # FACTORIES
 #
 
-$container["action"] = function (Container $c) {
-    $route = $c["route"];
-    $handler = $route->getHandler();
-
-    if (is_callable($handler)) {
-        return null;
-    }
-
-    if (is_string($handler)) {
-        $parts = preg_split('/[@\.]/', $handler);
-
-        if (isset($parts[1])) {
-            return $parts[1];
-        }
-    }
-
-    $actionSlug = $route->getParam("action", $c["default_action"]);
-
-    return (string) S::create($actionSlug)->camelize();
-};
-
 $container["app_log"] = function (Container $c) {
     $logger = new Logger("App log");
     $logfile = $c["app_path"] . "/logs/app.log";
@@ -93,44 +72,8 @@ $container["cache_path"] = function (Container $c) {
     return $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
 };
 
-$container["controller"] = function (Container $c) {
-    $route = $c["route"];
-    $handler = $route->getHandler();
-    $namespace = $c["route_namespace"];
-
-    if (is_callable($handler)) {
-        return $handler;
-    }
-
-    if ($handler) {
-        $parts = explode("@", $handler);
-
-        return  $namespace . $parts[0];
-    } elseif ($route->checkParam("controller")) {
-        $handler = S::create($route->getParam("controller"))->upperCamelize();
-
-        return $namespace . $handler;
-    }
-
-    return null;
-};
-
 $container["controller_namespace"] = function (Container $c) {
     return $c["app_namespace"] . "controllers\\";
-};
-
-$container["controller_path"] = function (Container $c) {
-    $controllerNamespace = $c["controller_namespace"];
-    $routeNamespace = $c["route_namespace"];
-    $controllerSlug = $c["controller_slug"];
-
-    $path = str_replace(
-            [$controllerNamespace, "\\"],
-            ["", DIRECTORY_SEPARATOR],
-            $routeNamespace
-        ) . $controllerSlug;
-
-    return $path;
 };
 
 $container["db"] = function (Container $c) {

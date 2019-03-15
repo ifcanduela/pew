@@ -147,6 +147,25 @@ class AppTest extends PHPUnit\Framework\TestCase
 
         $controllerClass = $app->resolveController($r);
         $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
+
+        $r = new \pew\router\Route();
+        $r->setHandler("admin\\admin@index");
+
+        $app = new App($this->appFolder, 'test');
+
+        $controllerClass = $app->resolveController($r);
+        $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
+    }
+
+    public function testResolveControllerNotFound()
+    {
+        $r = new \pew\router\Route();
+        $r->setHandler("admin\\admin@index");
+
+        $app = new App($this->appFolder, 'test');
+
+        $controllerClass = $app->resolveController($r);
+        $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
     }
 
     public function testMiddleware()
@@ -181,10 +200,12 @@ class AppTest extends PHPUnit\Framework\TestCase
         ]);
 
         $app->set("route", $r);
+        $action = (string) $app->resolveAction($r);
+        $this->assertEquals("stringResponse", $action);
 
-        ob_start();
-        $app->run();
-        $html = ob_get_clean();
-        $this->assertEquals('noneresponse', $html);
+        // ob_start();
+        // $app->run();
+        // $html = ob_get_clean();
+        // $this->assertEquals('noneresponse', $html);
     }
 }
