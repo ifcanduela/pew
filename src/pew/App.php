@@ -5,13 +5,10 @@ namespace pew;
 use Monolog\Logger;
 use pew\lib\Injector;
 use pew\model\TableManager;
-use pew\request\Request;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Psr\Container\ContainerExceptionInterface;
 use Stringy\Stringy as S;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -299,21 +296,25 @@ class App implements ContainerInterface
      * Process the request through a controller action.
      *
      * @param string $controllerClass
+     * @param string $actionName
      * @param Injector $injector
      * @return mixed
-     * @throws \InvalidArgumentException
      */
     protected function handleAction(string $controllerClass, string $actionName, Injector $injector)
     {
         # Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->get("controller_namespace"));
-        $templateName = $controllerPath . DIRECTORY_SEPARATOR . S::create($actionName)->underscored();
+        $actionId = S::create($actionName)->underscored();
+        $template = $controllerPath . DIRECTORY_SEPARATOR . $actionId;
+
+        $this->set("controller_slug", basename($controllerPath));
+        $this->set("action_slug", $actionId);
 
         App::log("Request handler is {$controllerPath}/{$actionName}");
 
         # Set up the template
         $view = $this->get("view");
-        $view->template($templateName);
+        $view->template($template);
         $view->layout("default.layout");
 
         # Create the controller
