@@ -126,6 +126,28 @@ class AppTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($wwwPath, $app->get("www_path"), "Public Path");
     }
 
+    public function testRouteNotFound()
+    {
+        $app = new App($this->appFolder, 'test');
+        $app->set('path', '/not-found');
+
+        ob_start();
+        $app->run();
+        $response = ob_get_clean();
+
+        $this->assertEquals('Route not found', $response);
+
+        $app = new App($this->appFolder, 'test');
+        $app->set('path', '/not-found');
+        $app->set('debug', true);
+
+        try {
+            $app->run();
+        } catch (\pew\router\RouteNotFound $e) {
+            $this->assertEquals("Route not found", $e->getMessage());
+        }
+    }
+
     public function testResolveController()
     {
         $r = new \pew\router\Route();
