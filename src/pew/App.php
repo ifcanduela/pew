@@ -9,6 +9,9 @@ use pew\request\Request;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Stringy\Stringy as S;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Its purpose is to route the request into a response.
  */
-class App
+class App implements ContainerInterface
 {
     /** @var \Pimple\Container */
     protected $container;
@@ -461,8 +464,10 @@ class App
      *
      * @param string $key
      * @return mixed
+     * @throws \psrNotFoundExceptionInterface  No entry was found for **this** identifier.
+     * @throws \psrContainerExceptionInterface Error while retrieving the entry.
      */
-    public function get(string $key)
+    public function get($key)
     {
         return $this->container[$key];
     }
@@ -474,7 +479,7 @@ class App
      * @param mixed $value
      * @return void
      */
-    public function set(string $key, $value)
+    public function set($key, $value)
     {
         $this->container[$key] = $value;
     }
@@ -485,7 +490,7 @@ class App
      * @param string $key
      * @return bool
      */
-    public function has(string $key)
+    public function has($key)
     {
         return isset($this->container[$key]);
     }
