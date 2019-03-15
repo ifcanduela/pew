@@ -18,7 +18,8 @@
         "ifcanduela/abbrev": "^1.0",
         "ifcanduela/db": "^1.0",
         "monolog/monolog": "^1.24",
-        "symfony/cache": "^4.2"
+        "symfony/cache": "^4.2",
+        "psr/container": "^1.0"
     },
     "autoload": {
         "psr-0": {
