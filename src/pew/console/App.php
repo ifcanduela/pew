@@ -16,27 +16,7 @@ class App extends \pew\App
      */
     public function run()
     {
-        $injector = $this->container["injector"];
-
-        $commandFiles = glob($this->container["app_path"] . "/commands/*Command.php");
-
-        foreach ($commandFiles as $commandFile) {
-            $className = "\\app\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
-            /** @var Command $command */
-            $command = $injector->createInstance($className);
-
-            $this->availableCommands[$command->name()] = $command;
-        }
-
-        $commandFiles = glob(dirname(__DIR__) . "/commands/*Command.php");
-
-        foreach ($commandFiles as $commandFile) {
-            $className = "\\pew\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
-            $command = $injector->createInstance($className);
-
-            $this->availableCommands[$command->name()] = $command;
-        }
-
+        $this->initCommandList();
         $arguments = $this->getArguments();
 
         if (empty($arguments)) {
@@ -62,10 +42,36 @@ class App extends \pew\App
 
         $this->container["arguments"] = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
 
-        return $injector->callMethod($command, $action);
+        return $this->handleCommand($command, $action);
     }
 
-    private function commandMissing(string $commandName)
+    /**
+     * Initialize the list of available commands.
+     */
+    protected function initCommandList()
+    {
+        $injector = $this->get("injector");
+        $commandFiles = glob($this->container["app_path"] . "/commands/*Command.php");
+
+        foreach ($commandFiles as $commandFile) {
+            $className = "\\app\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
+            /** @var Command $command */
+            $command = $injector->createInstance($className);
+
+            $this->availableCommands[$command->name()] = $command;
+        }
+
+        $commandFiles = glob(dirname(__DIR__) . "/commands/*Command.php");
+
+        foreach ($commandFiles as $commandFile) {
+            $className = "\\pew\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
+            $command = $injector->createInstance($className);
+
+            $this->availableCommands[$command->name()] = $command;
+        }
+    }
+
+    protected function commandMissing(string $commandName)
     {
         echo "Command {$commandName} not found" . PHP_EOL;
         echo "Did you mean:" . PHP_EOL;
@@ -88,7 +94,7 @@ class App extends \pew\App
      *
      * @return array
      */
-    private function getArguments()
+    protected function getArguments()
     {
         $argv = $_SERVER["argv"];
         $scriptName = $_SERVER["SCRIPT_NAME"];
@@ -109,9 +115,9 @@ class App extends \pew\App
      * If a command is not found, a list of suggestions is returned.
      *
      * @param string $commandName
-     * @return Command|array
+     * @return CommandInterface|array
      */
-    private function findCommand(string $commandName)
+    protected function findCommand(string $commandName)
     {
         $names = array_keys($this->availableCommands);
         $abbrev = new Abbrev($names);
@@ -123,5 +129,23 @@ class App extends \pew\App
         }
 
         return $this->availableCommands[$match];
+    }
+
+    /**
+     * Call a method on a command instance.
+     *
+     * @param CommandInterface $command
+     * @param string $action
+     * @return mixed
+     */
+    protected function handleCommand(CommandInterface $command, string $action)
+    {
+        $injector = $this->get("injector");
+
+        $injector->callMethod($command, "init");
+        $result = $injector->callMethod($command, $action);
+        $injector->callMethod($command, "finish");
+
+        return $result;
     }
 }
