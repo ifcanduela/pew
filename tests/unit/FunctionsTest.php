@@ -100,9 +100,4 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
             "beta" => ["gamma" => "GAMMA"],
         ], session());
     }
-
-    public function testFlashFunction()
-    {
-        # code...
-    }
 }

@@ -80,7 +80,7 @@ class HasAndBelongsToMany extends Relationship
         $result = [];
 
         foreach ($records as $record) {
-            $result[$record[$field]][] = $recordClass::fromArray($record);
+            $result[$record[$field]][] = $recordClass ? $recordClass::fromArray($record) : $record;
         }
 
         return array_map(function ($items) {

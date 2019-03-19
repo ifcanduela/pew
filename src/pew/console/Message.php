@@ -203,16 +203,23 @@ class Message
      */
     public function format(string $text = null)
     {
-        $set = join(";", $this->setCodes);
-        $unset = join(";", $this->unsetCodes);
-
         $text = $text ?? $this->text;
         $width = $this->width ?? strlen($text);
+        $prefix = "";
+        $suffix = "";
         $eol = $this->newLine ? PHP_EOL : "";
 
         $text = str_pad($text, $width, " ", STR_PAD_RIGHT);
 
-        return "\033[{$set}m{$text}\033[{$unset}m{$eol}";
+        if (count($this->setCodes)) {
+            $set = join(";", $this->setCodes);
+            $unset = join(";", $this->unsetCodes);
+
+            $prefix = "\033[{$set}m";
+            $suffix = "\033[{$unset}m";
+        }
+
+        return "{$prefix}{$text}{$suffix}{$eol}";
     }
 
     public function __toString()
