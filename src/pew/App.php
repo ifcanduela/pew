@@ -59,12 +59,13 @@ class App implements ContainerInterface
 
         $this->set("app_path", $appPath);
         $this->set("config_file_name", $configFileName);
+        $this->set("app", $this);
+
+        static::$instance = $this;
 
         # import app-defined configuration
         $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
-
-        static::$instance = $this;
 
         App::log("App path set to {$appPath}", Logger::INFO);
     }
