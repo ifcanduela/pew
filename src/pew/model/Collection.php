@@ -532,11 +532,12 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      *
      * @param int $offset
      * @param int $length
+     * @param bool $preserveKeys
      * @return static
      */
-    public function slice($offset, $length = null)
+    public function slice($offset, $length = null, $preserveKeys = false)
     {
-        return new static(array_slice($this->items, $offset, $length));
+        return new static(array_slice($this->items, $offset, $length, $preserveKeys));
     }
 
     /**
@@ -583,7 +584,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         }
 
         if ($reverse) {
-            array_reverse($items);
+            $items = array_reverse($items);
         }
 
         return new static($items);
@@ -650,7 +651,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Get all items in order until a condition is met.
      *
-     * The signature for the callable is ($key, $value, $index)
+     * The signature for the callable is ($key, $value, $index, $items)
      *
      * @param callable $condition
      * @return static
@@ -661,11 +662,10 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         $index = 0;
 
         foreach ($this->items as $key => $value) {
-            $result = $condition($key, $value, $index);
+            $items[$key] = $value;
+            $result = $condition($key, $value, $index, $items);
 
             if ($result) {
-                $items[$key] = $value;
-            } else {
                 break;
             }
         }

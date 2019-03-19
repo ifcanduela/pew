@@ -337,12 +337,15 @@ class CollectionTest extends PHPUnit\Framework\TestCase
     {
         $c = Collection::fromArray([0, 1, 2, 3]);
 
-        $r1= $c->random();
-        $this->assertEquals("integer", gettype($r1));
-        $r2= $c->random();
-        $this->assertEquals("integer", gettype($r2));
-        $r3= $c->random();
-        $this->assertEquals("integer", gettype($r3));
+        $random_number = $c->random();
+        $this->assertTrue(is_int($random_number));
+
+        $two_random_numbers = $c->random(2);
+        $this->assertTrue($two_random_numbers->hasKey(0));
+        $this->assertTrue(is_int($two_random_numbers[0]));
+        $this->assertTrue($two_random_numbers->hasKey(1));
+        $this->assertTrue(is_int($two_random_numbers[1]));
+
     }
 
     public function testReduce()
@@ -372,52 +375,123 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
     public function testShuffle()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3])->shuffle();
+
+        $this->assertTrue($c->hasValue(0));
+        $this->assertTrue($c->hasValue(1));
+        $this->assertTrue($c->hasValue(2));
+        $this->assertTrue($c->hasValue(3));
     }
 
     public function testSlice()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        $this->assertEquals([0, 1, 2, 3], $c->slice(0, 4)->toArray());
+        $this->assertEquals([6, 7, 8, 9], $c->slice(-4, 4)->toArray());
+        $this->assertEquals([6 => 6, 7 => 7, 8 => 8, 9 => 9], $c->slice(-4, 4, true)->toArray());
     }
 
     public function testSplice()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([0, 1, 2, 3]);
+
+        $insert = $c->splice(2, 0, 4);
+        $this->assertEquals([0, 1, 4, 2, 3], $insert->toArray());
+
+        $replace = $c->splice(2, 1, 4);
+        $this->assertEquals([0, 1, 4, 3], $replace->toArray());
     }
 
     public function testSort()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = Collection::fromArray([3, 1, 2, 0]);
+
+        $normalSort = $c->sort();
+        $this->assertEquals([0, 1, 2, 3], $normalSort->toArray());
+
+        $letters = Collection::fromArray([
+            (object) ["position" => 0, "name" => "alpha", "letter" => "α"],
+            (object) ["position" => 1, "name" => "beta", "letter" => "β"],
+            (object) ["position" => 2, "name" => "delta", "letter" => "γ"],
+        ]);
+
+        $sortedLetters = $letters->sort(function ($a, $b) {
+            return $a->position - $b->position;
+        }, true);
+
+        $result = array_reverse($letters->toArray());
+        $this->assertEquals($result, $sortedLetters->toArray());
+
+        $moreSortedLetters = $letters->sort("position", true);
+        $this->assertEquals($result, $moreSortedLetters->toArray());
     }
 
     public function testToArray()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $numbers = Collection::fromArray([0, 1, 2, 3]);
+        $this->assertEquals([0, 1, 2, 3], $numbers->toArray());
+
+        $letters = Collection::fromArray(["a" => "alpha", "b" => "beta"]);
+        $this->assertEquals(["a" => "alpha", "b" => "beta"], $letters->toArray());
+
+        $collections = Collection::fromArray([
+            "a" => Collection::fromArray([1, "alpha"]),
+            "b" => Collection::fromArray([2, "beta"]),
+        ]);
+
+        $asArray = $collections->toArray();
+        $this->assertTrue(is_array($asArray));
+        $this->assertInstanceOf(Collection::class, $asArray["a"]);
+
+        $asArrayRecursive = $collections->toArray(true);
+        $this->assertTrue(is_array($asArrayRecursive));
+        $this->assertTrue(is_array($asArrayRecursive["a"]));
     }
 
     public function testToJson()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $numbers = Collection::fromArray([0, 1, 2, 3]);
+        $json = $numbers->toJson();
+
+        $this->assertEquals('[0,1,2,3]', $json);
     }
 
     public function testUnshift()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $numbers = Collection::fromArray([0, 1, 2, 3]);
+        $numbers->unshift(-1);
+
+        $this->assertEquals([-1, 0, 1, 2, 3], $numbers->toArray());
     }
 
     public function testUntil()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $numbers = Collection::fromArray([0, 1, 2, 3]);
+        $result = $numbers->until(function ($item) {
+            return $item === 2;
+        })->toArray();
+
+        $this->assertEquals([0, 1, 2], $result);
     }
 
     public function testValues()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $numbers = Collection::fromArray([2 => 0, 5 => 1, 8 => 2, 10 => 3]);
+
+        $result = $numbers->values()->toArray();
+
+        $this->assertEquals([0, 1, 2, 3], $result);
     }
 
     public function testWalk()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $numbers = Collection::fromArray([0, 1, 2, 3]);
+
+        $numbers->walk(function (&$item) {
+            $item = $item * 2;
+        });
+        $this->assertEquals([0, 2, 4, 6], $numbers->toArray());
     }
 
     public function testWithout()
@@ -438,6 +512,9 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
     public function testClone()
     {
-        $this->markTestIncomplete("Not yet implemented");
+        $c = new Collection([1, 2, 3, 4]);
+        $clone = clone $c;
+
+        $this->assertEquals($c->toArray(), $clone->toArray());
     }
 }
