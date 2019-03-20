@@ -44,6 +44,21 @@ class Image
     /** @var int */
     protected $height;
 
+    /** @var array */
+    protected $imageTypeByExtension = [
+        "jpg" => IMAGETYPE_JPEG,
+        "jpeg" => IMAGETYPE_JPEG,
+        "png" => IMAGETYPE_PNG,
+        "gif" => IMAGETYPE_GIF,
+    ];
+
+    /** @var array */
+    protected $extensionByImageType = [
+        IMAGETYPE_JPEG => "jpg" ,
+        IMAGETYPE_PNG => "png" ,
+        IMAGETYPE_GIF => "gif" ,
+    ];
+
     /**
      * Build a new image object.
      *
@@ -217,7 +232,7 @@ class Image
      * @return bool Result of the image* functions
      * @throws \Exception
      */
-    public function save($destination, $imageType = null, $quality = null)
+    public function save($destination, int $imageType = null, int $quality = null)
     {
         $this->checkResource();
 
@@ -225,16 +240,22 @@ class Image
             $destination = getcwd();
         }
 
-        if (is_null($imageType)) {
-            $imageType = $this->imageType;
+        $extension = pathinfo($destination, PATHINFO_EXTENSION);
+
+        if (!$imageType) {
+            $imageType = $this->imageTypeByExtension[$extension] ?? $this->imageType;
         }
 
-        if (is_null($quality)) {
+        if (!$quality) {
             $quality = $this->quality;
         }
 
-        if (strpos(basename($destination), ".") === false) {
-            $destination .= DIRECTORY_SEPARATOR . basename($this->filename);
+        if (!$extension) {
+            $extension = $this->extensionByImageType[$imageType];
+            $destination = rtrim($destination, "\\/")
+                         . DIRECTORY_SEPARATOR
+                         . pathinfo($this->filename, PATHINFO_FILENAME)
+                         . "." . $extension;
         }
 
         switch ($imageType) {
