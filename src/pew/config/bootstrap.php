@@ -222,9 +222,8 @@ $container["tableManager"] = function (Container $c) {
 
 $container["url"] = function (Container $c) {
     $request = $c["request"];
-    $router = $c["router"];
 
-    return new Url($request, $router->routes);
+    return new Url($request);
 };
 
 $container["use_db"] = function (Container $c) {

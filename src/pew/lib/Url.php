@@ -7,20 +7,11 @@ use Stringy\Stringy as S;
 
 /**
  * Class to manipulate URLs.
- *
- * Objects of this class are immutable, and `set` operations will always return
- * a new instance.
  */
 class Url
 {
     /** @var Request */
     public $request;
-
-    /** @var array */
-    public $routes = [];
-
-    /** @var array */
-    public $namedRoutes = [];
 
     /** @var string */
     public $scheme = "http";
@@ -50,9 +41,8 @@ class Url
      * Create a URL object.
      *
      * @param string|Url|Request $request
-     * @param array $routes
      */
-    public function __construct($request = null, array $routes = [])
+    public function __construct($request = null)
     {
         if (is_string($request) || ($request instanceof Url)) {
             $request = (string) $request;
@@ -66,8 +56,6 @@ class Url
         } else {
             $this->request = Request::createFromGlobals();
         }
-
-        $this->routes = $routes;
 
         $this->scheme = $this->request->getScheme();
         $this->user = $this->request->getUser();
@@ -103,59 +91,6 @@ class Url
     }
 
     /**
-     * Create a URL to a named route.
-     *
-     * @param string $routeName
-     * @param array $params
-     * @return string
-     * @throws \Exception
-     */
-    public function toRoute(string $routeName, array $params = [])
-    {
-        # arrange all the named routes
-        if (!$this->namedRoutes) {
-            foreach ($this->routes as $route) {
-                if ($route->getName()) {
-                    $this->namedRoutes[$route->getName()] = $route;
-                }
-            }
-        }
-
-        if (isset($this->namedRoutes[$routeName])) {
-            $route = $this->namedRoutes[$routeName];
-            $path = $route->getPath();
-
-            # merge the defaults with the passed params
-            if ($route->getDefaults()) {
-                $params = array_merge($route->getDefaults(), $params);
-            }
-
-            # replace all available params
-            foreach ($params as $key => $value) {
-                $path = str_replace("{" . $key . "}", $value, $path);
-            }
-
-            # clear all remaining optional parameters
-            while (strpos($path, "}]") !== false) {
-                // try to remove [\{var}]
-                $path = preg_replace('~(\[\/\{[^}]+\}\])~', "", $path);
-            }
-
-            # check if there are any remaining mandatory parameters
-            if (strpos($path, "{")) {
-                throw new \Exception("Not all required placeholders could be filled for " . $route["path"]);
-            }
-
-            # clean the optional parameter markers
-            $path = str_replace(["[", "]"], "", $path);
-
-            return $this->to($path);
-        }
-
-        throw new \RuntimeException("Route name not found: {$routeName}");
-    }
-
-    /**
      * Set the URL scheme.
      *
      * @param string $scheme
@@ -163,10 +98,9 @@ class Url
      */
     public function setScheme(string $scheme)
     {
-        $url = clone $this;
-        $url->scheme = S::create($scheme)->removeRight("://");
+        $this->scheme = S::create($scheme)->removeRight("://");
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -192,20 +126,18 @@ class Url
      */
     public function setAuth(string $user = null, string $password = null)
     {
-        $url = clone $this;
-
-        $url->user = null;
-        $url->password = null;
+        $this->user = null;
+        $this->password = null;
 
         if ($user) {
-            $url->user = $user;
+            $this->user = $user;
 
             if ($password) {
-                $url->password = $password;
+                $this->password = $password;
             }
         }
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -240,10 +172,9 @@ class Url
      */
     public function setHost(string $host)
     {
-        $url = clone $this;
-        $url->host = $host;
+        $this->host = $host;
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -264,10 +195,9 @@ class Url
      */
     public function setPort(int $port)
     {
-        $url = clone $this;
-        $url->port = $port;
+        $this->port = $port;
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -302,18 +232,14 @@ class Url
      */
     public function setPath(string ...$path)
     {
-        $url = clone $this;
-
-        $url->path = [];
+        $this->path = [];
 
         foreach ($path as $value) {
-            $url->path = array_values(array_merge(
-                $url->path,
-                array_filter(explode("/", $value . "/"))
-            ));
+            $segments = array_filter(explode("/", $value));
+            $this->path = array_values(array_merge($this->path, $segments));
         }
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -337,8 +263,7 @@ class Url
      */
     public function removePath(string $segment)
     {
-        $url = clone $this;
-        $path = $url->path;
+        $path = $this->path;
 
         $pos = array_search($segment, $path, true);
 
@@ -346,9 +271,9 @@ class Url
             unset($path[$pos]);
         }
 
-        $url->path = array_values(array_filter($path));
+        $this->path = array_values(array_filter($path));
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -370,10 +295,9 @@ class Url
      */
     public function setQueryParam(string $param, $value)
     {
-        $url = clone $this;
-        $url->query[$param] = $value;
+        $this->query[$param] = $value;
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -384,10 +308,9 @@ class Url
      */
     public function setQueryString(string $queryString)
     {
-        $url = clone $this;
-        parse_str($queryString, $url->query);
+        parse_str($queryString, $this->query);
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -398,10 +321,9 @@ class Url
      */
     public function setQuery(array $query)
     {
-        $url = clone $this;
-        $url->query = $query;
+        $this->query = $query;
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -435,10 +357,9 @@ class Url
      */
     public function mergeQueryParams(array $query)
     {
-        $url = clone $this;
-        $url->query = array_merge($url->query, $query);
+        $this->query = array_merge($this->query, $query);
 
-        return $url;
+        return $this;
     }
 
     /**
@@ -461,10 +382,9 @@ class Url
      */
     public function setFragment(string $fragment)
     {
-        $url = clone $this;
-        $url->fragment = (string) S::create($fragment)->substr(strpos($fragment, "#"))->removeLeft("#");
+        $this->fragment = (string) S::create($fragment)->substr(strpos($fragment, "#"))->removeLeft("#");
 
-        return $url;
+        return $this;
     }
 
     /**
