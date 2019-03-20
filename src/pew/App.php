@@ -223,7 +223,7 @@ class App implements ContainerInterface
      *
      * @param Route $route
      * @param Injector $injector
-     * @return Response|void
+     * @return Response|null
      */
     protected function runBeforeMiddleware(Route $route, Injector $injector)
     {
@@ -501,8 +501,7 @@ class App implements ContainerInterface
      *
      * @param string $key
      * @return mixed
-     * @throws \psrNotFoundExceptionInterface  No entry was found for **this** identifier.
-     * @throws \psrContainerExceptionInterface Error while retrieving the entry.
+     * @throws Psr\Container\NotFoundExceptionInterface
      */
     public function get($key)
     {

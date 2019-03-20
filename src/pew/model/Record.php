@@ -514,9 +514,10 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string|null $localKeyName
-     * @param string|null $foreignKeyName
+     * @param string $localKeyName
+     * @param string $foreignKeyName
      * @return BelongsTo
+     * @throws \ReflectionException
      */
     public function belongsTo(string $className, string $localKeyName = null, string $foreignKeyName = null)
     {
@@ -556,6 +557,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string $foreignKeyName
      * @param string $localKeyName
      * @return HasMany
+     * @throws \ReflectionException
      */
     public function hasMany(string $className, string $foreignKeyName = null, string $localKeyName = null)
     {
@@ -594,7 +596,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string $className
      * @param string $foreignKeyName
      * @param string $localKeyName
-     * @return HasMany
+     * @return HasOne
+     * @throws \ReflectionException
      */
     public function hasOne(string $className, string $foreignKeyName = null, string $localKeyName = null)
     {
@@ -635,12 +638,13 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string|null $associationTableName
-     * @param string|null $nearKeyName
-     * @param string|null $nearForeignKeyName
-     * @param string|null $farForeignKeyName
-     * @param string|null $farKeyName
+     * @param string $associationTableName
+     * @param string $nearKeyName
+     * @param string $nearForeignKeyName
+     * @param string $farForeignKeyName
+     * @param string $farKeyName
      * @return HasAndBelongsToMany
+     * @throws \ReflectionException
      */
     public function hasAndBelongsToMany(
         string $className,

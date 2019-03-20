@@ -137,7 +137,6 @@ class Image
      *
      * @param string $filename The image file name
      * @param int $imageType One of the IMAGETYPE_* constants
-     * @return int Return value from the imageCreateFrom* function
      * @throws \Exception
      */
     protected function loadFile(string $filename, $imageType)
