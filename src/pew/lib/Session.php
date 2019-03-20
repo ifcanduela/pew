@@ -14,11 +14,11 @@ class Session extends SymfonySession implements ArrayAccess
      * Set a flash message.
      *
      * @param string $key
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function addFlash(string $key, $value)
     {
-        return $this->getFlashBag()->add($key, $value);
+        $this->getFlashBag()->add($key, $value);
     }
 
     /**
