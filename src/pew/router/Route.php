@@ -386,7 +386,7 @@ class Route implements \ArrayAccess
      */
     public function offsetSet($key, $value)
     {
-        throw new \BadMethodCallException("Route is read-only: cannot set value {$key}");
+        throw new \BadMethodCallException("Route is read-only: cannot set value `{$key}`");
     }
 
     /**
@@ -400,7 +400,7 @@ class Route implements \ArrayAccess
      */
     public function offsetUnset($key)
     {
-        throw new \BadMethodCallException("Route is read-only: cannot unset value {$key}");
+        throw new \BadMethodCallException("Route is read-only: cannot unset value `{$key}`");
     }
 
     /**
@@ -419,6 +419,6 @@ class Route implements \ArrayAccess
             return $this;
         }
 
-        throw new \InvalidArgumentException("Method $method does not exist.");
+        throw new \InvalidArgumentException("Method `$method` does not exist");
     }
 }

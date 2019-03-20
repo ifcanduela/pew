@@ -93,7 +93,7 @@ class Router
         }
 
         /** @var Route $route */
-        $route = $matchedRoute[1];
+        $route = clone $matchedRoute[1];
         $route->setParams($matchedRoute[2]);
 
         # If the handler is a string, replace placeholders with path params

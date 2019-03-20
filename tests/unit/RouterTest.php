@@ -33,6 +33,15 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('HomeController@index', $destination->getHandler());
     }
 
+    public function testRouteName()
+    {
+        $r = Route::from("/")->to("app@home");
+
+        $r->name("homepage");
+
+        $this->assertEquals("homepage", $r->getName());
+    }
+
     /**
      * @expectedException RuntimeException
      * @expectedExceptionMessage Route not found
@@ -117,7 +126,6 @@ class RouterTest extends PHPUnit\Framework\TestCase
 
     public function testControllerAndActionPlaceholders()
     {
-
         $routes = [
             Route::from("/{first}/{second}/{id}")
                 ->to("{first}@{second}"),
@@ -130,5 +138,73 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Route::class, $destination);
         $this->assertEquals('users@profile', $destination->getHandler());
         $this->assertEquals(1, $destination->getParam("id"));
+    }
+
+    public function testRouteDefaultParam()
+    {
+        $routes = [
+            Route::from("/[{action}]")->to("users@{action}")->default("action", "listing"),
+        ];
+
+        $router = new Router($routes);
+
+        $route = $router->route("/details", "get");
+        $this->assertEquals("users@details", $route->getHandler());
+
+        $route = $router->route("/", "get");
+        $this->assertEquals("users@listing", $route->getHandler());
+    }
+
+    public function testRouteDefaultParams()
+    {
+        $routes = [
+            Route::from("/[{action}[/{id}]]")->to("users@{action}")->defaults([
+                "action" => "listing",
+                "id" => 0,
+            ]),
+        ];
+
+        $router = new Router($routes);
+
+        $route = $router->route("/details/1", "get");
+        $this->assertEquals("details", $route["action"]);
+        $this->assertEquals(1, $route["id"]);
+
+        $route = $router->route("/details", "get");
+        $this->assertEquals("details", $route["action"]);
+        $this->assertEquals(0, $route["id"]);
+
+        $route = $router->route("/", "get");
+        $this->assertEquals("listing", $route["action"]);
+        $this->assertEquals(0, $route["id"]);
+    }
+
+    public function testRouteException()
+    {
+        $route = Route::from("/")->to("users@index");
+
+        try {
+            $route["action"] = "view";
+        } catch (\Exception $e) {
+            $this->assertEquals("Route is read-only: cannot set value `action`", $e->getMessage());
+        }
+
+        try {
+            unset($route["action"]);
+        } catch (\Exception $e) {
+            $this->assertEquals("Route is read-only: cannot unset value `action`", $e->getMessage());
+        }
+
+        try {
+            $route->test();
+        } catch (\Exception $e) {
+            $this->assertEquals("Method `test` does not exist", $e->getMessage());
+        }
+
+        try {
+            $route->handler("");
+        } catch (\Exception $e) {
+            $this->assertEquals("Route handler cannot be empty", $e->getMessage());
+        }
     }
 }
