@@ -153,8 +153,7 @@ class TableManager
         # Get the last item
         $classShortName = array_pop($segments);
 
-        # Transform the class name into an unders-scored version and make it
-        # plural (naïvely)
+        # Transform the class name into an underscored version and make it plural
         return Stringy::create($classShortName)->underscored() . "s";
     }
 }
