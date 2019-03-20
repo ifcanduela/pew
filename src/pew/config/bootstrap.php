@@ -156,22 +156,6 @@ $container["route"] = function (Container $c) {
     return $router->route($pathInfo, $request->getMethod());
 };
 
-$container["route_namespace"] = function (Container $c) {
-    $route = $c["route"];
-
-    $namespace = S::create($c["controller_namespace"])
-        ->ensureLeft("\\")
-        ->ensureRight("\\");
-
-    if ($routeNamespace = $route->getNamespace()) {
-        $namespace .= S::create($routeNamespace)
-            ->removeLeft("\\")
-            ->ensureRight("\\");
-    }
-
-    return $namespace;
-};
-
 $container["router"] = function (Container $c) {
     $debug = $c["debug"];
     $routes = $c["routes"];
