@@ -14,6 +14,30 @@ class Message
     const COLOR_WHITE = "white";
     const COLOR_DEFAULT = "default";
 
+    const CODE_FG_SET = 30;
+    const CODE_FG_UNSET = 39;
+
+    const CODE_BG_SET = 40;
+    const CODE_BG_UNSET = 49;
+
+    const CODE_BOLD_SET = 1;
+    const CODE_BOLD_UNSET = 22;
+
+    const CODE_DIM_SET = 2;
+    const CODE_DIM_UNSET =  22;
+
+    const CODE_UNDERLINE_SET = 4;
+    const CODE_UNDERLINE_UNSET =  24;
+
+    const CODE_BLINK_SET = 5;
+    const CODE_BLINK_UNSET =  25;
+
+    const CODE_INVERT_SET = 7;
+    const CODE_INVERT_UNSET =  27;
+
+    const CODE_HIDDEN_SET = 8;
+    const CODE_HIDDEN_UNSET =  28;
+
     /** @var string Text to format and print */
     protected $text = "";
 
@@ -58,8 +82,8 @@ class Message
      */
     public function fg(string $color)
     {
-        $this->setCodes[] = 30 + $this->colors[$color];
-        $this->unsetCodes[] = 39;
+        $this->setCodes[] = static::CODE_FG_SET + $this->colors[$color];
+        $this->unsetCodes[] = static::CODE_FG_UNSET;
 
         return $this;
     }
@@ -72,8 +96,8 @@ class Message
      */
     public function bg(string $color)
     {
-        $this->setCodes[] = 40 + $this->colors[$color];
-        $this->unsetCodes[] = 49;
+        $this->setCodes[] = static::CODE_BG_SET + $this->colors[$color];
+        $this->unsetCodes[] = static::CODE_BG_UNSET;
 
         return $this;
     }
@@ -111,8 +135,8 @@ class Message
      */
     public function bold()
     {
-        $this->setCodes[] = 1;
-        $this->unsetCodes[] = 22;
+        $this->setCodes[] = static::CODE_BOLD_SET;
+        $this->unsetCodes[] = static::CODE_BOLD_UNSET;
 
         return $this;
     }
@@ -124,8 +148,8 @@ class Message
      */
     public function dim()
     {
-        $this->setCodes[] = 2;
-        $this->unsetCodes[] = 22;
+        $this->setCodes[] = static::CODE_DIM_SET;
+        $this->unsetCodes[] = static::CODE_DIM_UNSET;
 
         return $this;
     }
@@ -137,8 +161,8 @@ class Message
      */
     public function underline()
     {
-        $this->setCodes[] = 4;
-        $this->unsetCodes[] = 24;
+        $this->setCodes[] = static::CODE_UNDERLINE_SET;
+        $this->unsetCodes[] = static::CODE_UNDERLINE_UNSET;
 
         return $this;
     }
@@ -150,8 +174,8 @@ class Message
      */
     public function blink()
     {
-        $this->setCodes[] = 5;
-        $this->unsetCodes[] = 25;
+        $this->setCodes[] = static::CODE_BLINK_SET;
+        $this->unsetCodes[] = static::CODE_BLINK_UNSET;
 
         return $this;
     }
@@ -163,8 +187,8 @@ class Message
      */
     public function invert()
     {
-        $this->setCodes[] = 7;
-        $this->unsetCodes[] = 27;
+        $this->setCodes[] = static::CODE_INVERT_SET;
+        $this->unsetCodes[] = static::CODE_INVERT_UNSET;
 
         return $this;
     }
@@ -176,8 +200,8 @@ class Message
      */
     public function hidden()
     {
-        $this->setCodes[] = 8;
-        $this->unsetCodes[] = 28;
+        $this->setCodes[] = static::CODE_HIDDEN_SET;
+        $this->unsetCodes[] = static::CODE_HIDDEN_UNSET;
 
         return $this;
     }
