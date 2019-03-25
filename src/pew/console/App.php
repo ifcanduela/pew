@@ -40,7 +40,8 @@ class App extends \pew\App
             $this->commandMissing($commandName);
         }
 
-        $this->container["arguments"] = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
+        $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
+        $this->set(CommandArguments::class, $args);
 
         return $this->handleCommand($command, $action);
     }
