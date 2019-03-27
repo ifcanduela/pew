@@ -149,7 +149,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      */
     public function toArray()
     {
-        return array_merge($this->record, get_object_vars($this));
+        return $this->attributes();
     }
 
     /**
@@ -175,23 +175,12 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         $include = array_merge(get_object_vars($this), $this->record);
 
-        $exclude = [
-            "connectionName" => true,
-            "createdFieldName" => true,
-            "doNotSerialize" => true,
-            "errors" => true,
-            "getterMethods" => true,
-            "getterResults" => true,
-            "isNew" => true,
-            "primaryKey" => true,
-            "record" => true,
-            "serialize" => true,
-            "setterMethods" => true,
-            "tableManager" => true,
-            "tableName" => true,
-            "updatedFieldName" => true,
-            "validator" => true,
-        ];
+        $reflectionClass = new \ReflectionClass(__CLASS__);
+        $modelProperties = array_map(function (\ReflectionProperty $reflectionProperty) {
+            return $reflectionProperty->name;
+        }, $reflectionClass->getProperties());
+
+        $exclude = array_flip($modelProperties);
 
         $record = array_diff_key($include, $exclude);
 
@@ -382,13 +371,13 @@ class Record implements \JsonSerializable, \IteratorAggregate
             $this->$methodName($value);
 
             return $this;
-        } elseif (array_key_exists($key, $this->record)) {
-            $this->record[$key] = $value;
-
-            return $this;
         }
 
-        throw new \RuntimeException("Record attribute {$key} does not exist");
+        if (array_key_exists($key, $this->record)) {
+            $this->record[$key] = $value;
+        } else {
+            throw new \RuntimeException("Record attribute `{$key}` does not exist");
+        }
     }
 
     /**
@@ -424,7 +413,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             return $this->record[$key];
         }
 
-        throw new \Exception("Field '{$key}' not found in class '" . get_class($this) . "'");
+        throw new \Exception("Record attribute `{$key}` does not exist");
     }
 
     /**
@@ -471,7 +460,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             return static::find()->where([$field => $value])->one();
         }
 
-        throw new \BadMethodCallException("Method " . static::class . "::{$method}() does not exist");
+        throw new \BadMethodCallException("Method `" . static::class . "::{$method}()` does not exist");
     }
 
     /**

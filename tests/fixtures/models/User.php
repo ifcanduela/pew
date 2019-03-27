@@ -11,4 +11,9 @@ class User extends \pew\Model
     {
         return $this->belongsTo(Project::class);
     }
+
+    public function getProfile()
+    {
+        return $this->hasOne(Profile::class);
+    }
 }
