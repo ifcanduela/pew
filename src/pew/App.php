@@ -390,7 +390,7 @@ class App implements ContainerInterface
                 }
             }
 
-            throw new \RuntimeException("No controller found for handler {$handler}");
+            throw new \RuntimeException("No controller found for handler `{$handler}`");
         }
 
         return $handler;
@@ -501,7 +501,7 @@ class App implements ContainerInterface
      *
      * @param string $key
      * @return mixed
-     * @throws Psr\Container\NotFoundExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function get($key)
     {

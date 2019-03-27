@@ -9,6 +9,12 @@ class App extends \pew\App
     /** @var string[] */
     public $availableCommands = [];
 
+    public function __construct(string $appFolder, string $configFileName = "config")
+    {
+        parent::__construct($appFolder, $configFileName);
+        $this->initCommandList();
+    }
+
     /**
      * Run a command.
      *
@@ -16,7 +22,6 @@ class App extends \pew\App
      */
     public function run()
     {
-        $this->initCommandList();
         $arguments = $this->getArguments();
 
         if (empty($arguments)) {
@@ -25,7 +30,7 @@ class App extends \pew\App
                 echo "    " . $command->description() . PHP_EOL;
             }
 
-            die();
+            return;
         }
 
         if (strpos($arguments["command"], ":") !== false) {
@@ -37,7 +42,8 @@ class App extends \pew\App
         $command = $this->findCommand($commandName);
 
         if (!($command instanceof CommandInterface)) {
-            $this->commandMissing($commandName);
+            $this->commandMissing($commandName, $command);
+            return;
         }
 
         $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
@@ -72,14 +78,12 @@ class App extends \pew\App
         }
     }
 
-    protected function commandMissing(string $commandName)
+    protected function commandMissing(string $commandName, array $suggestions = [])
     {
         echo "Command {$commandName} not found" . PHP_EOL;
         echo "Did you mean:" . PHP_EOL;
 
-        if ($commandName) {
-            $suggestions = $commandName;
-        } else {
+        if (!$suggestions) {
             $suggestions = array_keys($this->availableCommands);
         }
 
@@ -87,7 +91,7 @@ class App extends \pew\App
             echo "    {$suggestion}" . PHP_EOL;
         }
 
-        die();
+        return;
     }
 
     /**
@@ -95,7 +99,7 @@ class App extends \pew\App
      *
      * @return array
      */
-    protected function getArguments()
+    public function getArguments()
     {
         $argv = $_SERVER["argv"];
         $scriptName = $_SERVER["SCRIPT_NAME"];

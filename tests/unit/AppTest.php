@@ -118,12 +118,20 @@ class AppTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("config", $app->get("config_folder"), "Config Folder");
         $this->assertEquals(false, $app->get("debug"), "Debug Mode");
         $this->assertEquals("index", $app->get("default_action"), "Default Action");
-        $this->assertEquals("dev", $app->get("env"), "Current Environment");
+        $this->assertEquals("test", $app->get("env"), "Current Environment");
         $this->assertEquals(["\\", ".", "|"], $app->get("ignore_url_separator"), "URL Separators to Ignore");
         $this->assertEquals(["json", "html", "php"], $app->get("ignore_url_suffixes"), "URL Suffixes to Ignore");
         $this->assertEquals(300, $app->get("log_level"), "Log Level");
         $this->assertEquals($rootPath, $app->get("root_path"), "Root Path");
         $this->assertEquals($wwwPath, $app->get("www_path"), "Public Path");
+
+        $this->assertEquals([
+            "test" => [
+                "engine" => "sqlite",
+                "file" => ":memory:",
+            ],
+        ], $app->get("db_config"));
+        $this->assertInstanceOf(\ifcanduela\db\Database::class, $app->get("db"));
     }
 
     public function testRouteNotFound()
@@ -177,6 +185,20 @@ class AppTest extends PHPUnit\Framework\TestCase
 
         $controllerClass = $app->resolveController($r);
         $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
+    }
+
+    public function testMissingController()
+    {
+        $r = new \pew\router\Route();
+        $r->setHandler("noController@index");
+
+        $app = new App($this->appFolder, 'test');
+
+        try {
+            $app->resolveController($r);
+        } catch (\Exception $e) {
+            $this->assertEquals("No controller found for handler `noController@index`", $e->getMessage());
+        }
     }
 
     public function testResolveControllerNotFound()
