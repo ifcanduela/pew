@@ -35,9 +35,6 @@ class Image
     /** @var string Image file MIME type */
     protected $mimeType;
 
-    /** @var int Output quality */
-    protected $quality;
-
     /** @var int */
     protected $width;
 
@@ -50,6 +47,7 @@ class Image
         "jpeg" => IMAGETYPE_JPEG,
         "png" => IMAGETYPE_PNG,
         "gif" => IMAGETYPE_GIF,
+        "webp" => IMAGETYPE_WEBP,
     ];
 
     /** @var array */
@@ -57,6 +55,7 @@ class Image
         IMAGETYPE_JPEG => "jpg" ,
         IMAGETYPE_PNG => "png" ,
         IMAGETYPE_GIF => "gif" ,
+        IMAGETYPE_WEBP => "webp",
     ];
 
     /**
@@ -66,8 +65,6 @@ class Image
      */
     public function __construct($file = null)
     {
-        $this->quality = 75;
-
         if (is_array($file)) {
             $this->upload($file);
         } elseif (is_string($file)) {
@@ -141,27 +138,45 @@ class Image
      */
     protected function loadFile(string $filename, $imageType)
     {
+        $resource = null;
+
         switch ($imageType) {
             case IMAGETYPE_JPEG:
-                $this->resource = @imagecreatefromjpeg($filename);
+                $resource = @imagecreatefromjpeg($filename);
                 break;
 
             case IMAGETYPE_PNG:
-                $this->resource = @imagecreatefrompng($filename);
+                $resource = @imagecreatefrompng($filename);
                 break;
 
             case IMAGETYPE_GIF:
-                $this->resource = @imagecreatefromgif($filename);
+                $resource = @imagecreatefromgif($filename);
+                break;
+
+            case IMAGETYPE_WEBP:
+                $resource = @imagecreatefromwebp($filename);
                 break;
 
             default:
                 throw new \Exception("The image format of file {$filename} is not supported");
         }
 
-        if (!$this->resource) {
+        if (!$resource) {
             $error = error_get_last();
             $message = $error["message"];
             throw new \Exception("The file {$filename} is not a valid image resouce. {$message}");
+        }
+
+        $this->setResource($resource, $imageType);
+    }
+
+    protected function setResource($resource, $imageType = null)
+    {
+        $this->resource = $resource;
+
+        if ($imageType === IMAGETYPE_PNG) {
+            imagealphablending($this->resource, false);
+            imagesavealpha($this->resource, true);
         }
     }
 
@@ -175,7 +190,8 @@ class Image
     public function image($resource = null)
     {
         if (!is_null($resource)) {
-            $this->resource = $resource;
+            $this->setResource($resource);
+
             return $this;
         }
 
@@ -221,13 +237,14 @@ class Image
     /**
      * Save the loaded image to a file.
      *
-     * The image type defaults to the original image type, and the quality defaults to 75.
+     * The image type defaults to the original image type, and the quality
+     * defaults to 75 for JPEG, 6 for PNG and 80 for WebP.
      *
      * @see http://www.php.net/manual/en/function.image-type-to-mime-type.php
      *
      * @param string $destination Destination folder or filename
      * @param int $imageType One of the IMAGETYPE_* constants
-     * @param int $quality Output quality (0 - 100)
+     * @param int $quality Output quality
      * @return bool Result of the image* functions
      * @throws \Exception
      */
@@ -245,10 +262,6 @@ class Image
             $imageType = $this->imageTypeByExtension[$extension] ?? $this->imageType;
         }
 
-        if (!$quality) {
-            $quality = $this->quality;
-        }
-
         if (!$extension) {
             $extension = $this->extensionByImageType[$imageType];
             $destination = rtrim($destination, "\\/")
@@ -262,10 +275,13 @@ class Image
                 return imagejpeg($this->resource, $destination, $quality);
 
             case IMAGETYPE_PNG:
-                return imagepng($this->resource, $destination, $quality * 9 / 100);
+                return imagepng($this->resource, $destination, $quality);
 
             case IMAGETYPE_GIF:
                 return imagegif($this->resource, $destination);
+
+            case IMAGETYPE_WEBP:
+                return imagewebp($this->resource, $destination, $qualitty);
 
             default:
                 $filename = $this->sourceFileName;
@@ -368,27 +384,6 @@ class Image
     }
 
     /**
-     * Set or get the output quality.
-     *
-     * The value must be a percentage, even for PNG images.
-     *
-     * @param int $quality Output quality (0 - 100)
-     * @return int|self The image object, or the current quality setting
-     */
-    public function quality($quality = null)
-    {
-        if (!is_null($quality)) {
-            $quality = max(0, min(100, (int) $quality));
-
-            $this->quality = $quality;
-
-            return $this;
-        }
-
-        return $this->quality;
-    }
-
-    /**
      * Resize an image.
      *
      * If one of the dimensions is null the resize operation will
@@ -416,7 +411,8 @@ class Image
             $newHeight = $newWidth * $this->height / $this->width;
         }
 
-        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        $resized = $this->createImage($newWidth, $newHeight);
+
         imagecopyresampled(
             $resized,
             $this->resource,
@@ -431,7 +427,7 @@ class Image
         );
 
         imagedestroy($this->resource);
-        $this->resource = $resized;
+        $this->setResource($resized);
         $this->width = imagesx($resized);
         $this->height = imagesy($resized);
 
@@ -513,11 +509,11 @@ class Image
             $xOffset = $oldWidth - $w;
         }
 
-        $cropped = imagecreatetruecolor($w, $h);
-        imagecopyresampled($cropped, $this->resource, 0, 0, $xOffset, $yOffset, $w, $h, $w, $h);
+        $cropped = $this->createImage($w, $h);
 
+        imagecopyresampled($cropped, $this->resource, 0, 0, $xOffset, $yOffset, $w, $h, $w, $h);
         imagedestroy($this->resource);
-        $this->resource = $cropped;
+        $this->setResource($cropped);
         $this->width = $w;
         $this->height = $h;
 
@@ -573,7 +569,7 @@ class Image
      * @param int $quality Quality of the PNG or JPEG output, from 0 to 100
      * @throws \Exception
      */
-    public function serve($imageType = IMAGETYPE_JPEG, $quality = 75)
+    public function serve($imageType = IMAGETYPE_JPEG, $quality = null)
     {
         $this->checkResource();
 
@@ -585,11 +581,15 @@ class Image
                 break;
 
             case IMAGETYPE_PNG:
-                imagepng($this->resource, null, $quality * 9 / 100);
+                imagepng($this->resource, null, $quality);
                 break;
 
             case IMAGETYPE_GIF:
                 imagegif($this->resource);
+                break;
+
+            case IMAGETYPE_WEBP:
+                imagewebp($this->resource, null, $quality);
                 break;
 
             default:
@@ -635,5 +635,17 @@ class Image
         if (!$this->resource) {
             throw new \RuntimeException("No image loaded");
         }
+    }
+
+    public function createImage($width, $height)
+    {
+        $image = imagecreatetruecolor($width, $height);
+
+        if ($this->imageType === IMAGETYPE_PNG) {
+            imagealphablending($image, false);
+            imagesavealpha($image, true);
+        }
+
+        return $image;
     }
 }
