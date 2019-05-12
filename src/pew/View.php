@@ -16,7 +16,7 @@ class View implements \ArrayAccess
     /** @var string Template name */
     protected $template = "";
 
-    /** @var string Layout name */
+    /** @var string|bool Layout name */
     protected $layout = "";
 
     /** @var string View title */
@@ -94,7 +94,7 @@ class View implements \ArrayAccess
      *
      * Template names are resolved using the configured template directories and template file extension.
      *
-     * @param null|string $template Template name, relative to one of the template directories.
+     * @param null|string|array $template Template name, relative to one of the template directories.
      * @param array $data Template data
      * @return string
      * @throws \Exception
@@ -144,7 +144,7 @@ class View implements \ArrayAccess
     /**
      * Check if a template file exists.
      *
-     * @param string|null $template Base file name (without extension)
+     * @param string $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
      */
     public function exists(string $template = "")
@@ -214,7 +214,7 @@ class View implements \ArrayAccess
     /**
      * Set or get the template to render.
      *
-     * @param string|null $template Name of the template
+     * @param string $template Name of the template
      * @return self|string Name of the template
      */
     public function template(string $template = "")
@@ -231,7 +231,7 @@ class View implements \ArrayAccess
     /**
      * Set or get the view file extension.
      *
-     * @param string|null $extension View file extension
+     * @param string $extension View file extension
      * @return self|string View file extension
      */
     public function extension(string $extension = "")
@@ -247,6 +247,8 @@ class View implements \ArrayAccess
 
     /**
      * Set or get the layout to use.
+     *
+     * Use `$view->layout(false)` or `$view->layout("")` to disable layout rendering.
      *
      * @param string|bool|null $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
