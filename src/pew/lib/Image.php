@@ -248,7 +248,7 @@ class Image
      * @return bool Result of the image* functions
      * @throws \Exception
      */
-    public function save($destination, int $imageType = null, int $quality = null)
+    public function save($destination, int $imageType = null, int $quality = -1)
     {
         $this->checkResource();
 
@@ -287,7 +287,7 @@ class Image
                 return imagegif($this->resource, $destination);
 
             case IMAGETYPE_WEBP:
-                return imagewebp($this->resource, $destination, $qualitty);
+                return imagewebp($this->resource, $destination, $quality);
 
             default:
                 $filename = $this->sourceFileName;
