@@ -270,6 +270,12 @@ class Image
                          . "." . $extension;
         }
 
+        $dirname = dirname($destination);
+
+        if (!file_exists($dirname)) {
+            mkdir($dirname, 0777, true);
+        }
+        
         switch ($imageType) {
             case IMAGETYPE_JPEG:
                 return imagejpeg($this->resource, $destination, $quality);
