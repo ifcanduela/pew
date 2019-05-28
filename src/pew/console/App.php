@@ -3,6 +3,7 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
+use pew\model\TableManager;
 
 class App extends \pew\App
 {
@@ -145,6 +146,9 @@ class App extends \pew\App
      */
     protected function handleCommand(CommandInterface $command, string $action)
     {
+        # Initialize the database manager
+        TableManager::instance($this->get("tableManager"));
+
         $injector = $this->get("injector");
 
         $injector->callMethod($command, "init");
