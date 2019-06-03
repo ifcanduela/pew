@@ -67,6 +67,9 @@ class App implements ContainerInterface
         $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
 
+        # Initialize the database manager
+        TableManager::instance($this->get("tableManager"));
+
         App::log("App path set to {$appPath}", Logger::INFO);
     }
 
@@ -148,8 +151,6 @@ class App implements ContainerInterface
         $errorHandler->register();
 
         try {
-            # Initialize the database manager
-            TableManager::instance($this->get("tableManager"));
             # Process the request
             $response = $this->handle();
         } catch (RouteNotFound $e) {
