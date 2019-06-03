@@ -1,2 +1,2 @@
 <title><?= $this->title ?></title>
-<?= $this->child() ?>
+<?= $this->content() ?>

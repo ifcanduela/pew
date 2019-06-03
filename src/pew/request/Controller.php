@@ -55,9 +55,7 @@ class Controller
             $this->view->template($template);
         }
 
-        $content = $this->view->render($template, $data);
-
-        return new Response($content);
+        return $this->view->render($template, $data);
     }
 
     /**

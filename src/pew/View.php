@@ -4,11 +4,13 @@ namespace pew;
 
 use SplStack;
 use Stringy\Stringy as S;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * This class encapsulates the template rendering functionality.
  */
-class View implements \ArrayAccess
+class View
 {
     /** @var SplStack Base templates directory */
     protected $folderStack;
@@ -37,17 +39,25 @@ class View implements \ArrayAccess
     /** @var array */
     protected $variables = [];
 
+    /** @var bool */
+    protected $isJsonResponse = false;
+
+    /** @var Response */
+    protected $response;
+
     /**
      * Creates a View object based on a folder.
      *
      * If no folder is provided, the current working directory is used.
      *
      * @param string $templatesFolder
+     * @param Response $response
      */
-    public function __construct(string $templatesFolder = "")
+    public function __construct(string $templatesFolder = "", Response $response = null)
     {
         $this->blockStack = new SplStack();
         $this->folderStack = new SplStack();
+        $this->response = $response ?? new Response();
 
         $this->addFolder($templatesFolder ?: getcwd());
     }
@@ -76,6 +86,28 @@ class View implements \ArrayAccess
     public function get(string $key, $default = null)
     {
         return $this->variables[$key] ?? $default;
+    }
+
+    /**
+     * Set data for the template.
+     *
+     * @param array $data
+     */
+    public function setData(array $data)
+    {
+        $this->variables = $data;
+
+        return $this;
+    }
+
+    /**
+     * Get the current data for the template.
+     *
+     * @return array
+     */
+    public function getData()
+    {
+        return $this->variables;
     }
 
     /**
@@ -135,10 +167,10 @@ class View implements \ArrayAccess
                 throw new \RuntimeException("Layout {$this->layout} not found");
             }
 
-            $output = $this->renderFile($layoutFile, ["output" => $output]);
+            $this->output = $this->renderFile($layoutFile, ["output" => $output]);
         }
 
-        return $output;
+        return $this;
     }
 
     /**
@@ -265,6 +297,18 @@ class View implements \ArrayAccess
     }
 
     /**
+     * Do not wrap the template in a layout.
+     *
+     * @return self
+     */
+    public function noLayout()
+    {
+        $this->layout = false;
+
+        return $this;
+    }
+
+    /**
      * Set and get the view title.
      *
      * @param string|null $title The title of the view
@@ -286,7 +330,7 @@ class View implements \ArrayAccess
      *
      * @return string View output
      */
-    public function child()
+    public function content()
     {
         return $this->output;
     }
@@ -311,7 +355,7 @@ class View implements \ArrayAccess
         }
 
         # Render the element.
-        return $this->renderFile($templateFile, $data);
+        return $this->renderFile($templateFile, array_replace($this->variables, $data));
     }
 
     /**
@@ -415,47 +459,83 @@ class View implements \ArrayAccess
     }
 
     /**
-     * Get the value of a template variable.
+     * Set a cookie on the response.
      *
-     * @param string $key
-     * @return mixed
+     * @param Cookie|string $cookie
+     * @param string|null $value
+     * @return self
      */
-    public function offsetGet($key)
+    public function cookie($cookie, string $value = null)
     {
-        return $this->get($key);
+        if ($cookie instanceof Cookie) {
+            $this->response->headers->setCookie($cookie);
+        } else {
+            $this->response->headers->setCookie(new Cookie($cookie, $value));
+        }
+
+        return $this;
     }
 
     /**
-     * Set the value of a template variable.
+     * Set a header on the response.
      *
-     * @param string $key
-     * @param mixed $value
-     * @return mixed
+     * @param string $header
+     * @param string $value
+     * @return self
      */
-    public function offsetSet($key, $value)
+    public function header(string $header, string $value)
     {
-        return $this->set($key, $value);
+        $this->response->headers->set($header, $value);
+
+        return $this;
     }
 
     /**
-     * Check if a template variable was set.
+     * Return a JSON response instead of rendering a template.
      *
-     * @param string $key
-     * @return bool
+     * @param bool $isJsonResponse
+     * @return self
      */
-    public function offsetExists($key)
+    public function json($isJsonResponse = true)
     {
-        return array_key_exists($key, $this->variables);
+        $this->isJsonResponse = true;
+
+        return $this;
     }
 
     /**
-     * Unset a template variable.
-     *
-     * @param string $key
-     * @return void
+     * Adds content to the response
+     * @return Response
      */
-    public function offsetUnset($key)
+    protected function prepareResponse()
     {
-        unset($this->variables[$key]);
+        if ($this->isJsonResponse) {
+            $this->response->setContent(json_encode($this->variables));
+            $this->response->headers->set("Content-Type", "application/json");
+        } else {
+            // $this->render();
+            $this->response->setContent($this->output);
+        }
+
+        return $this->response;
+    }
+
+    public function getResponse()
+    {
+        return $this->prepareResponse();
+    }
+
+    public function send()
+    {
+        $this->getResponse()->send();
+    }
+
+    public function __toString()
+    {
+        if ($this->isJsonResponse) {
+            return json_encode($this->variables);
+        }
+
+        return $this->output;
     }
 }

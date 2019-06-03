@@ -50,7 +50,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
                     ->getMock();
 
         $c = new TestController($request, new View());
-        
+
         $response = $c->redirect("/user/profile");
 
         $this->assertInstanceOf(\Symfony\Component\HttpFoundation\RedirectResponse::class, $response);
@@ -68,8 +68,8 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $response = $c->render("partial", ["value" => 1]);
 
-        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\Response::class, $response);
-        $this->assertEquals("1", $response->getContent());
+        $this->assertInstanceOf(\pew\View::class, $response);
+        $this->assertEquals("1", $response->content());
     }
 
     public function testMiddlewareRedirect()

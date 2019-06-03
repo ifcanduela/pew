@@ -132,18 +132,12 @@ class ViewTest extends PHPUnit\Framework\TestCase
     public function testDataPropertyHandling()
     {
         $v = new View();
-        $v["alpha"] = "ALPHA";
-        $v->set("beta", "BETA");
+        $v->set("alpha", "ALPHA");
 
         $this->assertTrue($v->has("alpha"));
         $this->assertEquals($v->get("alpha"), "ALPHA");
 
-        $this->assertTrue(isset($v["beta"]));
-        $this->assertEquals($v["beta"], "BETA");
-
-        unset($v["beta"]);
         $this->assertFalse($v->has("beta"));
-        $this->assertFalse(isset($v["beta"]));
     }
 
     public function testTemplateExists()

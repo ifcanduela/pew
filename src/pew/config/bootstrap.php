@@ -235,8 +235,9 @@ $container["use_db"] = function (Container $c) {
 $container["view"] = function (Container $c) {
     $app_path = $c["app_path"];
     $viewsFolder = $app_path . "/views/";
+    $response = $c["response"];
 
-    return new View($viewsFolder);
+    return new View($viewsFolder, $response);
 };
 
 return $container;
