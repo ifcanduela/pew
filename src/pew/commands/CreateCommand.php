@@ -143,7 +143,7 @@ PHP;
     }
 
     /**
-     * Create a middelware file.
+     * Create a middleware file.
      *
      * @param CommandArguments $arguments
      * @return void
@@ -157,7 +157,7 @@ PHP;
 
 namespace app\middleware;
 
-class OnlyAuthenticated extends \\request\\Middlewaree
+class {$className} extends \\request\\Middleware
 {
     public function before()
     {
