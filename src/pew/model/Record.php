@@ -449,14 +449,16 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $methodStr = S::create($method);
 
         if ($methodStr->startsWith("findAllBy")) {
-            $field = $methodStr->removeLeft("findAllBy")->underscored()->__toString();
+            $field = (string) $methodStr->removeLeft("findAllBy")->underscored();
             $value = array_shift($arguments);
+
             return static::find()->where([$field => $value])->all();
         }
 
         if ($methodStr->startsWith("findOneBy")) {
-            $field = $methodStr->removeLeft("findOneBy")->underscored()->__toString();
+            $field = (string) $methodStr->removeLeft("findOneBy")->underscored();
             $value = array_shift($arguments);
+
             return static::find()->where([$field => $value])->one();
         }
 

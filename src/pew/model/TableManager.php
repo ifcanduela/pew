@@ -110,6 +110,7 @@ class TableManager
      * @param string $recordClass
      * @param string|null $connectionName
      * @return Table
+     * @throws \ReflectionException
      */
     public function create(string $recordClass, $connectionName = null)
     {
@@ -141,7 +142,7 @@ class TableManager
     }
 
     /**
-     * Make a naïve guess on a table name based on the class name.
+     * Make a naive guess on a table name based on the class name.
      *
      * @param string $className
      * @return string

@@ -51,6 +51,7 @@ class Router
      *
      * @param array $routeData
      * @return Route[]
+     * @throws \Exception
      */
     protected function processRouteData(array $routeData)
     {
@@ -78,6 +79,7 @@ class Router
      * @param string $httpMethod
      * @return Route
      * @throws \RuntimeException
+     * @throws \Exception
      */
     public function route(string $pathInfo, string $httpMethod)
     {

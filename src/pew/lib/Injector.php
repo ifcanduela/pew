@@ -2,9 +2,13 @@
 
 namespace pew\lib;
 
-class KeyNotFoundException extends \Exception
-{
-}
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
+
+class KeyNotFoundException extends \Exception {}
 
 class Injector
 {
@@ -53,11 +57,12 @@ class Injector
      * The returned array can be used with `call_user_func_array()` or
      * `invokeArgs()`.
      *
-     * @param \ReflectionFunctionAbstract $method
+     * @param ReflectionFunctionAbstract $method
      * @return array List of arguments
      * @throws KeyNotFoundException When an argument cannot be found
+     * @throws ReflectionException
      */
-    public function getInjections(\ReflectionFunctionAbstract $method)
+    public function getInjections(ReflectionFunctionAbstract $method)
     {
         $injections = [];
         $parameters = $method->getParameters();
@@ -124,10 +129,12 @@ class Injector
      *
      * @param string $className A fully-qualified class name
      * @return object A new object of the class
+     * @throws KeyNotFoundException
+     * @throws ReflectionException
      */
     public function createInstance(string $className)
     {
-        $class = new \ReflectionClass($className);
+        $class = new ReflectionClass($className);
         $constructor = $class->getConstructor();
 
         if ($constructor) {
@@ -144,6 +151,8 @@ class Injector
      * @param object $object An object on which to invoke the method
      * @param string $methodName Method name
      * @return mixed Result of calling the method on the object
+     * @throws KeyNotFoundException
+     * @throws ReflectionException
      */
     public function callMethod($object, string $methodName)
     {
@@ -156,7 +165,7 @@ class Injector
             throw new \InvalidArgumentException("Invalid argument supplied to {$method}: \$object must be an object.");
         }
 
-        $method = new \ReflectionMethod($object, $methodName);
+        $method = new ReflectionMethod($object, $methodName);
         $injections = $this->getInjections($method);
 
         return $method->invokeArgs($object, $injections);
@@ -168,10 +177,12 @@ class Injector
      * @param callable $callable An object on which to invoke the method
      * @param object $boundObject Optional object to bind the closure to
      * @return mixed Result of calling the method on the object
+     * @throws KeyNotFoundException
+     * @throws ReflectionException
      */
     public function callFunction(callable $callable, $boundObject = null)
     {
-        $function = new \ReflectionFunction($callable);
+        $function = new ReflectionFunction($callable);
         $injections = $this->getInjections($function);
 
         if (is_object($boundObject)) {
@@ -186,6 +197,8 @@ class Injector
      *
      * @param callable $callable
      * @return mixed
+     * @throws KeyNotFoundException
+     * @throws ReflectionException
      */
     public function call(callable $callable)
     {

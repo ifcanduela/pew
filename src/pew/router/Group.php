@@ -3,7 +3,7 @@
 namespace pew\router;
 
 /**
- * The Group class represents a gropuing of routes with common properties.
+ * The Group class represents a grouping of routes with common properties.
  */
 class Group extends Route
 {
@@ -40,6 +40,7 @@ class Group extends Route
      * Get the routes in the group.
      *
      * @return Route[]
+     * @throws \Exception
      */
     public function getRoutes()
     {

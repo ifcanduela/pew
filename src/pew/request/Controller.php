@@ -46,8 +46,9 @@ class Controller
      * to `$view->template(string $template)` has been made beforehand.
      *
      * @param string $template
-     * @param array $data
+     * @param array  $data
      * @return Response
+     * @throws \Exception
      */
     public function render(string $template, array $data = [])
     {

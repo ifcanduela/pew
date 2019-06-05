@@ -62,6 +62,7 @@ class Image
      * Build a new image object.
      *
      * @param string|array $file Image file to load
+     * @throws \Exception When the file does not exist
      */
     public function __construct($file = null)
     {
@@ -117,6 +118,7 @@ class Image
         if (!file_exists($file["tmp_name"]) || !is_uploaded_file($file["tmp_name"])) {
             $filename = $file["filename"];
             $tmpname = $file["tmp_name"];
+
             throw new \Exception("Uploaded file {$filename} not found [temp={$tmpname}]");
         }
 
@@ -164,7 +166,7 @@ class Image
         if (!$resource) {
             $error = error_get_last();
             $message = $error["message"];
-            throw new \Exception("The file {$filename} is not a valid image resouce. {$message}");
+            throw new \Exception("The file {$filename} is not a valid image resource. {$message}");
         }
 
         $this->setResource($resource, $imageType);
@@ -275,7 +277,7 @@ class Image
         if (!file_exists($dirname)) {
             mkdir($dirname, 0777, true);
         }
-        
+
         switch ($imageType) {
             case IMAGETYPE_JPEG:
                 return imagejpeg($this->resource, $destination, $quality);
@@ -445,7 +447,7 @@ class Image
      *
      * @param int $width
      * @return self
-     * @internal param int $w The target width
+     * @throws \Exception
      */
     public function resizeWidth(int $width)
     {
@@ -457,7 +459,7 @@ class Image
      *
      * @param int $height
      * @return self
-     * @internal param int|null $h The target height
+     * @throws \Exception
      */
     public function resizeHeight(int $height)
     {
@@ -555,9 +557,10 @@ class Image
     /**
      * Resize and crop an image to create a thumbnail.
      *
-     * @param int $width Thumbnail width
+     * @param int $width  Thumbnail width
      * @param int $height Thumbnail height
      * @return self
+     * @throws \Exception
      */
     public function fit(int $width, int $height)
     {

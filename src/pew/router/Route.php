@@ -190,7 +190,7 @@ class Route implements \ArrayAccess
     }
 
     /**
-     * Get the ruote name.
+     * Get the route name.
      *
      * @return string
      */
