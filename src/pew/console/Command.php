@@ -2,6 +2,11 @@
 
 namespace pew\console;
 
+use Stringy\Stringy;
+use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
 /**
  * Base class for command-line scripts.
  *
@@ -13,6 +18,43 @@ namespace pew\console;
  */
 abstract class Command implements CommandInterface
 {
+    /** @var string */
+    public $name;
+
+    /** @var string */
+    public $description;
+
+    /**
+     * Command constructor.
+     *
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     * @param FormatterHelper $formatter
+     */
+    public function __construct(InputInterface $input, OutputInterface $output, FormatterHelper $formatter)
+    {
+        $this->input = $input;
+        $this->output = $output;
+        $this->formatter = $formatter;
+    }
+
+    /**
+     * Get the command-line name for this Command.
+     *
+     * @return string
+     * @throws \ReflectionException
+     */
+    public function getName()
+    {
+        if (isset($this->name)) {
+            return $this->name;
+        }
+
+        $className = (new \ReflectionClass($this))->getShortName();
+
+        return (string) Stringy::create($className)->removeLeft("Command")->slugify();
+    }
+
     /**
      * Setup the command before running.
      *
@@ -42,112 +84,80 @@ abstract class Command implements CommandInterface
     }
 
     /**
-     * Create a command-line message to be printed.
+     * Print a command-line message.
      *
-     * @param string $text
+     * @param string|array $text
      * @return Message
      */
-    public function message(string $text)
+    public function message($text, bool $newLine = true, string $format = "")
     {
-        return new Message($text);
+        if (!is_array($text)) {
+            $text = [$text];
+        }
+
+        if ($format) {
+            $text = array_map(function ($t) use ($format) {
+                return "{$format}{$t}</>";
+            }, $text);
+        }
+
+        $this->output->write($text, $newLine);
     }
 
     /**
-     * Create an info message with light blue text.
+     * Print an info message with light blue text.
      *
-     * @param string $text
+     * @param string|array $text
      * @return Message
      */
-    public function info(string $text)
+    public function info($text, bool $newLine = true)
     {
-        return $this->message($text)->fg("cyan");
+        $this->message($text, $newLine, "<fg=cyan>");
     }
 
     /**
-     * Create an success message with green text.
+     * Print a success message with green text.
      *
-     * @param string $text
+     * @param string|array $text
      * @return Message
      */
-    public function success(string $text)
+    public function success($text, bool $newLine = true)
     {
-        return $this->message($text)->fg("green");
+        $this->message($text, $newLine, "<info>");
     }
 
     /**
-     * Create a warning message with yellow text.
+     * Print a warning message with yellow text.
      *
-     * @param string $text
+     * @param string|array $text
      * @return Message
      */
-    public function warning(string $text)
+    public function warning($text, bool $newLine = true)
     {
-        return $this->message($text)->fg("yellow");
+        $this->message($text, $newLine, "<comment>");
     }
 
     /**
-     * Create a warning message with black text on red background.
+     * Print an error message with red text.
      *
-     * @param string $text
+     * @param string|array $text
      * @return Message
      */
-    public function error(string $text)
+    public function error($text, bool $newLine = true)
     {
-        return $this->message($text)->fg("black")->bg("red");
+        $this->message($text, $newLine, "<error>");
     }
 
     /**
-     * Create a block of text to be printed.
+     * Print a log-style message.
      *
-     * @param string|string[] ...$text
-     * @return MessageBox
-     */
-    public function messageBox(string ...$text)
-    {
-        return new MessageBox(...$text);
-    }
-
-    /**
-     * Create an info message box with light blue background and white text.
-     *
-     * @param string|string[] ...$text
+     * @param string $type
+     * @param string $message
      * @return Message
      */
-    public function infoBox(string ...$text)
+    public function log(string $section, string $message, bool $newLine = true)
     {
-        return $this->messageBox(...$text)->fg("white")->bg("cyan");
-    }
-
-    /**
-     * Create an info message box with green background and white text.
-     *
-     * @param string|string[] ...$text
-     * @return Message
-     */
-    public function successBox(string ...$text)
-    {
-        return $this->messageBox(...$text)->fg("white")->bg("green");
-    }
-
-    /**
-     * Create a warning message box with yellow background and black text.
-     *
-     * @param string|string[] ...$text
-     * @return Message
-     */
-    public function warningBox(string ...$text)
-    {
-        return $this->messageBox(...$text)->fg("black")->bg("yellow");
-    }
-
-    /**
-     * Create an error message box with red background and black text.
-     *
-     * @param string|string[] ...$text
-     * @return Message
-     */
-    public function errorBox(string ...$text)
-    {
-        return $this->messageBox(...$text)->fg("black")->bg("red");
+        $text = $this->formatter->formatSection($section, $message);
+        $this->message($text, $newLine);
     }
 }

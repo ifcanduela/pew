@@ -5,13 +5,14 @@ namespace pew;
 use Monolog\Logger;
 use pew\lib\Injector;
 use pew\model\TableManager;
+use pew\response\Response;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
 use Psr\Container\ContainerInterface;
 use Stringy\Stringy as S;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * The App class is a request/response processor.
@@ -248,11 +249,11 @@ class App implements ContainerInterface
      * Run configured middleware callbacks after the controller action.
      *
      * @param Route $route
-     * @param Response $response
+     * @param SymfonyResponse $response
      * @param Injector $injector
      * @return Response
      */
-    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
+    protected function runAfterMiddleware(Route $route, SymfonyResponse $response, Injector $injector)
     {
         # Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
@@ -307,12 +308,13 @@ class App implements ContainerInterface
         # Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->get("controller_namespace"));
         $actionId = S::create($actionName)->underscored();
+        $actionMethod = S::create($actionName)->camelize();
         $template = $controllerPath . DIRECTORY_SEPARATOR . $actionId;
 
         $this->set("controller_slug", basename($controllerPath));
         $this->set("action_slug", $actionId);
 
-        App::log("Request handler is {$controllerPath}/{$actionName}");
+        App::log("Request handler is {$controllerPath}/{$actionMethod}");
 
         # Set up the template
         $view = $this->get("view");
@@ -330,7 +332,7 @@ class App implements ContainerInterface
 
         # Run the action if `beforeAction` did not return a result
         if ($result === null) {
-            $result = $injector->callMethod($controller, $actionName);
+            $result = $injector->callMethod($controller, $actionMethod);
         }
 
         return $result;
@@ -491,8 +493,7 @@ class App implements ContainerInterface
 
         # Use the action result to render the view
         $view = $this->get("view");
-        $output = $view->render($actionResult);
-        $response->setContent($output);
+        $response = $view->render($actionResult);
 
         return $response;
     }

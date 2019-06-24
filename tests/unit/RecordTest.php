@@ -1,5 +1,6 @@
 <?php
 
+use pew\model\Table;
 use pew\model\TableManager;
 use ifcanduela\db\Database;
 use app\models\Project;
@@ -41,8 +42,8 @@ class RecordTest extends PHPUnit\Framework\TestCase
             created_at INTEGER NULL,
             updated_at INTEGER NULL
         )');
-        $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 1", 1, NULL, NULL)');
-        $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 2", 1, NULL, NULL)');
+        $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 1", 1, 10000000, 10000000)');
+        $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 2", 1, 10000002, 10000002)');
         $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 3", 2, NULL, NULL)');
         $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 4", 2, NULL, NULL)');
         $db->run('INSERT INTO users (username, project_id, created_at, updated_at) VALUES ("User 5", 3, NULL, NULL)');
@@ -122,6 +123,14 @@ class RecordTest extends PHPUnit\Framework\TestCase
 
         $this->assertInstanceOf(\pew\model\Collection::class, $projects);
         $this->assertInstanceOf(Project::class, $projects[0]);
+    }
+
+    public function testOverloadFindStaticMethod()
+    {
+        $finder = User::find();
+
+        $this->assertInstanceOf(Table::class, $finder);
+        $this->assertEquals(2, count($finder->all()));
     }
 
     public function testRecordFromArray()
@@ -275,7 +284,7 @@ JSON;
     {
         $p1 = Project::findOne(1);
         $p2 = Project::findOne(2);
-        
+
         $p1tags = $p1->tags;
         $p2tags = $p2->tags;
 

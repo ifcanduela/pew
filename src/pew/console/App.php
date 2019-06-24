@@ -3,15 +3,28 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
+use Stringy\Stringy;
+use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 class App extends \pew\App
 {
     /** @var string[] */
     public $availableCommands = [];
 
+    /** @var ArgvInput */
+    public $input;
+
+    /** @var ConsoleOutput */
+    public $output;
+
     public function __construct(string $appFolder, string $configFileName = "config")
     {
         parent::__construct($appFolder, $configFileName);
+        $this->input = new ArgvInput();
+        $this->output = new ConsoleOutput();
+
         $this->initCommandList();
     }
 
@@ -19,37 +32,41 @@ class App extends \pew\App
      * Run a command.
      *
      * @return mixed
+     * @throws \ReflectionException
      */
     public function run()
     {
         $arguments = $this->getArguments();
 
         if (empty($arguments)) {
-            foreach ($this->availableCommands as $command) {
-                echo $command->name() . PHP_EOL;
-                echo "    " . $command->description() . PHP_EOL;
+            foreach ($this->availableCommands as $name => $commandClass) {
+                $r = new \ReflectionClass($commandClass);
+                $props = $r->getDefaultProperties();
+
+                $this->output->writeln("<info>$name</info>");
+
+                if ($props["description"]) {
+                    $this->output->writeln("    " . $props["description"]);
+                }
             }
 
             return;
         }
 
         if (strpos($arguments["command"], ":") !== false) {
-            list($commandName, $action) = explode(":", $arguments["command"]);
+            [$commandName, $action] = explode(":", $arguments["command"]);
         } else {
-            list($commandName, $action) = [$arguments["command"], "run"];
+            [$commandName, $action] = [$arguments["command"], "run"];
         }
 
-        $command = $this->findCommand($commandName);
+        $commandClassName = $this->findCommand($commandName);
 
-        if (!($command instanceof CommandInterface)) {
-            $this->commandMissing($commandName, $command);
+        if (!$commandClassName) {
+            $this->commandMissing($commandName, $commandClassName);
             return;
         }
 
-        $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
-        $this->set(CommandArguments::class, $args);
-
-        return $this->handleCommand($command, $action);
+        return $this->handleCommand($commandClassName, $arguments, $action);
     }
 
     /**
@@ -57,25 +74,35 @@ class App extends \pew\App
      */
     protected function initCommandList()
     {
-        $injector = $this->get("injector");
-        $commandFiles = glob($this->container["app_path"] . "/commands/*Command.php");
+        $appNamespace = $this->get("app_namespace");
+        $commandsNamespace = $this->get("commands_namespace");
+        $appCommandsNamespace = "{$appNamespace}{$commandsNamespace}\\";
 
-        foreach ($commandFiles as $commandFile) {
-            $className = "\\app\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
-            /** @var Command $command */
-            $command = $injector->createInstance($className);
-
-            $this->availableCommands[$command->name()] = $command;
-        }
-
+        # framework-defined commands
         $commandFiles = glob(dirname(__DIR__) . "/commands/*Command.php");
 
         foreach ($commandFiles as $commandFile) {
-            $className = "\\pew\\commands\\" . pathinfo($commandFile, PATHINFO_FILENAME);
-            $command = $injector->createInstance($className);
-
-            $this->availableCommands[$command->name()] = $command;
+            $this->addCommand($commandFile, "\\pew\\commands\\");
         }
+
+        # app-defined commands
+        $commandFiles = glob($this->container["app_path"] . "/commands/*Command.php");
+
+        foreach ($commandFiles as $commandFile) {
+            $this->addCommand($commandFile, $appCommandsNamespace);
+        }
+    }
+
+    protected function addCommand(string $commandFilename, $namespace)
+    {
+        $className = pathinfo($commandFilename, PATHINFO_FILENAME);
+        $fullClassName = "{$namespace}{$className}";
+
+        $r = new \ReflectionClass($fullClassName);
+        $defaultProperties = $r->getDefaultProperties();
+        $name = $defaultProperties["name"] ?? Stringy::create($className)->removeRight("Command")->slugify();
+
+        $this->availableCommands[(string) $name] = $fullClassName;
     }
 
     protected function commandMissing(string $commandName, array $suggestions = [])
@@ -139,13 +166,24 @@ class App extends \pew\App
     /**
      * Call a method on a command instance.
      *
-     * @param CommandInterface $command
+     * @param string $commandClassName
+     * @param array $arguments
      * @param string $action
      * @return mixed
      */
-    protected function handleCommand(CommandInterface $command, string $action)
+    protected function handleCommand(string $commandClassName, array $arguments, string $action = "run")
     {
+        /** @var Command $command */
+        $command = new $commandClassName(
+            $this->input,
+            $this->output,
+            new FormatterHelper()
+        );
+
         $injector = $this->get("injector");
+
+        $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
+        $this->set(CommandArguments::class, $args);
 
         $injector->callMethod($command, "init");
         $result = $injector->callMethod($command, $action);

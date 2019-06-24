@@ -69,7 +69,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
         $response = $c->render("partial", ["value" => 1]);
 
         $this->assertInstanceOf(\pew\View::class, $response);
-        $this->assertEquals("1", $response->content());
+        $this->assertEquals("1", (string) $response);
     }
 
     public function testMiddlewareRedirect()

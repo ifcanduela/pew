@@ -8,26 +8,12 @@ use Stringy\Stringy as S;
 
 class CreateCommand extends Command
 {
-    /**
-     * Command name.
-     *
-     * @return string
-     */
-    public function name()
-    {
-        return "create";
-    }
+    /** @var string */
+    public $name = "create";
 
-    /**
-     * Command description.
-     *
-     * @return string
-     */
-    public function description()
-    {
-        return "Generates app files.";
-    }
-
+    /** @var string */
+    public $description = "Generates app files.";
+    
     /**
      * Run the command.
      *
@@ -86,19 +72,13 @@ use pew\console\CommandArguments;
 
 class {$className} extends Command
 {
-    public function name()
-    {
-        return "{$commandName}";
-    }
-
-    public function description()
-    {
-        return "";
-    }
+    public \$name = "{$commandName}";
+    
+    public \$description = "";
 
     public function run(CommandArguments \$args)
     {
-        echo \$this->info("{$commandName}");
+        \$this->info("{$commandName}");
     }
 }
 

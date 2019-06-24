@@ -16,4 +16,9 @@ class User extends \pew\Model
     {
         return $this->hasOne(Profile::class);
     }
+
+    public static function find()
+    {
+        return parent::find()->where(["created_at" => ["IS NOT", null]]);
+    }
 }

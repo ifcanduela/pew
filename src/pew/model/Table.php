@@ -290,21 +290,9 @@ class Table
     public function one()
     {
         $this->limit(1);
-        $className = $this->recordClass;
-        $model = null;
+        $result = $this->all();
 
-        $records = $this->db->run($this->query);
-
-        if (isset($records[0])) {
-            $record = array_shift($records);
-            $model = $className ? $className::fromArray($record, false) : $record;
-        }
-
-        if ($this->relationships) {
-            $this->loadRelationships([$model]);
-        }
-
-        return $model;
+        return $result->count() ? $result->first() : null;
     }
 
     /**

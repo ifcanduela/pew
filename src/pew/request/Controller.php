@@ -36,7 +36,22 @@ class Controller
      */
     public function redirect(string $uri)
     {
-        return new RedirectResponse($uri);
+        $response = new RedirectResponse($uri);
+
+        return new \pew\response\Redirect($response);
+    }
+
+    /**
+     * Render a JSON response
+     *
+     * @param mixed $data
+     * @return JsonResponse
+     */
+    public function json($data)
+    {
+        $response = new JsonResponse($data);
+
+        return new \pew\response\Json($response);
     }
 
     /**
@@ -57,16 +72,5 @@ class Controller
         }
 
         return $this->view->render($template, $data);
-    }
-
-    /**
-     * Render a JSON response
-     *
-     * @param mixed $data
-     * @return JsonResponse
-     */
-    public function renderJson($data)
-    {
-        return new JsonResponse($data);
     }
 }

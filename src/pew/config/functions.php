@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Assorted functions, helpers and shortcuts.
  */

@@ -191,7 +191,6 @@ class CollectionTest extends PHPUnit\Framework\TestCase
             ],
         ], $c->group("type")->toArray(true));
 
-
         $this->assertEquals([
             "u" => [
                 ["letter" => "Α", "type"=> "uppercase"],

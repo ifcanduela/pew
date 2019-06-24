@@ -30,6 +30,7 @@ class ViewTest extends PHPUnit\Framework\TestCase
         $this->assertFalse($v->exists('nope'));
 
         $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
+$this->assertEquals("PARAMETER", $v->get("parameter"));
 
         $this->assertEquals(rn('<div>PARAMETER</div>
 <div>PROPERTY</div>
@@ -47,12 +48,54 @@ class ViewTest extends PHPUnit\Framework\TestCase
 '), rn($result));
     }
 
+    public function testRenderWithoutTemplateName()
+    {
+        $v = new View(__DIR__ . '/../fixtures/views');
+
+        $this->assertEmpty($v->title());
+
+        $this->assertTrue($v->exists('view1'));
+        $this->assertFalse($v->exists('nope'));
+
+        $v->template('view1');
+
+        $result = $v->render(['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
+
+        $this->assertEquals(rn('<div>PARAMETER</div>
+<div>PROPERTY</div>
+<div>PROPERTY</div>
+'), rn($result));
+
+        $v->layout('layout');
+        $v->title('test');
+        $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
+
+        $this->assertEquals(rn('<title>test</title>
+<div>PARAMETER</div>
+<div>PROPERTY</div>
+<div>PROPERTY</div>
+'), rn($result));
+    }
+
+    public function testRenderWithoutLayout()
+    {
+        $v = new View(__DIR__ . '/../fixtures/views');
+
+        $v->layout('layout');
+        $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY'])->noLayout();
+
+        $this->assertEquals(rn('<div>PARAMETER</div>
+<div>PROPERTY</div>
+<div>PROPERTY</div>
+'), rn($result));
+    }
+
     public function testRenderExceptions()
     {
         $v = new View(__DIR__ . "/../fixtures/views");
 
         try {
-            $v->render(null, []);
+            $v->render(null, [])->toString();
         } catch (\RuntimeException $e) {
             $this->assertEquals($e->getMessage(), "No template specified");
         }
@@ -60,7 +103,7 @@ class ViewTest extends PHPUnit\Framework\TestCase
         $v->layout("missing");
 
         try {
-            $v->render("missing", ["parameter" => 1, "property" => 2]);
+            $v->render("missing", ["parameter" => 1, "property" => 2])->toString();
         } catch (\RuntimeException $e) {
             $this->assertEquals($e->getMessage(), "Template missing not found");
         }
@@ -68,13 +111,13 @@ class ViewTest extends PHPUnit\Framework\TestCase
         $v->template("view1");
 
         try {
-            $v->render(null, ["parameter" => 1, "property" => 2]);
+            $v->render(null, ["parameter" => 1, "property" => 2])->toString();
         } catch (\RuntimeException $e) {
             $this->assertEquals($e->getMessage(), "Layout missing not found");
         }
 
         try {
-            $v->render("throws");
+            $v->render("throws")->toString();
         } catch (\Exception $e) {
             $this->assertEquals("thrown", $e->getMessage());
             $this->assertEquals("", ob_get_contents());
@@ -213,5 +256,16 @@ class ViewTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($v->layout(), "");
         $v->layout("layout");
         $this->assertEquals($v->layout(), "layout");
+    }
+
+    public function testGetDataAndSetData()
+    {
+        $v = new View();
+
+        $data = ["a" => "alpha", "b" => "beta"];
+
+        $v->setData($data);
+
+        $this->assertEquals($data, $v->getData());
     }
 }

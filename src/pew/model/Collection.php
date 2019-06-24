@@ -256,7 +256,14 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Group the items in the collection.
      *
-     * Callback signature is function($value, $key): bool
+     * String keys will be preserved, but numeric keys will not.
+     *
+     * Pass a function as `$field` to customize the group names. The signature
+     * of the callback is function($value, $key): string|int
+     *
+     * $collection->group(function ($value, $key) {
+     *     return strtolower($value->someFieldName);
+     * });
      *
      * @param string|callable $field
      * @return static
@@ -276,7 +283,11 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
                 $items[$k] = new static();
             }
 
-            $items[$k][] = $value;
+            if (is_string($key)) {
+                $items[$k][$key] = $value;
+            } else {
+                $items[$k][] = $value;
+            }
         }
 
         return new static($items);

@@ -10,12 +10,13 @@ use pew\lib\Injector;
 use pew\lib\Session;
 use pew\lib\Url;
 use pew\request\Request;
+use pew\response\Response;
 use pew\router\Route;
 use pew\router\Router;
 use pew\View;
 use Pimple\Container;
 use Symfony\Component\Cache\Simple\FilesystemCache;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -28,6 +29,7 @@ $container = new Container();
 
 $container["app_namespace"] = "\\app\\";
 $container["cache_duration"] = 15 * 60;
+$container["commands_namespace"] = "commands";
 $container["config_folder"] = "config";
 $container["debug"] = false;
 $container["default_action"] = "index";
@@ -143,7 +145,7 @@ $container["request"] = function (Container $c) {
 };
 
 $container["response"] = function (Container $c) {
-    return new Response();
+    return new SymfonyResponse();
 };
 
 $container["route"] = function (Container $c) {
