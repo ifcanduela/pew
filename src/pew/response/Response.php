@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 /**
  * This class represents a response.
  */
-abstract class Response extends SymfonyResponse
+class Response extends SymfonyResponse
 {
     /** @var bool */
     protected $isJsonResponse = false;

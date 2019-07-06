@@ -1,14 +1,13 @@
 <?php
 
-namespace pew\lib;
+namespace pew\di;
 
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
-
-class KeyNotFoundException extends \Exception {}
+use RuntimeException;
 
 class Injector
 {
@@ -73,8 +72,11 @@ class Injector
 
             # first try: typehint
             if ($paramType = $param->getType()) {
+                $typeName = $paramType->getName();
+                $classExists = class_exists($typeName);
+
                 try {
-                    $injection = $this->findKey($paramType->getName());
+                    $injection = $this->findKey($typeName);
                     $found = true;
                 } catch (KeyNotFoundException $e) {
                 }
@@ -139,6 +141,7 @@ class Injector
 
         if ($constructor) {
             $injections = $this->getInjections($constructor);
+
             return $class->newInstanceArgs($injections);
         }
 

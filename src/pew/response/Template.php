@@ -136,41 +136,30 @@ class Template extends Response
      */
     public function render($template = "", array $data = [])
     {
+        # check for number of arguments
         if (count(func_get_args()) === 1) {
             if (is_array($template)) {
+                # if the first arument is an array, it's meant to be $data
                 $data = $template;
+                # and the template was not provided
                 $template = null;
             }
         }
 
+        # if the template was not provided
         if (!$template) {
+            # and there is no configured template
             if (!$this->template) {
+                # throw
                 throw new \RuntimeException("No template specified");
             }
 
+            # update the configured template
             $template = $this->template;
         }
 
-        # find the template file
-        $templateFile = $this->resolve($template);
-
-        if ($templateFile === false) {
-            throw new \RuntimeException("Template {$template} not found");
-        }
-
-        # make previous and received variables available using the index operator
+        # mix in the provided data with the template data
         $this->variables = array_merge($this->variables, $data);
-        $this->output = $output = $this->renderFile($templateFile, $this->variables);
-
-        if ($this->layout) {
-            $layoutFile = $this->resolve($this->layout);
-
-            if ($layoutFile === false) {
-                throw new \RuntimeException("Layout {$this->layout} not found");
-            }
-
-            $this->output = $this->renderFile($layoutFile, ["output" => $output]);
-        }
 
         return $this;
     }
@@ -461,6 +450,35 @@ class Template extends Response
     }
 
     /**
+     * Actually render the template.
+     *
+     * @return string
+     */
+    protected function getRenderedOutput()
+    {
+        # find the template file
+        $templateFile = $this->resolve($this->template);
+
+        if ($templateFile === false) {
+            throw new \RuntimeException("Template {$this->template} not found");
+        }
+
+        $this->output = $output = $this->renderFile($templateFile, $this->variables);
+
+        if ($this->layout) {
+            $layoutFile = $this->resolve($this->layout);
+
+            if ($layoutFile === false) {
+                throw new \RuntimeException("Layout {$this->layout} not found");
+            }
+
+            $this->output = $this->renderFile($layoutFile, ["output" => $output]);
+        }
+
+        return $this->output;
+    }
+
+    /**
      * Adds content to the response
      * @return Response
      */
@@ -470,7 +488,7 @@ class Template extends Response
             $this->response->setContent(json_encode($this->variables));
             $this->response->headers->set("Content-Type", "application/json");
         } else {
-            $this->response->setContent($this->output);
+            $this->response->setContent($this->getRenderedOutput());
         }
 
         return $this->response;

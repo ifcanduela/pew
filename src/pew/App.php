@@ -3,13 +3,13 @@
 namespace pew;
 
 use Monolog\Logger;
-use pew\lib\Injector;
+use pew\di\Injector;
+use pew\di\Container;
 use pew\model\TableManager;
 use pew\response\Response;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
-use Psr\Container\ContainerInterface;
 use Stringy\Stringy as S;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -19,11 +19,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  *
  * Its purpose is to route the request into a response.
  */
-class App implements ContainerInterface
+class App extends Container
 {
-    /** @var \Pimple\Container */
-    protected $container;
-
     /** @var array */
     protected $middleware = [];
 
@@ -99,21 +96,7 @@ class App implements ContainerInterface
         $configFolder = $this->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
 
-        if (file_exists($filename)) {
-            $appConfig = require $filename;
-
-            if (!is_array($appConfig)) {
-                throw new \RuntimeException("Configuration file {$filename} must return an array");
-            }
-
-            foreach ($appConfig as $key => $value) {
-                $this->set($key, $value);
-            }
-
-            return true;
-        }
-
-        return false;
+        return $this->loadFile($filename);
     }
 
     /**
@@ -354,9 +337,8 @@ class App implements ContainerInterface
 
         $view = $this->get("view");
         $view->layout(false);
-        $output = $view->render("errors/404", ["exception" => $e]);
 
-        return new Response($output, 404);
+        return $view->render("errors/404", ["exception" => $e]);
     }
 
     /**
@@ -496,41 +478,6 @@ class App implements ContainerInterface
         $response = $view->render($actionResult);
 
         return $response;
-    }
-
-    /**
-     * Get a value from the container.
-     *
-     * @param string $key
-     * @return mixed
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    public function get($key)
-    {
-        return $this->container[$key];
-    }
-
-    /**
-     * Set a value in the container.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    public function set($key, $value)
-    {
-        $this->container[$key] = $value;
-    }
-
-    /**
-     * Check if a key exists in the container.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public function has($key)
-    {
-        return isset($this->container[$key]);
     }
 
     /**
