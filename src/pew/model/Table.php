@@ -325,7 +325,7 @@ class Table
     public function count()
     {
         # query the database
-        $this->createSelect()->columns("COUNT(*) as count");
+        $this->columns("COUNT(*) as count");
         $result = $this->db->run($this->query);
 
         return $result[0]["count"];
