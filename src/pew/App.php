@@ -337,8 +337,9 @@ class App extends Container
 
         $view = $this->get("view");
         $view->layout(false);
+        $output = $view->render("errors/404", ["exception" => $e]);
 
-        return $view->render("errors/404", ["exception" => $e]);
+        return new Response($output, 404);
     }
 
     /**
@@ -475,7 +476,8 @@ class App extends Container
 
         # Use the action result to render the view
         $view = $this->get("view");
-        $response = $view->render($actionResult);
+        $view->setData($actionResult);
+        $response = new \pew\response\HtmlResponse($view);
 
         return $response;
     }

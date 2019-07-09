@@ -38,7 +38,7 @@ class Controller
     {
         $response = new RedirectResponse($uri);
 
-        return new \pew\response\Redirect($response);
+        return new \pew\response\RedirectResponse($response);
     }
 
     /**
@@ -51,7 +51,7 @@ class Controller
     {
         $response = new JsonResponse($data);
 
-        return new \pew\response\Json($response);
+        return new \pew\response\JsonResponse($response);
     }
 
     /**
@@ -71,6 +71,8 @@ class Controller
             $this->view->template($template);
         }
 
-        return $this->view->render($template, $data);
+        $this->view->setData($data);
+
+        return new \pew\response\HtmlResponse($this->view);
     }
 }

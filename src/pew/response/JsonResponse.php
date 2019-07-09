@@ -2,6 +2,6 @@
 
 namespace pew\response;
 
-class Redirect extends Response
+class JsonResponse extends Response
 {
 }
