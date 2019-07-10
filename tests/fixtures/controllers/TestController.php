@@ -6,7 +6,7 @@ class TestController extends \pew\Controller
 {
     public function myAction()
     {
-        return $this->renderJson('myAction');
+        return $this->json('myAction');
     }
 
     public function templateResponse()
@@ -18,7 +18,7 @@ class TestController extends \pew\Controller
 
     public function jsonResponse()
     {
-        return $this->renderJson([
+        return $this->json([
             'hello' => 'world',
         ]);
     }

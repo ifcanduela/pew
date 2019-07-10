@@ -4,15 +4,9 @@ namespace app\commands;
 
 class TestCommand extends \pew\console\Command
 {
-    public function name()
-    {
-        return "test";
-    }
+    public $name = "test";
 
-    public function description()
-    {
-        return "Test command";
-    }
+    public $description = "Test command";
 
     public function run()
     {

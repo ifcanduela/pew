@@ -7,6 +7,7 @@ use pew\di\Injector;
 use pew\di\Container;
 use pew\model\TableManager;
 use pew\response\Response;
+use pew\response\HtmlResponse;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
@@ -19,10 +20,13 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  *
  * Its purpose is to route the request into a response.
  */
-class App extends Container
+class App
 {
     /** @var array */
     protected $middleware = [];
+
+    /** @var Container */
+    protected $container;
 
     /** @var static */
     protected static $instance;
@@ -55,9 +59,9 @@ class App extends Container
             throw new \InvalidArgumentException("The app path does not exist: {$guessedAppPath}");
         }
 
-        $this->set("app_path", $appPath);
-        $this->set("config_file_name", $configFileName);
-        $this->set("app", $this);
+        $this->container->set("app_path", $appPath);
+        $this->container->set("config_file_name", $configFileName);
+        $this->container->set("app", $this);
 
         static::$instance = $this;
 
@@ -66,9 +70,43 @@ class App extends Container
         $this->loadAppBootstrap();
 
         # Initialize the database manager
-        TableManager::instance($this->get("tableManager"));
+        TableManager::instance($this->container->get("tableManager"));
 
         App::log("App path set to {$appPath}", Logger::INFO);
+    }
+
+    /**
+     * Get a value from the container.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function get(string $key)
+    {
+        return $this->container->get($key);
+    }
+
+    /**
+     * Set a value in the container.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
+    public function set(string $key, $value)
+    {
+        $this->container->set($key, $value);
+    }
+
+    /**
+     * Check if a value is present in the container.
+     *
+     * @param string $key
+     * @return boolean
+     */
+    public function has(string $key)
+    {
+        return $this->container->has($key);
     }
 
     /**
@@ -92,11 +130,11 @@ class App extends Container
      */
     protected function loadAppConfig(string $configFileName)
     {
-        $appPath = $this->get("app_path");
-        $configFolder = $this->get("config_folder");
+        $appPath = $this->container->get("app_path");
+        $configFolder = $this->container->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
 
-        return $this->loadFile($filename);
+        return $this->container->loadFile($filename);
     }
 
     /**
@@ -106,8 +144,8 @@ class App extends Container
      */
     protected function loadAppBootstrap()
     {
-        $appPath = $this->get("app_path");
-        $configFolder = $this->get("config_folder");
+        $appPath = $this->container->get("app_path");
+        $configFolder = $this->container->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/bootstrap.php";
 
         if (file_exists($filename)) {
@@ -131,7 +169,7 @@ class App extends Container
      */
     public function run()
     {
-        $errorHandler = $this->get("error_handler");
+        $errorHandler = $this->container->get("error_handler");
         $errorHandler->register();
 
         try {
@@ -159,13 +197,13 @@ class App extends Container
      */
     protected function handle()
     {
-        $injector = $this->get("injector");
-        $request = $this->get("request");
+        $injector = $this->container->get("injector");
+        $request = $this->container->get("request");
         # Add get and post parameters to the injection container
         $injector->appendContainer($request->request->all());
         $injector->appendContainer($request->query->all());
 
-        $route = $this->get("route");
+        $route = $this->container->get("route");
         # Add route parameters to the injection container
         $injector->appendContainer($route);
 
@@ -236,7 +274,7 @@ class App extends Container
      * @param Injector $injector
      * @return Response
      */
-    protected function runAfterMiddleware(Route $route, SymfonyResponse $response, Injector $injector)
+    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
     {
         # Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
@@ -289,18 +327,18 @@ class App extends Container
     protected function handleAction(string $controllerClass, string $actionName, Injector $injector)
     {
         # Guess the template path and filename
-        $controllerPath = $this->getControllerPath($controllerClass, $this->get("controller_namespace"));
+        $controllerPath = $this->getControllerPath($controllerClass, $this->container->get("controller_namespace"));
         $actionId = S::create($actionName)->underscored();
         $actionMethod = S::create($actionName)->camelize();
         $template = $controllerPath . DIRECTORY_SEPARATOR . $actionId;
 
-        $this->set("controller_slug", basename($controllerPath));
-        $this->set("action_slug", $actionId);
+        $this->container->set("controller_slug", basename($controllerPath));
+        $this->container->set("action_slug", $actionId);
 
         App::log("Request handler is {$controllerPath}/{$actionMethod}");
 
         # Set up the template
-        $view = $this->get("view");
+        $view = $this->container->get("view");
         $view->template($template);
         $view->layout("default.layout");
 
@@ -331,15 +369,19 @@ class App extends Container
     protected function handleError(\Exception $e)
     {
         # If debug mode is on, let the error handler take care of the error
-        if ($this->get("debug")) {
+        if ($this->container->get("debug")) {
             throw $e;
         }
 
-        $view = $this->get("view");
+        $view = $this->container->get("view");
         $view->layout(false);
-        $output = $view->render("errors/404", ["exception" => $e]);
+        $view->template("errors/404");
+        $view->set("exception", $e);
 
-        return new Response($output, 404);
+        $response = new HtmlResponse($view);
+        $response->code(404);
+
+        return $response;
     }
 
     /**
@@ -366,7 +408,7 @@ class App extends Container
             $controllerId = join("\\", $controllerParts);
             # The namespace is the default controller namespace with an optional,
             # additional namespace set in the route
-            $namespace = S::create($this->get("controller_namespace") . $route->getNamespace())->ensureLeft("\\")->ensureRight("\\");
+            $namespace = S::create($this->container->get("controller_namespace") . $route->getNamespace())->ensureLeft("\\")->ensureRight("\\");
 
             # Check if the controller class exists -- it may have an optional "Controller" suffix
             foreach ([$controllerId, $controllerId . "Controller"] as $c) {
@@ -404,7 +446,7 @@ class App extends Container
             }
         }
 
-        $actionSlug = $route->getParam("action", $this->get("default_action"));
+        $actionSlug = $route->getParam("action", $this->container->get("default_action"));
 
         return S::create($actionSlug)->camelize();
     }
@@ -431,7 +473,7 @@ class App extends Container
         $controllerSlug = S::create($controllerClassName)->removeRight("Controller")->underscored();
 
         # Make the controller slug available for use elsewhere
-        $this->set("controller_slug", $controllerSlug);
+        $this->container->set("controller_slug", $controllerSlug);
 
         return $controllerPath . DIRECTORY_SEPARATOR . $controllerSlug;
     }
@@ -444,12 +486,12 @@ class App extends Container
      */
     protected function transformActionResult($actionResult)
     {
-        $request = $this->get("request");
-        $response = $this->get("response");
+        $request = $this->container->get("request");
+        $response = $this->container->get("response");
 
         # If $actionResult is false, return an empty response
         if ($actionResult === false) {
-            return $response;
+            return new Response($response);
         }
 
         # If it's already a response, return it
@@ -466,7 +508,7 @@ class App extends Container
         if (is_string($actionResult)) {
             $response->setContent($actionResult);
 
-            return $response;
+            return new Response($response);
         }
 
         # If the action result is not an array, make it into one
@@ -475,11 +517,10 @@ class App extends Container
         }
 
         # Use the action result to render the view
-        $view = $this->get("view");
+        $view = $this->container->get("view");
         $view->setData($actionResult);
-        $response = new \pew\response\HtmlResponse($view);
 
-        return $response;
+        return new HtmlResponse($view, $response);
     }
 
     /**
@@ -494,7 +535,7 @@ class App extends Container
      */
     public static function log(string $message, $level = Logger::DEBUG)
     {
-        $logger = static::$instance->get("app_log");
+        $logger = static::$instance->container->get("app_log");
         $logger->log($level, $message);
     }
 }

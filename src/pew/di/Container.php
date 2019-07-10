@@ -5,11 +5,8 @@ namespace pew\di;
 use Pimple\Container as Pimple;
 use Psr\Container\ContainerInterface;
 
-class Container implements ContainerInterface
+class Container extends Pimple implements ContainerInterface
 {
-    /** @var Pimple */
-    protected $container;
-
     /**
      * Get a value from the container.
      *
@@ -19,7 +16,7 @@ class Container implements ContainerInterface
      */
     public function get($key)
     {
-        return $this->container[$key];
+        return $this[$key];
     }
 
     /**
@@ -31,7 +28,7 @@ class Container implements ContainerInterface
      */
     public function set($key, $value)
     {
-        $this->container[$key] = $value;
+        $this[$key] = $value;
     }
 
     /**
@@ -42,7 +39,7 @@ class Container implements ContainerInterface
      */
     public function has($key)
     {
-        return isset($this->container[$key]);
+        return isset($this[$key]);
     }
 
     /**
@@ -54,7 +51,7 @@ class Container implements ContainerInterface
     public function import(array $definitions)
     {
         foreach ($definitions as $key => $value) {
-            $this->container[$key] = $value;
+            $this[$key] = $value;
         }
     }
 

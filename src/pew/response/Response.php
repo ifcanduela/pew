@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Session\Session;
 /**
  * This class represents a response.
  */
-class Response extends SymfonyResponse
+class Response
 {
     /** @var bool */
     protected $isJsonResponse = false;
@@ -31,6 +31,19 @@ class Response extends SymfonyResponse
     {
         $this->response = $response ?? new SymfonyResponse();
         $this->session = $session ?? new Session();
+    }
+
+    /**
+     * Set the HTTP response status code.
+     *
+     * @param int $httpStatusCode
+     * @return self
+     */
+    public function code(int $httpStatusCode)
+    {
+        $this->response->setStatusCode($httpStatusCode);
+
+        return $this;
     }
 
     /**
@@ -101,10 +114,22 @@ class Response extends SymfonyResponse
         return $this->response;
     }
 
+    /**
+     * Convert the response to string.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        $response = $this->prepareResponse();
+
+        return (string) $response;
+    }
+
     public function send(): SymfonyResponse
     {
-        $this->prepareResponse();
+        $response = $this->prepareResponse();
 
-        return $this->response->send();
+        return $response->send();
     }
 }

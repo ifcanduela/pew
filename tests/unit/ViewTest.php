@@ -82,7 +82,8 @@ $this->assertEquals("PARAMETER", $v->get("parameter"));
         $v = new View(__DIR__ . '/../fixtures/views');
 
         $v->layout('layout');
-        $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY'])->noLayout();
+        $v->layout(false);
+        $result = $v->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
 
         $this->assertEquals(rn('<div>PARAMETER</div>
 <div>PROPERTY</div>
@@ -169,7 +170,7 @@ $this->assertEquals("PARAMETER", $v->get("parameter"));
 <div>PARAMETER</div>
 <div>PROPERTY</div>
 <div>PROPERTY</div>
-'), rn($result));
+'), rn((string) $result));
     }
 
     public function testDataPropertyHandling()

@@ -14,7 +14,7 @@ use pew\response\Response;
 use pew\router\Route;
 use pew\router\Router;
 use pew\View;
-use Pimple\Container;
+use pew\di\Container;
 use Symfony\Component\Cache\Simple\FilesystemCache;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Whoops\Handler\PlainTextHandler;

@@ -36,23 +36,12 @@ abstract class Command implements CommandInterface
         $this->input = $input;
         $this->output = $output;
         $this->formatter = $formatter;
-    }
 
-    /**
-     * Get the command-line name for this Command.
-     *
-     * @return string
-     * @throws \ReflectionException
-     */
-    public function getName()
-    {
-        if (isset($this->name)) {
-            return $this->name;
+        if (!$this->name) {
+            $className = (new \ReflectionClass($this))->getShortName();
+
+            $this->name = (string) Stringy::create($className)->removeLeft("Command")->slugify();
         }
-
-        $className = (new \ReflectionClass($this))->getShortName();
-
-        return (string) Stringy::create($className)->removeLeft("Command")->slugify();
     }
 
     /**

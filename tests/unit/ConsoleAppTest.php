@@ -11,7 +11,7 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $commandNames = array_keys($app->availableCommands);
 
         $this->assertEquals("Console App Test", $app->get("app_title"));
-        $this->assertEquals(["test", "create"], $commandNames);
+        $this->assertEquals(["create", "test"], $commandNames);
     }
 
     public function testEmptyArgumentList()
@@ -25,10 +25,10 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $output = ob_get_clean();
 
         $expected =
-"test" . PHP_EOL .
-"    Test command" . PHP_EOL .
 "create" . PHP_EOL .
-"    Generates app files." . PHP_EOL;
+"    Generates app files." . PHP_EOL .
+"test" . PHP_EOL .
+"    Test command" . PHP_EOL;
 
         $this->assertEquals($expected, $output);
     }
@@ -78,8 +78,8 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $expected =
 "Command not-found not found" . PHP_EOL .
 "Did you mean:" . PHP_EOL .
-"    test" . PHP_EOL .
-"    create" . PHP_EOL;
+"    create" . PHP_EOL .
+"    test" . PHP_EOL;
 
         $this->assertEquals($expected, $output);
     }

@@ -109,6 +109,7 @@ class Table
         $this->recordClass = $recordClass;
 
         $this->init();
+        $this->createSelect();
     }
 
     /**

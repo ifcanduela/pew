@@ -39,8 +39,8 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $response = $controller->myAction();
 
-        $this->assertInstanceOf(Symfony\Component\HttpFoundation\JsonResponse::class, $response);
-        $this->assertEquals('"myAction"', $response->getContent());
+        $this->assertInstanceOf(\pew\response\JsonResponse::class, $response);
+        $this->assertContains('"myAction"', (string) $response);
     }
 
     public function testControllerRedirect()
@@ -53,8 +53,10 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $response = $c->redirect("/user/profile");
 
-        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\RedirectResponse::class, $response);
-        $this->assertEquals("/user/profile", $response->getTargetUrl());
+        $this->assertInstanceOf(\pew\response\RedirectResponse::class, $response);
+        $responseBody = (string) $response;
+        $this->assertContains("HTTP", $responseBody);
+        $this->assertContains("302", $responseBody);
     }
 
     public function testControllerRender()
@@ -68,8 +70,12 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $response = $c->render("partial", ["value" => 1]);
 
-        $this->assertInstanceOf(\pew\View::class, $response);
-        $this->assertEquals("1", (string) $response);
+        $this->assertInstanceOf(\pew\response\HtmlResponse::class, $response);
+
+        $responseBody = (string) $response;
+        $this->assertContains("200 OK", $responseBody);
+        $this->assertContains("Cache-Control", $responseBody);
+        $this->assertRegExp("/1$/", $responseBody);
     }
 
     public function testMiddlewareRedirect()
