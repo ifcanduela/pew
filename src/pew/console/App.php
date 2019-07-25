@@ -3,7 +3,7 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
-use Stringy\Stringy;
+use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -39,14 +39,11 @@ class App extends \pew\App
         $arguments = $this->getArguments();
 
         if (empty($arguments)) {
-            foreach ($this->availableCommands as $name => $commandClass) {
-                $r = new \ReflectionClass($commandClass);
-                $props = $r->getDefaultProperties();
+            foreach ($this->availableCommands as $name => $commandInfo) {
+                $this->output->writeln("<info>{$name}</info>");
 
-                $this->output->writeln("<info>$name</info>");
-
-                if ($props["description"]) {
-                    $this->output->writeln("    " . $props["description"]);
+                if ($commandInfo->description) {
+                    $this->output->writeln("    " . $commandInfo->description);
                 }
             }
 
@@ -59,14 +56,15 @@ class App extends \pew\App
             [$commandName, $action] = [$arguments["command"], "run"];
         }
 
-        $commandClassName = $this->findCommand($commandName);
+        $commandInfo = $this->findCommand($commandName);
 
-        if (!$commandClassName) {
-            $this->commandMissing($commandName, $commandClassName);
+        if (!$commandInfo || is_array($commandInfo)) {
+            $suggestedClassName = $this->get("app_namespace") . "\\commands\\" . Str::create($commandName)->upperCamelize() . "Command";
+            $this->commandMissing($commandName, $commandInfo ?? []);
             return;
         }
 
-        return $this->handleCommand($commandClassName, $arguments, $action);
+        return $this->handleCommand($commandInfo->className, $arguments, $action);
     }
 
     /**
@@ -100,18 +98,30 @@ class App extends \pew\App
 
         $r = new \ReflectionClass($fullClassName);
         $defaultProperties = $r->getDefaultProperties();
-        $name = $defaultProperties["name"] ?? Stringy::create($className)->removeRight("Command")->slugify();
+        $name = $defaultProperties["name"] ?? Str::create($className)
+            ->removeRight("Command")
+            ->underscored()
+            ->slugify();
 
-        $this->availableCommands[(string) $name] = $fullClassName;
+        $description = $defaultProperties["description"] ?? null;
+
+        $this->availableCommands[(string) $name] = (object) [
+            "name" => $name,
+            "description" => $description,
+            "className" => $fullClassName
+        ];
     }
 
     protected function commandMissing(string $commandName, array $suggestions = [])
     {
-        echo "Command {$commandName} not found" . PHP_EOL;
-        echo "Did you mean:" . PHP_EOL;
-
         if (!$suggestions) {
+            $this->output->writeln("Command <info>{$commandName}</info> not found");
+            $this->output->writeln("Did you mean:");
+
             $suggestions = array_keys($this->availableCommands);
+        } else {
+            $this->output->writeln("Command <info>{$commandName}</info> is ambiguous");
+            $this->output->writeln("Did you mean:");
         }
 
         foreach ($suggestions as $suggestion) {
