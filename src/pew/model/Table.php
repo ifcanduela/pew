@@ -325,11 +325,16 @@ class Table
      */
     public function count()
     {
+        # clone the current query
+        $query = clone $this->query;
+        # replace the column list with COUNT(*)
+        $query->columns("COUNT(*) as row_count");
+        # remove limit and offset
+        $query->limit(0, 0);
         # query the database
-        $this->columns("COUNT(*) as count");
-        $result = $this->db->run($this->query);
+        $result = $this->db->run($query);
 
-        return $result[0]["count"];
+        return $result[0]["row_count"];
     }
 
     /**
