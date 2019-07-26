@@ -448,20 +448,4 @@ class View
     {
         return htmlspecialchars($value, ENT_QUOTES, "UTF-8");
     }
-
-    /**
-     * Adds content to the response
-     * @return Response
-     */
-    protected function prepareResponse(): SymfonyResponse
-    {
-        if ($this->isJsonResponse) {
-            $this->response->setContent(json_encode($this->variables));
-            $this->response->headers->set("Content-Type", "application/json");
-        } else {
-            $this->response->setContent($this->output);
-        }
-
-        return $this->response;
-    }
 }
