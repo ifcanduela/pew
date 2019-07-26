@@ -115,17 +115,17 @@ class App extends \pew\App
     protected function commandMissing(string $commandName, array $suggestions = [])
     {
         if (!$suggestions) {
-            $this->output->writeln("Command <info>{$commandName}</info> not found");
+            $this->output->writeln("Command <error>{$commandName}</error> not found");
             $this->output->writeln("Did you mean:");
 
             $suggestions = array_keys($this->availableCommands);
         } else {
-            $this->output->writeln("Command <info>{$commandName}</info> is ambiguous");
+            $this->output->writeln("Command <error>{$commandName}</error> is ambiguous");
             $this->output->writeln("Did you mean:");
         }
 
         foreach ($suggestions as $suggestion) {
-            echo "    {$suggestion}" . PHP_EOL;
+            $this->output->writeln("    <info>{$suggestion}</info>");
         }
 
         return;

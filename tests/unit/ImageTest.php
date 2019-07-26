@@ -1,11 +1,13 @@
 <?php
 
+namespace pew\tests\unit;
+
 use pew\lib\Image;
 
 const FIXTURES_DIR = __DIR__ . "/../fixtures";
 const TEST_JPG = FIXTURES_DIR . DIRECTORY_SEPARATOR . "test.jpg";
 
-class ImageTest extends PHPUnit\Framework\TestCase
+class ImageTest extends \PHPUnit\Framework\TestCase
 {
     public function setUp()
     {
@@ -36,9 +38,10 @@ class ImageTest extends PHPUnit\Framework\TestCase
         $i->save(__DIR__ . "/../fixtures/saved.jpg");
         $i->save(__DIR__ . "/../fixtures/", IMAGETYPE_PNG);
         $i->save(__DIR__ . "/../fixtures/saved.gif");
+        $i->save(__DIR__ . "/../fixtures/saved.webp");
 
         $this->assertTrue(file_exists(__DIR__ . "/../fixtures/saved.jpg"));
-        
+
         $l = new Image(__DIR__ . "/../fixtures/saved.jpg");
         $this->assertEquals(400, $l->width());
 
@@ -48,21 +51,25 @@ class ImageTest extends PHPUnit\Framework\TestCase
         $l = new Image(__DIR__ . "/../fixtures/saved.gif");
         $this->assertEquals(400, $l->width());
 
+        $l = new Image(__DIR__ . "/../fixtures/saved.webp");
+        $this->assertEquals(400, $l->width());
+
         unlink(__DIR__ . "/../fixtures/saved.jpg");
         unlink(__DIR__ . "/../fixtures/test.png");
         unlink(__DIR__ . "/../fixtures/saved.gif");
+        unlink(__DIR__ . "/../fixtures/saved.webp");
     }
 
     public function testLoadImageResource()
     {
         $r = imagecreatefromjpeg(TEST_JPG);
-        
+
         $i = new Image();
         $i->image($r);
-        
+
         $this->assertEquals(400, $i->width());
         $this->assertEquals(300, $i->height());
-        
+
         $res = $i->image();
         $this->assertTrue(is_resource($res));
     }
@@ -99,5 +106,26 @@ class ImageTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(100, imagesy($result));
 
         unlink(FIXTURES_DIR . "/cropped_1.jpg");
+    }
+
+    public function testGetAndSetFilename()
+    {
+        $i = new Image(TEST_JPG);
+        $this->assertEquals(FIXTURES_DIR . DIRECTORY_SEPARATOR . "test.jpg", $i->filename());
+
+        $i->filename("test_2.jpg");
+        $this->assertEquals("test_2.jpg", $i->filename());
+    }
+
+    public function testGetExtension()
+    {
+        $i = new Image(TEST_JPG);
+        $this->assertEquals(".jpg", $i->extension());
+    }
+
+    public function testGetMimeType()
+    {
+        $i = new Image(TEST_JPG);
+        $this->assertEquals("image/jpeg", $i->mimeType());
     }
 }

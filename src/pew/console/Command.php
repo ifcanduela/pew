@@ -41,9 +41,9 @@ abstract class Command implements CommandInterface
             $className = (new \ReflectionClass($this))->getShortName();
 
             $this->name = (string) Stringy::create($className)
-				->removeLeft("Command")
-				->underscored()
-				->slugify();
+                ->removeLeft("Command")
+                ->underscored()
+                ->slugify();
         }
     }
 
