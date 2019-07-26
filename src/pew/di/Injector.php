@@ -61,7 +61,7 @@ class Injector
      * @throws KeyNotFoundException When an argument cannot be found
      * @throws ReflectionException
      */
-    public function getInjections(ReflectionFunctionAbstract $method)
+    public function getInjections(ReflectionFunctionAbstract $method, bool $autoResolve = false)
     {
         $injections = [];
         $parameters = $method->getParameters();
@@ -79,6 +79,14 @@ class Injector
                     $injection = $this->findKey($typeName);
                     $found = true;
                 } catch (KeyNotFoundException $e) {
+                }
+
+                if (!$found && $autoResolve && $classExists) {
+                    try {
+                        $injection = $this->createInstance($typeName, $autoResolve);
+                        $found = true;
+                    } catch (KeyNotFoundException $e) {
+                    }
                 }
             }
 
@@ -134,13 +142,13 @@ class Injector
      * @throws KeyNotFoundException
      * @throws ReflectionException
      */
-    public function createInstance(string $className)
+    public function createInstance(string $className, bool $autoResolve = false)
     {
         $class = new ReflectionClass($className);
         $constructor = $class->getConstructor();
 
         if ($constructor) {
-            $injections = $this->getInjections($constructor);
+            $injections = $this->getInjections($constructor, $autoResolve);
 
             return $class->newInstanceArgs($injections);
         }
@@ -210,5 +218,10 @@ class Injector
         }
 
         return $this->callMethod(...$callable);
+    }
+
+    public function autoResolve(string $className)
+    {
+        return $this->createInstance($className, true);
     }
 }
