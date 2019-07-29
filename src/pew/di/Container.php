@@ -77,4 +77,11 @@ class Container extends Pimple implements ContainerInterface
 
         return false;
     }
+
+    public function alias($from, $to)
+    {
+        $this[$from] = function ($c) use ($to) {
+            return $c[$to];
+        };
+    }
 }

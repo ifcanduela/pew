@@ -223,6 +223,17 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $result = $injector->call([\types\Type3::class, "method"]);
         $this->assertEquals($type1, $result);
     }
+
+    public function testAutoResolve()
+    {
+        $injector = new Injector();
+        $type1 = $injector->autoResolve(\types\Type1::class);
+        $this->assertInstanceOf(\types\Type1::class, $type1);
+
+        $type3 = $injector->autoResolve(\types\Type3::class);
+        $this->assertInstanceOf(\types\Type3::class, $type3);
+        $this->assertInstanceOf(\types\Type1::class, $type3->type1);
+    }
 } // class InjectorTest
 
 } // namespace /
