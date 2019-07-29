@@ -95,7 +95,7 @@ class Image
     public function load(string $filename)
     {
         if (!file_exists($filename)) {
-            throw new \Exception("File {$filename} not found");
+            throw new \Exception("File `{$filename}` not found");
         }
 
         $this->sourceFileName = $this->filename = $filename;
@@ -119,7 +119,7 @@ class Image
             $filename = $file["filename"];
             $tmpname = $file["tmp_name"];
 
-            throw new \Exception("Uploaded file {$filename} not found [temp={$tmpname}]");
+            throw new \Exception("Uploaded file `{$filename}` not found [temp={$tmpname}]");
         }
 
         $this->sourceFileName = $file["tmp_name"];
@@ -160,13 +160,13 @@ class Image
                 break;
 
             default:
-                throw new \Exception("The image format of file {$filename} is not supported");
+                throw new \Exception("The image format of file `{$filename}` is not supported");
         }
 
         if (!$resource) {
             $error = error_get_last();
             $message = $error["message"];
-            throw new \Exception("The file {$filename} is not a valid image resource. {$message}");
+            throw new \Exception("The file `{$filename}` is not a valid image resource. {$message}");
         }
 
         $this->setResource($resource, $imageType);
@@ -293,7 +293,7 @@ class Image
 
             default:
                 $filename = $this->sourceFileName;
-                throw new \Exception("The image format of file {$filename} ({$imageType}) is not supported");
+                throw new \Exception("The image format of file `{$filename}` (`{$imageType}`) is not supported");
         }
     }
 

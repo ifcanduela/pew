@@ -419,6 +419,6 @@ class Route implements \ArrayAccess
             return $this;
         }
 
-        throw new \InvalidArgumentException("Method `$method` does not exist");
+        throw new \InvalidArgumentException("Method `{$method}` does not exist");
     }
 }

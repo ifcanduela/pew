@@ -142,7 +142,7 @@ class Injector
             }
         }
 
-        throw new KeyNotFoundException("Key not found: {$key}");
+        throw new KeyNotFoundException("Key not found: `{$key}`");
     }
 
     /**
@@ -184,7 +184,7 @@ class Injector
 
         if (!is_object($object)) {
             $method = __METHOD__;
-            throw new \InvalidArgumentException("Invalid argument supplied to {$method}: \$object must be an object.");
+            throw new \InvalidArgumentException("Invalid argument supplied to `{$method}`: \$object must be an object.");
         }
 
         $method = new ReflectionMethod($object, $methodName);

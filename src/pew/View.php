@@ -144,7 +144,7 @@ class View
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new \RuntimeException("Template {$template} not found");
+            throw new \RuntimeException("Template `{$template}` not found");
         }
 
         # make previous and received variables available using the index operator
@@ -342,7 +342,7 @@ class View
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new \RuntimeException("Partial template `$template` not found");
+            throw new \RuntimeException("Partial template `{$template}` not found");
         }
 
         # Render the element.

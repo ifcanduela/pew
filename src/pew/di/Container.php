@@ -67,7 +67,7 @@ class Container extends Pimple implements ContainerInterface
             $definitions = require $filename;
 
             if (!is_array($definitions)) {
-                throw new \RuntimeException("Definitions file {$filename} must return an array");
+                throw new \RuntimeException("Definitions file `{$filename}` must return an array");
             }
 
             $this->import($definitions);

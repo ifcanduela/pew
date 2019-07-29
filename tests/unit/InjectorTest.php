@@ -18,6 +18,14 @@ class Type3 implements Type {
         return $t;
     }
 }
+class Type4 implements Type {
+    public $type;
+
+    public function __construct(Type $type)
+    {
+        $this->type = $type;
+    }
+}
 
 } // namespace types
 
@@ -233,6 +241,14 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $type3 = $injector->autoResolve(\types\Type3::class);
         $this->assertInstanceOf(\types\Type3::class, $type3);
         $this->assertInstanceOf(\types\Type1::class, $type3->type1);
+
+        $this->expectException(\pew\di\KeyNotFoundException::class);
+        $this->expectExceptionMessage("Could not find a definition for `type (types\Type)`");
+        $injector->autoResolve(\types\Type4::class);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Cannot auto-resolve `types\TypeNothing`: class not found");
+        $injector->autoResolve(\types\TypeNothing::class);
     }
 } // class InjectorTest
 

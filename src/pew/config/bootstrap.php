@@ -81,7 +81,7 @@ $container["db"] = function (Container $c) {
     $useDb = $c["use_db"] ?? "default";
 
     if (!array_key_exists($useDb, $dbConfig)) {
-        throw new RuntimeException("Database configuration preset '{$useDb}' does not exist");
+        throw new RuntimeException("Database configuration preset `{$useDb}` does not exist");
     }
 
     $tableManager = $c["tableManager"];

@@ -56,7 +56,7 @@ class App
         $appPath = realpath($guessedAppPath);
 
         if ($appPath === false) {
-            throw new \InvalidArgumentException("The app path does not exist: {$guessedAppPath}");
+            throw new \InvalidArgumentException("The app path does not exist: `{$guessedAppPath}`");
         }
 
         $this->container->set("app_path", $appPath);
@@ -219,7 +219,7 @@ class App
             $actionName = $this->resolveAction($route);
 
             if (!$handler) {
-                throw new \RuntimeException("No handler specified for route (" . $request->getPathInfo() . ")");
+                throw new \RuntimeException("No handler specified for route `" . $request->getPathInfo() . "`");
             }
 
             if (is_callable($handler)) {

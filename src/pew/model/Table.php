@@ -530,7 +530,7 @@ class Table
     public function __call($method, $arguments)
     {
         if (!$this->query) {
-            throw new \RuntimeException("Method '{$method}' called before initializing a query");
+            throw new \RuntimeException("Method `{$method}` called before initializing a query");
         }
 
         if (method_exists($this->query, $method)) {
@@ -539,7 +539,7 @@ class Table
             return $this;
         }
 
-        throw new \BadMethodCallException("Invalid method '{$method}'");
+        throw new \BadMethodCallException("Invalid method `{$method}`");
     }
 
     /**

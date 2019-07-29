@@ -180,7 +180,7 @@ class FileCache
         $file = $this->filename($key);
 
         if (!file_exists($file)) {
-            throw new \RuntimeException("Cache file not found: {$file}");
+            throw new \RuntimeException("Cache file not found: `{$file}`");
         }
 
         $serializedData = file_get_contents($file);
