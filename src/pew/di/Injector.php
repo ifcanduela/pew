@@ -69,6 +69,8 @@ class Injector
         foreach ($parameters as $param) {
             $found = false;
             $injection = null;
+            $classExists = false;
+            $typeName = null;
 
             # first try: typehint
             if ($paramType = $param->getType()) {
@@ -105,9 +107,18 @@ class Injector
                 $found = true;
             }
 
+            # fourth try: auto-resolve class name
+            if (!$found && $classExists && $typeName) {
+                try {
+                    $injection = $this->createInstance($typeName);
+                    $found = true;
+                } catch (KeyNotFoundException $e) {
+                }
+            }
+
             if (!$found) {
                 $paramName = $param->getName() . " (" . $param->getType() . ")";
-                throw new KeyNotFoundException("Could not find a definition for {$paramName}.");
+                throw new KeyNotFoundException("Could not find a definition for `{$paramName}`");
             }
 
             $injections[] = $injection;
@@ -220,8 +231,19 @@ class Injector
         return $this->callMethod(...$callable);
     }
 
+    /**
+     * Attempt to instantiate an object of a class.
+     *
+     * @param string $className
+     * @return object
+     * @throws RuntimeException
+     */
     public function autoResolve(string $className)
     {
-        return $this->createInstance($className, true);
+        if (class_exists($className)) {
+            return $this->createInstance($className, true);
+        }
+
+        throw new \RuntimeException("Cannot auto-resolve `{$className}`: class not found");
     }
 }
