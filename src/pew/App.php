@@ -8,11 +8,11 @@ use pew\di\Container;
 use pew\model\TableManager;
 use pew\response\Response;
 use pew\response\HtmlResponse;
+use pew\response\JsonResponse;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
 use Stringy\Stringy as S;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -499,21 +499,14 @@ class App
             return $actionResult;
         }
 
-        # Check if the request is JSON and return an appropriate response
-        if ($request->isJson()) {
-            return new JsonResponse($actionResult);
-        }
-
         # If the action result is a string, use as the content of the response
         if (is_string($actionResult)) {
             $response->setContent($actionResult);
-
-            return new Response($response);
         }
 
-        # If the action result is not an array, make it into one
-        if (!is_array($actionResult)) {
-            $actionResult = ["data" => $actionResult];
+        # Check if the request is JSON and return an appropriate response
+        if ($request->isJson()) {
+            return new JsonResponse($response);
         }
 
         # Use the action result to render the view
