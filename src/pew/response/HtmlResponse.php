@@ -3,8 +3,6 @@
 namespace pew\response;
 
 use pew\View;
-use SplStack;
-use Stringy\Stringy as S;
 use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\Cookie;

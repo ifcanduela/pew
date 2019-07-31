@@ -8,6 +8,7 @@ use pew\di\Container;
 use pew\model\TableManager;
 use pew\response\Response;
 use pew\response\HtmlResponse;
+use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
@@ -180,6 +181,9 @@ class App
             $response = $this->handleError($e);
         } catch (InvalidHttpMethod $e) {
             # Bad method
+            $response = $this->handleError($e);
+        } catch (HttpException $e) {
+            # General HTTP errors
             $response = $this->handleError($e);
         } catch (\Exception $e) {
             # Other exceptions
@@ -368,18 +372,28 @@ class App
      */
     protected function handleError(\Exception $e)
     {
-        # If debug mode is on, let the error handler take care of the error
+        # If debug mode is on, let the error handler take care of it
         if ($this->container->get("debug")) {
             throw $e;
         }
 
+        $errorCode = 404;
+
+        if ($e instanceof HttpException) {
+            $errorCode = $e->getCode();
+        }
+
         $view = $this->container->get("view");
         $view->layout(false);
-        $view->template("errors/404");
+        $view->template("errors/view");
         $view->set("exception", $e);
 
+        if ($view->exists("errors/{$errorCode}")) {
+            $view->template("errors/{$errorCode}");
+        }
+
         $response = new HtmlResponse($view);
-        $response->code(404);
+        $response->code($errorCode);
 
         return $response;
     }
