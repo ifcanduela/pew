@@ -3,16 +3,19 @@
 namespace pew\request;
 
 use pew\View;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use pew\response\RedirectResponse as PewRedirectResponse;
+use pew\response\JsonResponse as PewJsonResponse;
+use pew\response\HtmlResponse as PewHtmlResponse;
 
 /**
  * The basic controller class, with some common methods and fields.
  */
 class Controller
 {
-    /** @var \pew\request\Request */
+    /** @var Request */
     public $request;
 
     /** @var \pew\View */
@@ -32,26 +35,26 @@ class Controller
      * Redirect to a URL.
      *
      * @param string $uri
-     * @return RedirectResponse
+     * @return PewRedirectResponse
      */
     public function redirect(string $uri)
     {
-        $response = new RedirectResponse($uri);
+        $response = new SymfonyRedirectResponse($uri);
 
-        return new \pew\response\RedirectResponse($response);
+        return new PewRedirectResponse($response);
     }
 
     /**
      * Render a JSON response
      *
      * @param mixed $data
-     * @return JsonResponse
+     * @return PewJsonResponse
      */
     public function json($data)
     {
-        $response = new JsonResponse($data);
+        $response = new SymfonyJsonResponse($data);
 
-        return new \pew\response\JsonResponse($response);
+        return new PewJsonResponse($response);
     }
 
     /**
@@ -62,7 +65,7 @@ class Controller
      *
      * @param string $template
      * @param array  $data
-     * @return Response
+     * @return PewHtmlResponse
      * @throws \Exception
      */
     public function render(string $template, array $data = [])
@@ -73,6 +76,6 @@ class Controller
 
         $this->view->setData($data);
 
-        return new \pew\response\HtmlResponse($this->view);
+        return new PewHtmlResponse($this->view);
     }
 }

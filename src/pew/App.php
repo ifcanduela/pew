@@ -520,6 +520,9 @@ class App
 
         # Check if the request is JSON and return an appropriate response
         if ($request->isJson()) {
+            $response->setContent(json_encode($actionResult));
+            $response->headers->set("Content-Type", "application/json");
+
             return new JsonResponse($response);
         }
 
