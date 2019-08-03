@@ -298,8 +298,9 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $exclude = array_flip($this->doNotSerialize);
 
         $record = array_diff_key($include, $exclude);
+        $serialize = array_unique($this->serialize);
 
-        foreach ($this->serialize as $key) {
+        foreach ($serialize as $key) {
             $record[$key] = $this->$key;
         }
 

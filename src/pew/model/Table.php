@@ -589,6 +589,7 @@ class Table
                         $keyValue = $model->{$groupingField};
 
                         if (isset($grouped[$keyValue])) {
+                            $model->serialize[] = $relationshipFieldName;
                             $model->attachRelated($getterMethodName, $grouped[$keyValue]);
                         }
                     }
