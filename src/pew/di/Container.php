@@ -78,6 +78,12 @@ class Container extends Pimple implements ContainerInterface
         return false;
     }
 
+    /**
+     * Alias a key with another name.
+     *
+     * @param string $from
+     * @param string $to
+     */
     public function alias($from, $to)
     {
         $this[$from] = function ($c) use ($to) {

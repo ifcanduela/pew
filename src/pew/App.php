@@ -528,7 +528,7 @@ class App
 
         # Use the action result to render the view
         $view = $this->container->get("view");
-        $view->setData($actionResult);
+        $view->setData($actionResult ?? []);
 
         return new HtmlResponse($view, $response);
     }

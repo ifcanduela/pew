@@ -37,6 +37,7 @@ $container["env"] = "dev";
 $container["ignore_url_separator"] = ["\\", ".", "|"];
 $container["ignore_url_suffixes"] = ["json", "html", "php"];
 $container["log_level"] = Logger::WARNING;
+$container["views_folder"] = "views";
 
 if (php_sapi_name() === 'cli') {
     $container["root_path"] =  getcwd();
@@ -234,7 +235,8 @@ $container["use_db"] = function (Container $c) {
 
 $container["view"] = function (Container $c) {
     $app_path = $c["app_path"];
-    $viewsFolder = $app_path . "/views/";
+    $views_folder = $c["views_folder"];
+    $viewsFolder = "{$app_path}/{$views_folder}/";
     $response = $c["response"];
 
     return new View($viewsFolder, $response);

@@ -13,7 +13,7 @@ class CreateCommand extends Command
 
     /** @var string */
     public $description = "Generates app files.";
-    
+
     /**
      * Run the command.
      *
@@ -73,7 +73,7 @@ use pew\console\CommandArguments;
 class {$className} extends Command
 {
     public \$name = "{$commandName}";
-    
+
     public \$description = "";
 
     public function run(CommandArguments \$args)
