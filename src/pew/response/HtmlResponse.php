@@ -67,7 +67,7 @@ class HtmlResponse extends Response
         if ($this->isJsonResponse) {
             $this->response->setContent(json_encode($this->variables));
             $this->response->headers->set("Content-Type", "application/json");
-        } else {
+        } elseif ($this->view) {
             $this->response->setContent($this->view->render());
         }
 

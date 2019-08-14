@@ -16,7 +16,7 @@ class View
     /** @var string Template name */
     protected $template = "";
 
-    /** @var string|bool Layout name */
+    /** @var string Layout name */
     protected $layout = "";
 
     /** @var string View title */
@@ -83,6 +83,7 @@ class View
      * Set data for the template.
      *
      * @param array $data
+     * @return self
      */
     public function setData(array $data)
     {
@@ -155,7 +156,7 @@ class View
             $layoutFile = $this->resolve($this->layout);
 
             if ($layoutFile === false) {
-                throw new \RuntimeException("Layout {$this->layout} not found");
+                throw new \RuntimeException("Layout `{$this->layout}` not found");
             }
 
             $this->output = $this->renderFile($layoutFile, ["output" => $output]);
@@ -279,7 +280,7 @@ class View
     public function layout($layout = null)
     {
         if ($layout !== null) {
-            $this->layout = $layout;
+            $this->layout = (string) $layout;
 
             return $this;
         }
@@ -294,7 +295,7 @@ class View
      */
     public function noLayout()
     {
-        $this->layout = false;
+        $this->layout = "";
 
         return $this;
     }

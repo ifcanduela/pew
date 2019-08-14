@@ -27,18 +27,16 @@ class CreateCommand extends Command
 
             $this->{$type}($arguments);
         } else {
-            echo $this->infoBox("Create application files");
+            $this->success("Create application files");
 
-            echo $this->messageBox(
-                "  - create:command <ClassName>",
-                "    Generates a console command. The suffix `Command` will be added if it's not present.",
-                "  - create:controller <ClassName>",
-                "    Generate an action class. The suffix `Controller` is optional.",
-                "  - create:middleware <ClassName>",
-                "    Generate a middleware controller with stubs for `before()` and `after()`.",
-                "  - create:model <ClassName> [table_name]",
-                "    Generate a database Model class. The table name can be inferred from the class name."
-            );
+            $this->info("\ncreate:command <ClassName>");
+            $this->message("    Create a console command. The suffix `Command` will be added if it's not present.</>");
+            $this->info("\ncreate:controller <ClassName>");
+            $this->message("    Create an action class. The suffix `Controller` is optional.");
+            $this->info("\ncreate:middleware <ClassName>");
+            $this->message("    Create a middleware controller with stubs for `before()` and `after()`.");
+            $this->info("\ncreate:model <ClassName> [table_name]");
+            $this->message("    Create a database Model class. The table name can be inferred from the class name.");
         }
     }
 
@@ -51,9 +49,10 @@ class CreateCommand extends Command
     public function command(CommandArguments $arguments)
     {
         $arg = $arguments->at(0);
+        $description = $arguments->get("description", "");
 
         if (!$arg) {
-            echo $this->errorBox("Missing argument: ClassName");
+            $this->error("Missing argument: ClassName");
             die;
         }
 
@@ -74,7 +73,7 @@ class {$className} extends Command
 {
     public \$name = "{$commandName}";
 
-    public \$description = "";
+    public \$description = "{$description}";
 
     public function run(CommandArguments \$args)
     {
@@ -100,9 +99,11 @@ PHP;
         $className = $arguments->at(0);
 
         if (!$className) {
-            echo $this->errorBox("Missing argument: ClassName");
+            $this->error("Missing argument: ClassName");
             die;
         }
+
+        $slug = S::create($className)->removeLeft("Controller")->underscored()->slugify();
 
         $fileContents = <<<PHP
 <?php
@@ -113,7 +114,10 @@ use pew\Controller;
 
 class {$className} extends Controller
 {
-
+    public function index()
+    {
+        return \$this->render("{$slug}/index");
+    }
 }
 
 PHP;
@@ -202,9 +206,9 @@ PHP;
     {
         if (!file_exists($filename)) {
             file_put_contents($filename, $content);
-            echo $this->successBox("{$filename} created.");
+            $this->success("{$filename} created.");
         } else {
-            echo $this->errorBox("{$filename} already exists.");
+            $this->error("{$filename} already exists.");
         }
     }
 }

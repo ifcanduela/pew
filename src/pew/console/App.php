@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 
 class App extends \pew\App
 {
-    /** @var string[] */
+    /** @var CommandDefinition[] */
     public $availableCommands = [];
 
     /** @var ArgvInput */
@@ -69,9 +69,12 @@ class App extends \pew\App
 
     /**
      * Initialize the list of available commands.
+     *
+     * @return void
      */
     protected function initCommandList()
     {
+        $appPath = $this->get("app_path");
         $appNamespace = $this->get("app_namespace");
         $commandsNamespace = $this->get("commands_namespace");
         $appCommandsNamespace = "{$appNamespace}{$commandsNamespace}\\";
@@ -84,14 +87,21 @@ class App extends \pew\App
         }
 
         # app-defined commands
-        $commandFiles = glob($this->container["app_path"] . "/commands/*Command.php");
+        $commandFiles = glob("{$appPath}/{$commandsNamespace}/*Command.php");
 
         foreach ($commandFiles as $commandFile) {
             $this->addCommand($commandFile, $appCommandsNamespace);
         }
     }
 
-    protected function addCommand(string $commandFilename, $namespace)
+    /**
+     * Register an available command.
+     *
+     * @param string $commandFilename
+     * @param string $namespace
+     * @return void
+     */
+    protected function addCommand(string $commandFilename, string $namespace)
     {
         $className = pathinfo($commandFilename, PATHINFO_FILENAME);
         $fullClassName = "{$namespace}{$className}";
@@ -105,13 +115,17 @@ class App extends \pew\App
 
         $description = $defaultProperties["description"] ?? null;
 
-        $this->availableCommands[(string) $name] = (object) [
-            "name" => $name,
-            "description" => $description,
-            "className" => $fullClassName
-        ];
+        $definition = new CommandDefinition($name, $fullClassName, $description);
+        $this->availableCommands[$definition->name] = $definition;
     }
 
+    /**
+     * Print a help message when no command was found.
+     *
+     * @param string $commandName
+     * @param array $suggestions
+     * @return void
+     */
     protected function commandMissing(string $commandName, array $suggestions = [])
     {
         if (!$suggestions) {
@@ -127,8 +141,6 @@ class App extends \pew\App
         foreach ($suggestions as $suggestion) {
             $this->output->writeln("    <info>{$suggestion}</info>");
         }
-
-        return;
     }
 
     /**
@@ -157,7 +169,7 @@ class App extends \pew\App
      * If a command is not found, a list of suggestions is returned.
      *
      * @param string $commandName
-     * @return CommandInterface|array
+     * @return object|array
      */
     protected function findCommand(string $commandName)
     {

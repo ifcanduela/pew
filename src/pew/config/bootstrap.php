@@ -6,17 +6,19 @@ use ifcanduela\db\Database;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use pew\di\Injector;
-use pew\lib\FileCache;
 use pew\lib\Session;
 use pew\lib\Url;
+use pew\model\TableManager;
 use pew\request\Request;
-use pew\response\Response;
 use pew\router\Route;
 use pew\router\Router;
 use pew\View;
 use pew\di\Container;
-use Symfony\Component\Cache\Simple\FilesystemCache;
+use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
@@ -39,7 +41,7 @@ $container["ignore_url_suffixes"] = ["json", "html", "php"];
 $container["log_level"] = Logger::WARNING;
 $container["views_folder"] = "views";
 
-if (php_sapi_name() === 'cli') {
+if (php_sapi_name() === "cli") {
     $container["root_path"] =  getcwd();
     $container["www_path"] = getcwd() . DIRECTORY_SEPARATOR . "www";
 } else {
@@ -51,7 +53,7 @@ if (php_sapi_name() === 'cli') {
 # FACTORIES
 #
 
-$container["app_log"] = function (Container $c) {
+$container["app_log"] = function (Container $c): LoggerInterface {
     $logger = new Logger("App log");
     $logfile = $c["app_path"] . "/logs/app.log";
     $logger->pushHandler(new StreamHandler($logfile, $c["log_level"]));
@@ -59,8 +61,8 @@ $container["app_log"] = function (Container $c) {
     return $logger;
 };
 
-$container["cache"] = function (Container $c) {
-    $cache = new FilesystemCache(
+$container["cache"] = function (Container $c): CacheInterface {
+    $cache = new FilesystemAdapter(
         "pew",
         $c["cache_duration"],
         $c["cache_path"]
@@ -69,15 +71,15 @@ $container["cache"] = function (Container $c) {
     return $cache;
 };
 
-$container["cache_path"] = function (Container $c) {
+$container["cache_path"] = function (Container $c): string {
     return $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
 };
 
-$container["controller_namespace"] = function (Container $c) {
+$container["controller_namespace"] = function (Container $c): string {
     return $c["app_namespace"] . "controllers\\";
 };
 
-$container["db"] = function (Container $c) {
+$container["db"] = function (Container $c): Database {
     $dbConfig = $c["db_config"];
     $useDb = $c["use_db"] ?? "default";
 
@@ -90,11 +92,11 @@ $container["db"] = function (Container $c) {
     return $tableManager->getConnection($useDb);
 };
 
-$container["db_config"] = function (Container $c) {
+$container["db_config"] = function (Container $c): array {
     return require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
 };
 
-$container["db_log"] = function (Container $c) {
+$container["db_log"] = function (Container $c): LoggerInterface {
     $logger = new Monolog\Logger("DB log");
     $logfile = $c["app_path"] . "/logs/db.log";
     $logger->pushHandler(new StreamHandler($logfile, Monolog\Logger::DEBUG));
@@ -102,54 +104,45 @@ $container["db_log"] = function (Container $c) {
     return $logger;
 };
 
-$container["error_handler"] = function (Container $c) {
+$container["error_handler"] = function (Container $c): Run {
     $request = $c["request"];
-    $handler = null;
-
-    if (php_sapi_name() === "cli" || $request->isJson()) {
-        $handler = new PlainTextHandler();
-    } else {
-        $handler = new PrettyPageHandler();
-    }
+    $isCli = (php_sapi_name() === "cli");
 
     $whoops = new Run();
-    $whoops->pushHandler($handler);
+    $whoops->prependHandler($isCli ? new PlainTextHandler() : new PrettyPageHandler());
+
+    if ($request->isJson()) {
+        $whoops->prependHandler(new JsonResponseHandler());
+    }
 
     return $whoops;
 };
 
-$container["file_cache"] = function (Container $c) {
-    $cachePath = $c["cache_path"];
-    $cacheDuration = $c["cache_duration"];
-
-    return new FileCache($cacheDuration, $cachePath);
-};
-
-$container["injector"] = function (Container $c) {
+$container["injector"] = function (Container $c): Injector {
     return new Injector($c);
 };
 
-$container["path"] = function (Container $c) {
+$container["path"] = function (Container $c): string {
     $request = $c["request"];
     $pathInfo = $request->getPathInfo();
 
     $ignore_url_suffixes = join("|", $c["ignore_url_suffixes"]);
     $ignore_url_separator = join("", $c["ignore_url_separator"]);
 
-    $pathInfo = preg_replace('/[' . $ignore_url_separator. '](' . $ignore_url_suffixes . ')$/', "", $pathInfo);
+    $pathInfo = preg_replace("/[{$ignore_url_separator}]({$ignore_url_suffixes})$/", "", $pathInfo);
 
     return "/" . trim($pathInfo, "/");
 };
 
-$container["request"] = function (Container $c) {
+$container["request"] = function (Container $c): Request {
     return Request::createFromGlobals();
 };
 
-$container["response"] = function (Container $c) {
+$container["response"] = function (Container $c): SymfonyResponse {
     return new SymfonyResponse();
 };
 
-$container["route"] = function (Container $c) {
+$container["route"] = function (Container $c): Route {
     $request = $c["request"];
     $router = $c["router"];
     $pathInfo = $c["path"];
@@ -157,8 +150,7 @@ $container["route"] = function (Container $c) {
     return $router->route($pathInfo, $request->getMethod());
 };
 
-$container["router"] = function (Container $c) {
-    $debug = $c["debug"];
+$container["router"] = function (Container $c): Router {
     $routes = $c["routes"];
 
     $router = new Router($routes);
@@ -166,7 +158,7 @@ $container["router"] = function (Container $c) {
     return $router;
 };
 
-$container["routes"] = function (Container $c) {
+$container["routes"] = function (Container $c): array {
     $appFolder = $c["app_path"];
     $configFolder = $c["config_folder"];
     $routesPath = "{$appFolder}/{$configFolder}/routes.php";
@@ -190,13 +182,13 @@ $container["routes"] = function (Container $c) {
     return $routes;
 };
 
-$container["session"] = function () {
+$container["session"] = function (): Session {
     return new Session();
 };
 
-$container["tableManager"] = function (Container $c) {
+$container["tableManager"] = function (Container $c): TableManager {
     $dbConfig = $c["db_config"];
-    $tableManager = new \pew\model\TableManager();
+    $tableManager = new TableManager();
     $tableManager->setDefaultConnection($c["use_db"]);
     $logger = null;
 
@@ -221,25 +213,24 @@ $container["tableManager"] = function (Container $c) {
     return $tableManager;
 };
 
-$container["url"] = function (Container $c) {
+$container["url"] = function (Container $c): Url {
     $request = $c["request"];
 
     return new Url($request);
 };
 
-$container["use_db"] = function (Container $c) {
+$container["use_db"] = function (Container $c): string {
     $db_config = $c["db_config"];
 
     return $db_config["use_db"] ?? $c["env"] ?? "default";
 };
 
-$container["view"] = function (Container $c) {
+$container["view"] = function (Container $c): View {
     $app_path = $c["app_path"];
     $views_folder = $c["views_folder"];
     $viewsFolder = "{$app_path}/{$views_folder}/";
-    $response = $c["response"];
 
-    return new View($viewsFolder, $response);
+    return new View($viewsFolder);
 };
 
 return $container;

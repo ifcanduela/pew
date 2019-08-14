@@ -106,7 +106,7 @@ $this->assertEquals("PARAMETER", $v->get("parameter"));
         try {
             $v->render("missing", ["parameter" => 1, "property" => 2])->toString();
         } catch (\RuntimeException $e) {
-            $this->assertEquals($e->getMessage(), "Template missing not found");
+            $this->assertEquals($e->getMessage(), "Template `missing` not found");
         }
 
         $v->template("view1");
@@ -114,7 +114,7 @@ $this->assertEquals("PARAMETER", $v->get("parameter"));
         try {
             $v->render(null, ["parameter" => 1, "property" => 2])->toString();
         } catch (\RuntimeException $e) {
-            $this->assertEquals($e->getMessage(), "Layout missing not found");
+            $this->assertEquals($e->getMessage(), "Layout `missing` not found");
         }
 
         try {

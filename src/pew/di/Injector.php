@@ -71,9 +71,11 @@ class Injector
             $injection = null;
             $classExists = false;
             $typeName = null;
+            $paramType = $param->getType();
+            $paramName = $param->getName();
 
             # first try: typehint
-            if ($paramType = $param->getType()) {
+            if ($paramType) {
                 $typeName = $paramType->getName();
                 $classExists = class_exists($typeName);
 
@@ -95,7 +97,7 @@ class Injector
             # second try: argument name
             if (!$found) {
                 try {
-                    $injection = $this->findKey($param->getName());
+                    $injection = $this->findKey($paramName);
                     $found = true;
                 } catch (KeyNotFoundException $e) {
                 }
@@ -117,7 +119,10 @@ class Injector
             }
 
             if (!$found) {
-                $paramName = $param->getName() . " (" . $param->getType() . ")";
+                if ($paramType) {
+                    $paramName .=  " (" . $paramType->getName() . ")";
+                }
+
                 throw new KeyNotFoundException("Could not find a definition for `{$paramName}`");
             }
 
@@ -170,7 +175,7 @@ class Injector
     /**
      * Invokes a method in an object.
      *
-     * @param object $object An object on which to invoke the method
+     * @param object|string $object An object on which to invoke the method, or a class name
      * @param string $methodName Method name
      * @return mixed Result of calling the method on the object
      * @throws KeyNotFoundException

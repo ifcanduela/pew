@@ -274,7 +274,7 @@ class App
      * Run configured middleware callbacks after the controller action.
      *
      * @param Route $route
-     * @param SymfonyResponse $response
+     * @param Response $response
      * @param Injector $injector
      * @return Response
      */
@@ -513,17 +513,18 @@ class App
             return $actionResult;
         }
 
-        # If the action result is a string, use as the content of the response
-        if (is_string($actionResult)) {
-            $response->setContent($actionResult);
-        }
-
         # Check if the request is JSON and return an appropriate response
         if ($request->isJson()) {
             $response->setContent(json_encode($actionResult));
             $response->headers->set("Content-Type", "application/json");
 
             return new JsonResponse($response);
+        }
+
+        # If the action result is a string, use as the content of the response
+        if (is_string($actionResult)) {
+            $response->setContent($actionResult);
+            return new Response($response);
         }
 
         # Use the action result to render the view

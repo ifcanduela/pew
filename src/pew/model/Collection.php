@@ -419,7 +419,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Get the items that match a set of keys.
      *
-     * @param string|int $keys...
+     * @param array $keys
      * @return static
      */
     public function only(...$keys)
@@ -476,13 +476,17 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      */
     public function random($count = 1)
     {
-        $single = $count === 1;
-        $pool = $this->items;
-        shuffle($pool);
+        if (!$this->items) {
+            return null;
+        }
 
-        do {
-            $items[] = array_pop($pool);
-        } while (--$count);
+        $single = $count === 1;
+        $items = [];
+
+        while ($count--) {
+            $i = array_rand($this->items);
+            $items[] = $this->items[$i];
+        }
 
         if ($single && $items) {
             return $items[0];

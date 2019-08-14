@@ -15,6 +15,7 @@ class Session extends SymfonySession implements ArrayAccess
      *
      * @param string $key
      * @param mixed  $value
+     * @return void
      */
     public function addFlash(string $key, $value)
     {

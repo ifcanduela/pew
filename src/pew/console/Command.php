@@ -19,10 +19,19 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class Command implements CommandInterface
 {
     /** @var string */
-    public $name;
+    public $name = "";
 
     /** @var string */
-    public $description;
+    public $description = "";
+
+    /** @var InputInterface */
+    public $input;
+
+    /** @var OutputInterface */
+    public $output;
+
+    /** @var FormatterHelper */
+    public $formatter;
 
     /**
      * Command constructor.
@@ -79,7 +88,7 @@ abstract class Command implements CommandInterface
      * Print a command-line message.
      *
      * @param string|array $text
-     * @return Message
+     * @return void
      */
     public function message($text, bool $newLine = true, string $format = "")
     {
@@ -100,29 +109,29 @@ abstract class Command implements CommandInterface
      * Print an info message with light blue text.
      *
      * @param string|array $text
-     * @return Message
+     * @return void
      */
     public function info($text, bool $newLine = true)
     {
-        $this->message($text, $newLine, "<fg=cyan>");
+        $this->message($text, $newLine, "<info>");
     }
 
     /**
      * Print a success message with green text.
      *
      * @param string|array $text
-     * @return Message
+     * @return void
      */
     public function success($text, bool $newLine = true)
     {
-        $this->message($text, $newLine, "<info>");
+        $this->message($text, $newLine, "<fg=cyan>");
     }
 
     /**
      * Print a warning message with yellow text.
      *
      * @param string|array $text
-     * @return Message
+     * @return void
      */
     public function warning($text, bool $newLine = true)
     {
@@ -133,7 +142,7 @@ abstract class Command implements CommandInterface
      * Print an error message with red text.
      *
      * @param string|array $text
-     * @return Message
+     * @return void
      */
     public function error($text, bool $newLine = true)
     {
@@ -145,7 +154,7 @@ abstract class Command implements CommandInterface
      *
      * @param string $type
      * @param string $message
-     * @return Message
+     * @return void
      */
     public function log(string $section, string $message, bool $newLine = true)
     {

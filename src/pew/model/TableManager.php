@@ -47,6 +47,7 @@ class TableManager
      * Set the default database connection to use.
      *
      * @param string $connectionName
+     * @return void
      */
     public function setDefaultConnection(string $connectionName)
     {

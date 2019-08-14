@@ -186,8 +186,8 @@ if (!function_exists("url")) {
 
         $url = $base_url . ltrim($path, '/');
 
-        if ($params) {
-            $query = count($params) ? array_merge(...$params) : [];
+        if (count($params)) {
+            $query = array_merge(...$params);
             $query_string = http_build_query($query);
             $url .= "?" . $query_string;
         }

@@ -59,7 +59,8 @@ class Container extends Pimple implements ContainerInterface
      * Import container definitions from a file.
      *
      * @param string $filename
-     * @return void
+     * @return bool
+     * @throws \RuntimeException When the file does not return an array
      */
     public function loadFile(string $filename)
     {
@@ -83,10 +84,11 @@ class Container extends Pimple implements ContainerInterface
      *
      * @param string $from
      * @param string $to
+     * @return void
      */
     public function alias($from, $to)
     {
-        $this[$from] = function ($c) use ($to) {
+        $this[$from] = function (Container $c) use ($to)  {
             return $c[$to];
         };
     }

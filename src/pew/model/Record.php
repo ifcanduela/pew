@@ -67,6 +67,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         $this->tableManager = $this->getTableManager();
         # Initialize the record fields
         $this->record = $this->columns();
+
         # Update the table name if it's empty
         if (!$this->tableName) {
             $this->tableName = $this->tableManager->tableName();

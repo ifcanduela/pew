@@ -15,6 +15,7 @@ class CommandArguments
     /** @var array Arguments given without a nametag */
     protected $anonymousArguments = [];
 
+    /** @var array A list of default values for named arguments */
     protected $defaultArguments = [];
 
     /**
