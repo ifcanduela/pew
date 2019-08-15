@@ -2,6 +2,8 @@
 
 namespace pew\request;
 
+use Symfony\Component\HttpFoundation\ParameterBag;
+
 /**
  * A shell class that centralizes information about the current request.
  */
@@ -9,6 +11,9 @@ class Request extends \Symfony\Component\HttpFoundation\Request
 {
     /** @var string */
     public $appUrl;
+
+    /** @var ParameterBag */
+    protected $jsonData;
 
     /**
      * Get the URL from which this request is executed, with scheme, server and base path.
@@ -96,6 +101,27 @@ class Request extends \Symfony\Component\HttpFoundation\Request
         }
 
         # check if the 'Accept' header contains 'json'
-        return false !== strpos($this->headers->get('Accept'), 'json');
+        return false !== strpos($this->headers->get("Accept"), "json");
+    }
+
+
+    /**
+     * Get values from the request body in a JSON request.
+     *
+     * @param string|null $key
+     * @return array|mixed
+     */
+    public function getJson(string $key = null)
+    {
+        if (!$this->jsonData) {
+            $json = json_decode($this->getContent(), true);
+            $this->jsonData = new ParameterBag($json);
+        }
+
+        if ($key) {
+            return $this->jsonData->get($key);
+        }
+
+        return $this->jsonData->all();
     }
 }
