@@ -226,11 +226,16 @@ $container["use_db"] = function (Container $c): string {
 };
 
 $container["view"] = function (Container $c): View {
+    return new View($c["views_path"]);
+};
+
+$container["views_path"] = function (Container $c): string {
     $app_path = $c["app_path"];
     $views_folder = $c["views_folder"];
-    $viewsFolder = "{$app_path}/{$views_folder}/";
 
-    return new View($viewsFolder);
+    $path = realpath("{$app_path}/{$views_folder}/");
+
+    return $path;
 };
 
 return $container;
