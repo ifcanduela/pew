@@ -2,18 +2,30 @@
 
 namespace pew\request;
 
-use Symfony\Component\HttpFoundation\ParameterBag;
-
 /**
  * A shell class that centralizes information about the current request.
  */
 class Request extends \Symfony\Component\HttpFoundation\Request
 {
     /** @var string */
-    public $appUrl;
+    protected $appUrl;
 
-    /** @var ParameterBag */
-    protected $jsonData;
+    /** @var bool|null */
+    protected $acceptsJson;
+
+    public function __construct(array $query = [], array $request = [], array $attributes = [], array $cookies = [], array $files = [], array $server = [], $content = null)
+    {
+        parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
+
+        # check for a JSON request body
+        $bodyIsJson = strpos($this->headers->get("Content-Type"), "application/json") === 0;
+
+        # decode the JSON body and replace the POST parameter bag
+        if ($bodyIsJson) {
+            $data = json_decode($this->getContent(), true);
+            $this->request->replace(is_array($data) ? $data : []);
+        }
+    }
 
     /**
      * Get the URL from which this request is executed, with scheme, server and base path.
@@ -95,33 +107,23 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      */
     public function isJson()
     {
-        # check if the requested URL ends in '.json' or '|json'
-        if (preg_match('/[\.|]json$/', $this->getPathInfo())) {
-            return true;
+        if ($this->acceptsJson === null) {
+            $this->acceptsJson = false;
+            
+            # check if the requested URL ends in '.json' or '|json'
+            if (preg_match('/[\.|]json$/', $this->getPathInfo())) {
+                $this->acceptsJson = true;
+            } else {
+                # search for an 'Accept' header containing 'application/json'
+                foreach ($this->getAcceptableContentTypes("Accept") as $contentType) {
+                    if ($contentType === "application/json") {
+                        $this->acceptsJson = true;
+                        break;
+                    }
+                }
+            }
         }
-
-        # check if the 'Accept' header contains 'json'
-        return false !== strpos($this->headers->get("Accept"), "json");
-    }
-
-
-    /**
-     * Get values from the request body in a JSON request.
-     *
-     * @param string|null $key
-     * @return array|mixed
-     */
-    public function getJson(string $key = null)
-    {
-        if (!$this->jsonData) {
-            $json = json_decode($this->getContent(), true);
-            $this->jsonData = new ParameterBag($json);
-        }
-
-        if ($key) {
-            return $this->jsonData->get($key);
-        }
-
-        return $this->jsonData->all();
+        
+        return $this->acceptsJson;
     }
 }
