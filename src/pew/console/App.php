@@ -39,6 +39,9 @@ class App extends \pew\App
         $arguments = $this->getArguments();
 
         if (empty($arguments)) {
+            $this->output->writeln("<fg=cyan>Pew command runner</>");
+            $this->output->writeln("The following commands are available:" . PHP_EOL);
+
             foreach ($this->availableCommands as $name => $commandInfo) {
                 $this->output->writeln("<info>{$name}</info>");
 
