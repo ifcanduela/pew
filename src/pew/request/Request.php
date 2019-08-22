@@ -17,13 +17,15 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     {
         parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
 
-        # check for a JSON request body
-        $bodyIsJson = strpos($this->headers->get("Content-Type"), "application/json") === 0;
+        if ($this->isPost()) {
+            # check for a JSON request body
+            $bodyIsJson = strpos($this->headers->get("Content-Type"), "application/json") === 0;
 
-        # decode the JSON body and replace the POST parameter bag
-        if ($bodyIsJson) {
-            $data = json_decode($this->getContent(), true);
-            $this->request->replace(is_array($data) ? $data : []);
+            if ($bodyIsJson) {
+                # decode the JSON body and replace the POST parameter bag
+                $data = json_decode($this->getContent(), true);
+                $this->request->replace(is_array($data) ? $data : []);
+            }
         }
     }
 
@@ -88,28 +90,41 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      * @param string|null $key
      * @return string|array
      */
-    public function post($key = null)
+    public function post($key = null, $default = null)
     {
         if (is_null($key)) {
             return $this->request->all();
         }
 
-        return $this->request->get($key);
+        return $this->request->get($key, $default);
     }
 
     /**
      * Check if the request demands a JSON response.
      *
-     * The check is performed against the `Accepts` header of the
-     * HTTP request and the suffix of the URL.
+     * The check is performed against the `Accepts` header of the HTTP request
+     * and the suffix of the URL.
      *
      * @return bool
      */
     public function isJson()
     {
+        return $this->acceptsJson();
+    }
+
+    /**
+     * Check if the request expects a JSON response.
+     *
+     * The check is performed against the `Accepts` header of the HTTP request
+     * and the suffix of the URL.
+     *
+     * @return bool
+     */
+    public function acceptsJson()
+    {
         if ($this->acceptsJson === null) {
             $this->acceptsJson = false;
-            
+
             # check if the requested URL ends in '.json' or '|json'
             if (preg_match('/[\.|]json$/', $this->getPathInfo())) {
                 $this->acceptsJson = true;
@@ -123,7 +138,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
                 }
             }
         }
-        
+
         return $this->acceptsJson;
     }
 }
