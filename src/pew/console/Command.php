@@ -30,9 +30,6 @@ abstract class Command implements CommandInterface
     /** @var OutputInterface */
     public $output;
 
-    /** @var FormatterHelper */
-    public $formatter;
-
     /**
      * Command constructor.
      *
@@ -40,11 +37,10 @@ abstract class Command implements CommandInterface
      * @param OutputInterface $output
      * @param FormatterHelper $formatter
      */
-    public function __construct(InputInterface $input, OutputInterface $output, FormatterHelper $formatter)
+    public function __construct(InputInterface $input, OutputInterface $output)
     {
         $this->input = $input;
         $this->output = $output;
-        $this->formatter = $formatter;
 
         if (!$this->name) {
             $className = (new \ReflectionClass($this))->getShortName();
@@ -124,7 +120,7 @@ abstract class Command implements CommandInterface
      */
     public function success($text, bool $newLine = true)
     {
-        $this->message($text, $newLine, "<fg=cyan>");
+        $this->message($text, $newLine, "<success>");
     }
 
     /**
@@ -135,7 +131,7 @@ abstract class Command implements CommandInterface
      */
     public function warning($text, bool $newLine = true)
     {
-        $this->message($text, $newLine, "<comment>");
+        $this->message($text, $newLine, "<warn>");
     }
 
     /**
@@ -158,7 +154,7 @@ abstract class Command implements CommandInterface
      */
     public function log(string $section, string $message, bool $newLine = true)
     {
-        $text = $this->formatter->formatSection($section, $message);
+        $text = $this->message($message, "<comment>");
         $this->message($text, $newLine);
     }
 }

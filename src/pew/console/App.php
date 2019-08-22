@@ -5,6 +5,7 @@ namespace pew\console;
 use ifcanduela\abbrev\Abbrev;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -24,6 +25,8 @@ class App extends \pew\App
         parent::__construct($appFolder, $configFileName);
         $this->input = new ArgvInput();
         $this->output = new ConsoleOutput();
+        $this->output->getFormatter()->setStyle("warn", new OutputFormatterStyle("yellow", "default"));
+        $this->output->getFormatter()->setStyle("success", new OutputFormatterStyle("cyan", "default"));
 
         $this->initCommandList();
     }
@@ -201,8 +204,7 @@ class App extends \pew\App
         /** @var Command $command */
         $command = new $commandClassName(
             $this->input,
-            $this->output,
-            new FormatterHelper()
+            $this->output
         );
 
         $injector = $this->get("injector");
