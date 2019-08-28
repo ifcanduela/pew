@@ -25,7 +25,7 @@ class App extends \pew\App
         parent::__construct($appFolder, $configFileName);
         $this->input = new ArgvInput();
         $this->output = new ConsoleOutput();
-        $this->output->getFormatter()->setStyle("warn", new OutputFormatterStyle("yellow", "default"));
+        $this->output->getFormatter()->setStyle("warn", new OutputFormatterStyle("black", "yellow"));
         $this->output->getFormatter()->setStyle("success", new OutputFormatterStyle("cyan", "default"));
 
         $this->initCommandList();
@@ -212,9 +212,15 @@ class App extends \pew\App
         $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
         $this->set(CommandArguments::class, $args);
 
-        $injector->callMethod($command, "init");
+        if (method_exists($command, "init")) {
+            $injector->callMethod($command, "init");
+        }
+
         $result = $injector->callMethod($command, $action);
-        $injector->callMethod($command, "finish");
+
+        if (method_exists($command, "finish")) {
+            $injector->callMethod($command, "finish");
+        }
 
         return $result;
     }

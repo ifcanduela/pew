@@ -103,7 +103,7 @@ PHP;
             die;
         }
 
-        $slug = S::create($className)->removeLeft("Controller")->underscored()->slugify();
+        $slug = S::create($className)->removeRight("Controller")->underscored()->slugify();
 
         $fileContents = <<<PHP
 <?php

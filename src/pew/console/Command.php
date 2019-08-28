@@ -10,13 +10,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Base class for command-line scripts.
  *
- * Commands must implement the name(), description() and run() methods
- * from CommandInterface.
+ * Commands has to implement a method which will be called from the console
+ * app, the default being `run`.
  *
- * The init() and finish() methods are called by the command app
- * before and after, respectively, calling the run() method.
+ * The init() and finish() methods are called by the console app before and
+ * after calling the `run` (or other action) method. Values from the container
+ * can be injected.
+ *
+ * @method init()
+ * @method finish()
  */
-abstract class Command implements CommandInterface
+abstract class Command
 {
     /** @var string */
     public $name = "";
@@ -50,24 +54,6 @@ abstract class Command implements CommandInterface
                 ->underscored()
                 ->slugify();
         }
-    }
-
-    /**
-     * Setup the command before running.
-     *
-     * @return void
-     */
-    public function init()
-    {
-    }
-
-    /**
-     * Clean up after the command runs.
-     *
-     * @return void
-     */
-    public function finish()
-    {
     }
 
     /**
@@ -148,13 +134,12 @@ abstract class Command implements CommandInterface
     /**
      * Print a log-style message.
      *
-     * @param string $type
      * @param string $message
+     * @param bool $newLine
      * @return void
      */
-    public function log(string $section, string $message, bool $newLine = true)
+    public function log(string $message, bool $newLine = true)
     {
-        $text = $this->message($message, "<comment>");
-        $this->message($text, $newLine);
+        $this->message($message, $newLine, "<comment>");
     }
 }
