@@ -64,13 +64,13 @@ class App extends \pew\App
 
         $commandInfo = $this->findCommand($commandName);
 
-        if (!$commandInfo || is_array($commandInfo)) {
+        if (!($commandInfo instanceof CommandDefinition)) {
             $suggestedClassName = $this->get("app_namespace") . "\\commands\\" . Str::create($commandName)->upperCamelize() . "Command";
             $this->commandMissing($commandName, $commandInfo ?? []);
             return;
         }
 
-        return $this->handleCommand($commandInfo->className, $arguments, $action);
+        return $this->handleCommand($commandInfo, $arguments, $action);
     }
 
     /**
@@ -175,7 +175,7 @@ class App extends \pew\App
      * If a command is not found, a list of suggestions is returned.
      *
      * @param string $commandName
-     * @return object|array
+     * @return CommandDefinition|array
      */
     protected function findCommand(string $commandName)
     {
@@ -194,13 +194,15 @@ class App extends \pew\App
     /**
      * Call a method on a command instance.
      *
-     * @param string $commandClassName
+     * @param CommandDefinition $commandDefinition
      * @param array $arguments
      * @param string $action
      * @return mixed
      */
-    protected function handleCommand(string $commandClassName, array $arguments, string $action = "run")
+    protected function handleCommand(CommandDefinition $commandDefinition, array $arguments, string $action = "run")
     {
+        $commandClassName = $commandDefinition->className;
+
         /** @var Command $command */
         $command = new $commandClassName(
             $this->input,
