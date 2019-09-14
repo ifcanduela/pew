@@ -576,9 +576,9 @@ class Table
 
                 /** @var Relationship $relationship */
                 $relationship = $ref->$getterMethodName();
-                $groupingField = $relationship->getGroupingField();
 
                 if ($relationship instanceof Relationship) {
+                    $groupingField = $relationship->getGroupingField();
                     $relatedKeys = array_map(function ($r) use ($groupingField) {
                         return $r->$groupingField;
                     }, $models);
