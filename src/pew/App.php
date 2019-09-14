@@ -344,7 +344,6 @@ class App
         # Set up the template
         $view = $this->container->get("view");
         $view->template($template);
-        $view->layout("default.layout");
 
         # Create the controller
         $controller = $injector->createInstance($controllerClass);

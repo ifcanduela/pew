@@ -35,6 +35,7 @@ $container["commands_namespace"] = "commands";
 $container["config_folder"] = "config";
 $container["debug"] = false;
 $container["default_action"] = "index";
+$container["default_layout"] = "default.layout";
 $container["env"] = "dev";
 $container["ignore_url_separator"] = ["\\", ".", "|"];
 $container["ignore_url_suffixes"] = ["json", "html", "php"];
@@ -226,7 +227,10 @@ $container["use_db"] = function (Container $c): string {
 };
 
 $container["view"] = function (Container $c): View {
-    return new View($c["views_path"]);
+    $view = new View($c["views_path"]);
+    $view->layout($c["default_layout"]);
+
+    return $view;
 };
 
 $container["views_path"] = function (Container $c): string {
