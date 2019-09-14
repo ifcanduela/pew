@@ -71,7 +71,9 @@ if (!function_exists("here")) {
         static $here;
 
         if (!$here) {
-            $here = url(pew("path"), pew("request")->query->all());
+            $query = pew("request")->query->all();
+
+            $here = url(pew("path"), $query ?: "");
         }
 
         return $here;
