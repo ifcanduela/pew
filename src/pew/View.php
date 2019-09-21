@@ -4,12 +4,15 @@ namespace pew;
 
 use SplStack;
 use Stringy\Stringy as S;
+use ifcanduela\events\CanEmitEvents;
 
 /**
  * This class encapsulates the template rendering functionality.
  */
 class View
 {
+    use CanEmitEvents;
+
     /** @var SplStack Base templates directory */
     protected $folderStack;
 
@@ -209,7 +212,7 @@ class View
 
         foreach ($this->folderStack as $folder) {
             if (file_exists($folder . DIRECTORY_SEPARATOR . $templateFileName)) {
-                return $folder . DIRECTORY_SEPARATOR . $templateFileName;
+                return realpath($folder . DIRECTORY_SEPARATOR . $templateFileName);
             }
         }
 
@@ -363,6 +366,8 @@ class View
      */
     protected function renderFile()
     {
+        $this->emit("view.render", func_get_args());
+
         extract(func_get_arg(1), EXTR_PREFIX_INVALID, "v_");
         ob_start();
 

@@ -2,6 +2,8 @@
 
 namespace pew;
 
+use ifcanduela\events\CanEmitEvents;
+use ifcanduela\events\CanListenToEvents;
 use Monolog\Logger;
 use pew\di\Injector;
 use pew\di\Container;
@@ -23,6 +25,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class App
 {
+    use CanEmitEvents,
+        CanListenToEvents;
+
     /** @var array */
     protected $middleware = [];
 
@@ -66,12 +71,16 @@ class App
 
         static::$instance = $this;
 
+        $this->emit("pew.init");
+
         # import app-defined configuration
         $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
 
         # Initialize the database manager
         TableManager::instance($this->container->get("tableManager"));
+
+        $this->emit("app.init");
 
         App::log("App path set to {$appPath}", Logger::INFO);
     }
@@ -173,6 +182,8 @@ class App
         $errorHandler = $this->container->get("error_handler");
         $errorHandler->register();
 
+        $this->emit("timer.start", ["app.run", "Application run"]);
+
         try {
             # Process the request
             $response = $this->handle();
@@ -189,6 +200,8 @@ class App
             # Other exceptions
             $response = $this->handleError($e);
         }
+
+        $this->emit("timer.stop", ["app.run"]);
 
         $response->send();
     }
@@ -226,11 +239,15 @@ class App
                 throw new \RuntimeException("No handler specified for route `" . $request->getPathInfo() . "`");
             }
 
+            $this->emit("timer.start", ["app.action", "Handle action"]);
+
             if (is_callable($handler)) {
                 $result = $this->handleCallback($handler, $injector);
             } else {
                 $result = $this->handleAction($handler, $actionName, $injector);
             }
+
+            $this->emit("timer.stop", ["app.action"]);
         }
 
         # Process whatever the handler returned into a Response object
@@ -481,14 +498,14 @@ class App
         $controllerClassName = array_pop($parts);
         # The other segments will be the path to the controller templates in the
         # `views` folder
-        $controllerPath = implode(DIRECTORY_SEPARATOR, $parts);
+        $controllerPath = implode(DIRECTORY_SEPARATOR, array_filter($parts));
         # Convert the short class name into a slug to use as folder name
         $controllerSlug = S::create($controllerClassName)->removeRight("Controller")->underscored();
 
         # Make the controller slug available for use elsewhere
         $this->container->set("controller_slug", $controllerSlug);
 
-        return $controllerPath . DIRECTORY_SEPARATOR . $controllerSlug;
+        return implode(DIRECTORY_SEPARATOR, array_filter([$controllerPath, $controllerSlug]));
     }
 
     /**

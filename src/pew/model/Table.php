@@ -95,6 +95,12 @@ class Table
      */
     protected $relationships = [];
 
+    /** @var array */
+    protected static $primaryKeyCache = [];
+
+    /** @var array */
+    protected static $columnCache = [];
+
     /**
      * Create a table gateway object.
      *
@@ -117,22 +123,28 @@ class Table
      */
     public function init()
     {
-        if (!$this->db->tableExists($this->tableName)) {
-            throw new TableNotFoundException("Table `{$this->tableName}` not found");
-        }
-
         # some metadata about the table
         $this->tableData["name"] = $this->tableName;
 
         if (!isset($this->tableData["primary_key"])) {
-            $primaryKey = $this->db->getPrimaryKeys($this->tableName);
-            $this->tableData["primary_key"] = $primaryKey;
+            if (!isset(static::$primaryKeyCache[$this->tableName])) {
+                static::$primaryKeyCache[$this->tableName] = $this->db->getPrimaryKeys($this->tableName);
+            }
+
+            $this->tableData["primary_key"] = static::$primaryKeyCache[$this->tableName];
         }
 
         if (!isset($this->tableData["columns"])) {
-            $columns = $this->db->getColumnNames($this->tableName);
-            $this->tableData["columns"] = $columns;
-            $this->tableData["column_names"] = array_combine($columns, array_fill(0, count($columns), null));
+            if (!isset(static::$columnCache[$this->tableName])) {
+                $columns = $this->db->getColumnNames($this->tableName);
+                static::$columnCache[$this->tableName]["columns"] = $columns;
+                static::$columnCache[$this->tableName]["column_names"] = array_combine($columns, array_fill(0, count($columns), null));
+            }
+
+            $tableData = static::$columnCache[$this->tableName];
+
+            $this->tableData["columns"] = $tableData["columns"];
+            $this->tableData["column_names"] = $tableData["column_names"];
         }
     }
 

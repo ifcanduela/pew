@@ -397,7 +397,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         # check if the getter method exists
         if ($methodName) {
             # check if the getter method has been called before
-            if (!$this->hasGetterResults($key)) {
+            if (!array_key_exists($methodName, $this->getterResults)) {
                 $fetch = $this->$methodName();
 
                 if (method_exists($fetch, "fetch")) {
