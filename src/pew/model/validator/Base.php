@@ -2,13 +2,13 @@
 
 namespace pew\model\validator;
 
-use pew\model\validator\rule\Rule;
 use pew\model\validator\rule\Callback;
 use pew\model\validator\rule\CanBeNull;
 use pew\model\validator\rule\InList;
 use pew\model\validator\rule\IsUnique;
 use pew\model\validator\rule\NotNull;
 use pew\model\validator\rule\Required;
+use pew\model\validator\rule\Rule;
 
 abstract class Base
 {

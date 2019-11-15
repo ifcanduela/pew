@@ -2,13 +2,12 @@
 
 namespace pew\request;
 
+use pew\response\HtmlResponse as PewHtmlResponse;
+use pew\response\JsonResponse as PewJsonResponse;
+use pew\response\RedirectResponse as PewRedirectResponse;
 use pew\View;
 use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use pew\response\RedirectResponse as PewRedirectResponse;
-use pew\response\JsonResponse as PewJsonResponse;
-use pew\response\HtmlResponse as PewHtmlResponse;
 
 /**
  * The basic controller class, with some common methods and fields.

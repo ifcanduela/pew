@@ -60,9 +60,8 @@ class HasAndBelongsToMany extends Relationship
             ->join($this->through, $this->on)
             ->where([$fk => ["IN", $relatedKeys]]);
         $related = $this->finder->db->run($this->finder->query);
-        $grouped = $this->groupRecords($related, $this->foreignKeyName);
 
-        return $grouped;
+        return $this->groupRecords($related, $this->foreignKeyName);
     }
 
     /**

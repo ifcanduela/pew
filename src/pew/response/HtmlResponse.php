@@ -3,9 +3,8 @@
 namespace pew\response;
 
 use pew\View;
-use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 
 /**
  * This class encapsulates the template rendering functionality.
@@ -15,7 +14,7 @@ class HtmlResponse extends Response
     /** @var Response */
     protected $response;
 
-    /** @var \pew\View */
+    /** @var View */
     protected $view;
 
     /**
@@ -23,8 +22,9 @@ class HtmlResponse extends Response
      *
      * If no folder is provided, the current working directory is used.
      *
-     * @param string $templatesFolder
+     * @param View $view
      * @param SymfonyResponse $response
+     * @param SymfonySession $session
      */
     public function __construct(View $view, SymfonyResponse $response = null, SymfonySession $session = null)
     {

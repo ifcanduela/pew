@@ -2,9 +2,9 @@
 
 namespace pew\router;
 
-use function FastRoute\simpleDispatcher;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use function FastRoute\simpleDispatcher;
 
 class RouteNotFound extends \RuntimeException
 {

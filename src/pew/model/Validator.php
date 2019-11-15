@@ -4,10 +4,10 @@ namespace pew\model;
 
 use pew\model\validator\ArrayValidator;
 use pew\model\validator\BooleanValidator;
-use pew\model\validator\IntegerValidator;
 use pew\model\validator\FloatValidator;
-use pew\model\validator\StringValidator;
+use pew\model\validator\IntegerValidator;
 use pew\model\validator\ObjectValidator;
+use pew\model\validator\StringValidator;
 
 class Validator
 {

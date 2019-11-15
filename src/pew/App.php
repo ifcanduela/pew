@@ -5,18 +5,17 @@ namespace pew;
 use ifcanduela\events\CanEmitEvents;
 use ifcanduela\events\CanListenToEvents;
 use Monolog\Logger;
-use pew\di\Injector;
 use pew\di\Container;
+use pew\di\Injector;
 use pew\model\TableManager;
-use pew\response\Response;
 use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
+use pew\response\Response;
 use pew\router\InvalidHttpMethod;
 use pew\router\Route;
 use pew\router\RouteNotFound;
 use Stringy\Stringy as S;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * The App class is a request/response processor.

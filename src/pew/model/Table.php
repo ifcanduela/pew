@@ -2,11 +2,9 @@
 
 namespace pew\model;
 
-use pew\model\exception\TableNotFoundException;
-use pew\model\relation\Relationship;
-
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
+use pew\model\relation\Relationship;
 use Stringy\Stringy as S;
 
 /**
@@ -271,9 +269,7 @@ class Table
         if ($success) {
             if ($clause == "SELECT") {
                 # return an array of Models
-                $result = $stm->fetchAll();
-
-                return $result;
+                return $stm->fetchAll();
             }
 
             return $stm->rowCount();

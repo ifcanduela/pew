@@ -3,8 +3,8 @@
 namespace pew\model;
 
 use ifcanduela\db\Database;
-use Stringy\Stringy;
 use ReflectionClass;
+use Stringy\Stringy;
 
 class TableManager
 {

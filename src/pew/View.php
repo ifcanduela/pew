@@ -2,9 +2,9 @@
 
 namespace pew;
 
+use ifcanduela\events\CanEmitEvents;
 use SplStack;
 use Stringy\Stringy as S;
-use ifcanduela\events\CanEmitEvents;
 
 /**
  * This class encapsulates the template rendering functionality.

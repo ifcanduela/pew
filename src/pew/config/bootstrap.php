@@ -5,6 +5,7 @@ require __DIR__ . "/functions.php";
 use ifcanduela\db\Database;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use pew\di\Container;
 use pew\di\Injector;
 use pew\lib\Session;
 use pew\lib\Url;
@@ -13,11 +14,10 @@ use pew\request\Request;
 use pew\router\Route;
 use pew\router\Router;
 use pew\View;
-use pew\di\Container;
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Contracts\Cache\CacheInterface;
 use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -63,13 +63,11 @@ $container["app_log"] = function (Container $c): LoggerInterface {
 };
 
 $container["cache"] = function (Container $c): CacheInterface {
-    $cache = new FilesystemAdapter(
+    return new FilesystemAdapter(
         "pew",
         $c["cache_duration"],
         $c["cache_path"]
     );
-
-    return $cache;
 };
 
 $container["cache_path"] = function (Container $c): string {
@@ -154,9 +152,7 @@ $container["route"] = function (Container $c): Route {
 $container["router"] = function (Container $c): Router {
     $routes = $c["routes"];
 
-    $router = new Router($routes);
-
-    return $router;
+    return new Router($routes);
 };
 
 $container["routes"] = function (Container $c): array {
@@ -237,9 +233,7 @@ $container["views_path"] = function (Container $c): string {
     $app_path = $c["app_path"];
     $views_folder = $c["views_folder"];
 
-    $path = realpath("{$app_path}/{$views_folder}/");
-
-    return $path;
+    return realpath("{$app_path}/{$views_folder}/");
 };
 
 return $container;

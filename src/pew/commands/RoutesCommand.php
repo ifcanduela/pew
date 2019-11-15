@@ -4,7 +4,6 @@ namespace pew\commands;
 
 use pew\console\Command;
 use pew\console\CommandArguments;
-use Stringy\Stringy as S;
 
 use pew\router\Group as RouteGroup;
 

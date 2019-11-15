@@ -2,12 +2,11 @@
 
 namespace pew\model;
 
-use ReflectionClass;
-
 use pew\model\relation\BelongsTo;
+use pew\model\relation\HasAndBelongsToMany;
 use pew\model\relation\HasMany;
 use pew\model\relation\HasOne;
-use pew\model\relation\HasAndBelongsToMany;
+use ReflectionClass;
 
 use Stringy\Stringy as S;
 
@@ -183,9 +182,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         $exclude = array_flip($modelProperties);
 
-        $record = array_diff_key($include, $exclude);
-
-        return $record;
+        return array_diff_key($include, $exclude);
     }
 
     /**
@@ -253,9 +250,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             $table->where($condition);
         }
 
-        $result = $table->run();
-
-        return $result;
+        return $table->run();
     }
 
     /**
@@ -273,9 +268,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             $table->where($condition);
         }
 
-        $result = $table->run();
-
-        return $result;
+        return $table->run();
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace pew\model\validator\rule;
 
-use Stringy\Stringy as s;
+use Stringy\Stringy as S;
 
 abstract class Rule
 {
@@ -49,7 +49,7 @@ abstract class Rule
         if ($this->result === false) {
             if (empty($this->ruleName)) {
                 $className = (new \ReflectionClass($this))->getShortName();
-                $this->ruleName = s::create($className)->underscored()->humanize()->toTitleCase();
+                $this->ruleName = S::create($className)->underscored()->humanize()->toTitleCase();
             }
 
             return sprintf("The value %s failed rule %s", $this->value, $this->ruleName);
