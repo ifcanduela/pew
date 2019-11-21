@@ -2,10 +2,14 @@
 
 namespace pew\console;
 
-use Stringy\Stringy;
+use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 /**
  * Base class for command-line scripts.
@@ -39,17 +43,18 @@ abstract class Command
      *
      * @param InputInterface  $input
      * @param OutputInterface $output
-     * @param FormatterHelper $formatter
      */
     public function __construct(InputInterface $input, OutputInterface $output)
     {
         $this->input = $input;
         $this->output = $output;
+        $this->questionHelper = new QuestionHelper();
+        $this->formatterHelper = new FormatterHelper();
 
         if (!$this->name) {
             $className = (new \ReflectionClass($this))->getShortName();
 
-            $this->name = (string) Stringy::create($className)
+            $this->name = (string) Str::create($className)
                 ->removeLeft("Command")
                 ->underscored()
                 ->slugify();
@@ -141,5 +146,48 @@ abstract class Command
     public function log(string $message, bool $newLine = true)
     {
         $this->message($message, $newLine, "<comment>");
+    }
+
+    /**
+     * Ask a question and wait for input.
+     *
+     * @param string $question
+     * @param bool $defaultAnswer
+     * @return bool
+     */
+    public function ask($question, $defaultAnswer = "")
+    {
+        $q = new Question($question, $defaultAnswer);
+
+        return $this->questionHelper->ask($this->input, $this->output, $q);
+    }
+
+    /**
+     * Ask a yes/no question and wait for input.
+     *
+     * @param string $question
+     * @param bool $defaultAnswer
+     * @return bool
+     */
+    public function confirm(string $question, $defaultAnswer = true)
+    {
+        $q = new ConfirmationQuestion('Continue with this action?', $defaultAnswer);
+
+        return $this->questionHelper->ask($this->input, $this->output, $q);
+    }
+
+    /**
+     * Ask the user to choose from a list and wait for input.
+     *
+     * @param string $question
+     * @param string[] $options
+     * @param mixed $defaultAnswer
+     * @return mixed
+     */
+    public function choose(string $question, array $options, $defaultAnswer = 0)
+    {
+        $q = new ChoiceQuestion($question, $options, $defaultAnswer);
+
+        return $this->questionHelper->ask($this->input, $this->output, $q);
     }
 }

@@ -3,7 +3,7 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
-use Stringy\Stringy as S;
+use Stringy\Stringy as Str;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -95,6 +95,8 @@ class App extends \pew\App
         foreach ($commandFiles as $commandFile) {
             $this->addCommand($commandFile, $appCommandsNamespace);
         }
+
+        ksort($this->availableCommands);
     }
 
     /**
@@ -111,7 +113,7 @@ class App extends \pew\App
 
         $r = new \ReflectionClass($fullClassName);
         $defaultProperties = $r->getDefaultProperties();
-        $name = $defaultProperties["name"] ?? S::create($className)
+        $name = $defaultProperties["name"] ?? Str::create($className)
             ->removeRight("Command")
             ->underscored()
             ->slugify();
