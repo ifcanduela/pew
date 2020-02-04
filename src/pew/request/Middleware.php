@@ -1,7 +1,9 @@
 <?php
+
 namespace pew\request;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
+use pew\response\RedirectResponse;
 
 /**
  * Base, optional definition for a middleware service.
@@ -16,6 +18,8 @@ abstract class Middleware
      */
     public function redirect(string $uri)
     {
-        return new RedirectResponse($uri);
+        $response = new SymfonyRedirectResponse($uri);
+
+        return new RedirectResponse($response);
     }
 }
