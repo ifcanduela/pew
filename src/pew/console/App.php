@@ -4,6 +4,7 @@ namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
 use Stringy\Stringy as Str;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -57,17 +58,20 @@ class App extends \pew\App
 
         if (strpos($arguments["command"], ":") !== false) {
             [$commandName, $action] = explode(":", $arguments["command"]);
+            $action = (string) Str::create($action)->camelize();
         } else {
             [$commandName, $action] = [$arguments["command"], "run"];
         }
 
         $commandInfo = $this->findCommand($commandName);
 
-        if ($commandInfo instanceof CommandDefinition) {
-            return $this->handleCommand($commandInfo, $arguments, $action);
-        } else {
-            return $this->commandMissing($commandName, $commandInfo ?? []);
+        if (!($commandInfo instanceof CommandDefinition)) {
+            $suggestedClassName = $this->get("app_namespace") . "\\commands\\" . Str::create($commandName)->upperCamelize() . "Command";
+            $this->commandMissing($commandName, $commandInfo ?? []);
+            return;
         }
+
+        return $this->handleCommand($commandInfo, $arguments, $action);
     }
 
     /**
@@ -207,6 +211,11 @@ class App extends \pew\App
             $this->input,
             $this->output
         );
+
+        if (!is_callable([$command, $action])) {
+            $this->output->writeln("Command <error>{$commandDefinition->name}:{$action}</error> not found");
+            return false;
+        }
 
         $injector = $this->get("injector");
 
