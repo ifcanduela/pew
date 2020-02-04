@@ -197,3 +197,98 @@ if (!function_exists("url")) {
         return $url;
     }
 }
+
+if (!function_exists("file_get_json")) {
+    /**
+     * Read and decode JSON from a file.
+     *
+     * @see https://www.php.net/json_decode
+     * @see https://www.php.net/file_get_contents
+     *
+     * @param string $filename
+     * @param bool $assoc
+     * @param int $depth
+     * @param int $options
+     * @return mixed
+     */
+    function file_get_json(string $filename, bool $assoc = true, int $depth = 512, int $options = 0)
+    {
+        $json = file_get_contents($filename);
+        $data = json_decode($json, $assoc, $depth, $options);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \InvalidArgumentException("JSON decoding error: " . json_last_error_msg());
+        }
+
+        return $data;
+    }
+}
+
+if (!function_exists("file_put_json")) {
+    /**
+     * Encode and write JSON to a file.
+     *
+     * @see https://www.php.net/json_encode
+     * @see https://www.php.net/file_put_contents
+     *
+     * @param string $filename
+     * @param mixed $data
+     * @param int $options
+     * @param int $depth
+     * @return void
+     */
+    function file_put_json(string $filename, $data, int $options = 0, int $depth = 512)
+    {
+        $json = json_encode($data, $options, $depth);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \InvalidArgumentException("JSON encoding error: " . json_last_error_msg());
+        }
+
+        file_put_contents($filename, $json);
+    }
+}
+
+if (!function_exists("array_find_value")) {
+    /**
+     * Find a value in an array using a callback.
+     *
+     * @param array $array
+     * @param callable $callback
+     * @return mixed
+     */
+    function array_find_value(array $array, callable $callback)
+    {
+        foreach ($array as $key => $value) {
+            $match = $callback($value, $key);
+
+            if ($match) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+}
+
+if (!function_exists("array_find_key")) {
+    /**
+     * Find a key in an array using a callback.
+     *
+     * @param array $array
+     * @param callable $callback
+     * @return mixed
+     */
+    function array_find_key(array $array, callable $callback)
+    {
+        foreach ($array as $key => $value) {
+            $match = $callback($value, $key);
+
+            if ($match) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+}
