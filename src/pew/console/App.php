@@ -41,7 +41,7 @@ class App extends \pew\App
     {
         $arguments = $this->getArguments();
 
-        if (empty($arguments)) {
+        if (empty($arguments["command"])) {
             $this->output->writeln("<fg=cyan>Pew command runner</>");
             $this->output->writeln("The following commands are available:" . PHP_EOL);
 
@@ -71,7 +71,7 @@ class App extends \pew\App
             return;
         }
 
-        return $this->handleCommand($commandInfo, $arguments, $action);
+        return $this->handleCommand($commandInfo, $arguments["arguments"], $action);
     }
 
     /**
@@ -160,16 +160,11 @@ class App extends \pew\App
     public function getArguments()
     {
         $argv = $_SERVER["argv"];
-        $scriptName = $_SERVER["SCRIPT_NAME"];
-        $scriptNamePos = array_search($scriptName, $argv, true);
-        $arguments = array_slice($argv, $scriptNamePos + 1);
+        $scriptName = array_shift($argv);
+        $command = count($argv) ? array_shift($argv) : null;
+        $arguments = new CommandArguments($argv);
 
-        if ($arguments) {
-            $command = array_shift($arguments);
-            return compact("command", "arguments");
-        }
-
-        return [];
+        return compact("command", "arguments");
     }
 
     /**
@@ -202,7 +197,7 @@ class App extends \pew\App
      * @param string $action
      * @return mixed
      */
-    protected function handleCommand(CommandDefinition $commandDefinition, array $arguments, string $action = "run")
+    protected function handleCommand(CommandDefinition $commandDefinition, CommandArguments $arguments, string $action = "run")
     {
         $commandClassName = $commandDefinition->className;
 
@@ -219,8 +214,8 @@ class App extends \pew\App
 
         $injector = $this->get("injector");
 
-        $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
-        $this->set(CommandArguments::class, $args);
+        // $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
+        $this->set(CommandArguments::class, $arguments);
 
         if (method_exists($command, "init")) {
             $injector->callMethod($command, "init");

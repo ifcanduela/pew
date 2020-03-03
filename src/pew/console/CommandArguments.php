@@ -5,138 +5,289 @@ namespace pew\console;
 use Stringy\Stringy as S;
 
 /**
- * The CommandArguments class represents arguments passed to a command.
+ * Parse a list of command-line arguments into arrays.
+ *
+ * This class will transform a string like `--force my-command-name --message "Some text" -abc=1`
+ * into two lists, one with named arguments and another one with positional arguments:
+ *
+ * "named" => [
+ *     "force" => true,
+ *     "message" => "Some text",
+ *     "a" => 1,
+ *     "b" => 1,
+ *     "c" => 1,
+ * ]
+ *
+ * "positional" => [
+ *     0 => "my-command-name"
+ * ]
  */
 class CommandArguments
 {
-    /** @var array Arguments preceded by a nametag (-n or --name) */
-    protected $namedArguments = [];
+    const ESCAPE_CHAR = "\\";
 
-    /** @var array Arguments given without a nametag */
-    protected $anonymousArguments = [];
+    /** @var array */
+    private $named = [];
 
-    /** @var array A list of default values for named arguments */
-    protected $defaultArguments = [];
+    /** @var array */
+    private $positional = [];
 
     /**
-     * Create a CommandArguments object.
+     * Create a command-line argument parser.
      *
-     * @param array $commandLineArguments The list of command-line arguments
+     * This method accepts both a string or an array (for example, the `$argv` global
+     * variable). If `$argv` is passed, the script name will be added to the list of
+     * positional arguments.
+     *
+     * @param string|array $arguments
      */
-    public function __construct(array $commandLineArguments = [], array $defaultArguments = [])
+    public function __construct($arguments = "")
     {
-        $this->loadConsoleArguments($commandLineArguments);
-        $this->defaultArguments = $defaultArguments;
+        $this->parse($arguments);
     }
 
     /**
-     * Populate the CommandArguments object with data.
+     * Parse the list or arguments.
      *
-     * @param array $commandLineArguments The list of command-line arguments
+     * This method accepts both a string or an array (for example, the `$argv` global
+     * variable). If `$argv` is passed, the script name will be added to the list of
+     * positional arguments.
+     *
+     * @param string|array $arguments
      * @return void
      */
-    public function loadConsoleArguments(array $commandLineArguments)
+    public function parse($arguments)
     {
-        $argCount = count($commandLineArguments);
-        $keyName = null;
+        # make sure we have a string
+        if (is_array($arguments)) {
+            $arguments = implode(" ", $arguments);
+        }
 
-        for ($i = 0; $i < $argCount; $i++) {
-            $value = $commandLineArguments[$i];
+        # tokenize the string
+        $input = $this->tokenize($arguments);
 
-            if ($value[0] !== "-") {
-                if ($keyName) {
-                    $this->namedArguments[$keyName] = $value;
-                    $keyName = null;
-                } else {
-                    $this->anonymousArguments[] = $value;
+        # reset the argument list
+        $this->positional = [];
+        $this->named = [];
+
+        $name = null;
+
+        foreach ($input as $param) {
+            if ($param[0] === "-") {
+                if ($name) {
+                    # there's a named param without value
+                    $this->addNamed($name, true);
+                    $name = null;
+                }
+
+                # it's a name
+                if (isset($param[1])) {
+                    if ($param[1] === "-") {
+                        # it's a long name
+                        $name = substr($param, 2);
+
+                        if (strpos($name, "=")) {
+                            # the value is attached to the key
+                            [$name, $value] = explode("=", $name, 2);
+                            $this->addNamed($name, $value);
+                            $name = null;
+                        }
+                    } else {
+                        # it's a short param
+                        $value = true;
+                        $name = substr($param, 1);
+
+                        if (strpos($param, "=")) {
+                            # it's a short param with a value
+                            [$name, $value] = explode("=", $name, 2);
+                            $names = str_split($name, 1);
+                        } else {
+                            # it's a short param
+                            $names = str_split($name, 1);
+                        }
+
+                        foreach ($names as $name) {
+                            $this->addNamed($name, $value);
+                        }
+
+                        $name = null;
+                    }
                 }
             } else {
-                if ($keyName) {
-                    $this->namedArguments[$keyName] = true;
+                if ($name) {
+                    $this->addNamed($name, $param);
+                    $name = null;
+                } else {
+                    $this->addPositional($param);
                 }
-
-                $keyName = trim($value, "-");
             }
         }
 
-        if ($keyName) {
-            if (substr($keyName, 0, 3) === "no-") {
-                $this->namedArguments[substr($keyName, 3)] = false;
-            } else {
-                $this->namedArguments[$keyName] = true;
-            }
+        # handle any dangling token
+        if ($name) {
+            $this->addNamed($name, true);
+            $name = null;
         }
     }
 
     /**
-     * Check if an argument key (named or positional) exists.
+     * Check if a parameter exists.
      *
-     * @param string|int $key The argument key to check
-     * @return bool TRUE if the key exists, false otherwise.
+     * @param string|int $key
+     * @return bool
      */
     public function has($key)
     {
-        if (is_numeric($key)) {
-            return array_key_exists($key, $this->anonymousArguments);
+        if (array_key_exists($key, $this->named)) {
+            return true;
         }
 
-        return array_key_exists($key, $this->namedArguments) || array_key_exists($key, $this->defaultArguments);
+        if (array_key_exists($key, $this->positional)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * Get the value of an anonymous argument.
+     * Get the value of a parameter.
      *
-     * All named arguments are ignored when calculating the position. if the
-     * argument position is empty, NULL is returned.
-     *
-     * @param int $position Argument position
-     * @return string|bool|null The value of the argument, or NULL if it does not exist.
+     * @param string|int $key
+     * @param mixed $defaultValue
+     * @return mixed
      */
-    public function at($position)
+    public function get($key, $defaultValue = null)
     {
-        if (!array_key_exists($position, $this->anonymousArguments)) {
-            return null;
+        if (!is_array($key)) {
+            $key = [$key];
         }
 
-        return $this->anonymousArguments[$position];
+        foreach ($key as $k) {
+            if (array_key_exists($k, $this->named)) {
+                return $this->named[$k];
+            }
+
+            if (array_key_exists($k, $this->positional)) {
+                return $this->positional[$k];
+            }
+        }
+
+        return $defaultValue;
+    }
+
+    /**
+     * Get a positional arguments.
+     *
+     * @param int $index
+     * @param mixed $defaultValue
+     * @return mixed
+     */
+    public function at(int $index, $defaultValue = null)
+    {
+        if (array_key_exists($index, $this->positional)) {
+            return $this->positional[$index];
+        }
+
+        return $defaultValue;
+    }
+
+    /**
+     * Add a positional argument.\
+     *
+     * @param mixed $value
+     */
+    protected function addPositional($value)
+    {
+        $this->positional[] = $value;
+    }
+
+    /**
+     * Add a named argument.
+     *
+     * Boolean arguments with a `no-` prefix will jave their name stripped of
+     * the prefix and their value set to `false`.
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    protected function addNamed(string $name, $value)
+    {
+        if ($value === true && substr($name, 0, 3) === "no-") {
+            $name = substr($name, 3);
+            $value = false;
+        }
+
+        $this->named[$name] = $value;
+    }
+
+    /**
+     * Split a command-line list of parameters into an array.
+     *
+     * This method will separate the parts of the command-line string, respecting
+     * strings wrapped in single or double quotes.
+     *
+     * @param string $commandLine
+     * @return array
+     */
+    protected function tokenize(string $commandLine)
+    {
+        $input = str_split($commandLine, 1);
+        # add a terminating character
+        $input[] = " ";
+        $inputCount = count($input);
+
+        $value = "";
+        $quoteStack = [];
+        $escapeChar = false;
+        $tokens = [];
+
+        for ($i = 0; $i < $inputCount; $i++) {
+            $char = $input[$i];
+
+            if ($char === static::ESCAPE_CHAR) {
+                $escapeChar = true;
+            } elseif ($escapeChar) {
+                $value .= $char;
+                $escapeChar = false;
+            } else {
+                if (in_array($char, ["\"", "'"])) {
+                    if (isset($quoteStack[0]) && $quoteStack[0] === $char) {
+                        # end of quoted chunk
+                        $tokens[] = $value;
+                        $value = "";
+                        array_shift($quoteStack);
+                    } else {
+                        # beginning of quoted chunk
+                        array_unshift($quoteStack, $char);
+                    }
+                } elseif ($char === " ") {
+                    if (count($quoteStack)) {
+                        $value .= $char;
+                    } else {
+                        $tokens[] = $value;
+                        $value = "";
+                    }
+                } else {
+                    $value .= $char;
+                }
+            }
+        }
+
+        return array_filter($tokens);
     }
 
     /**
      * Get the value of a named argument.
      *
-     * This method accepts multiple arguments. The first argument with a value
-     * in the list is used. If none of the keys has a value, NULL is returned.
+     * Camel cased property accessors will be converted to dashed-lowercase.
      *
-     * @param string $key Argument key name (camelCase)
-     * @return string|bool|null The value of the argument, or NULL if it does not exist.
+     * @param string $key
+     * @return mixed
      */
-    public function get($key)
+    public function __get($property)
     {
-        $keyList = func_get_args();
+        $key = S::create($property)->dasherize();
 
-        foreach ($keyList as $key) {
-            $argumentName = (string) S::create($key)->dasherize();
-
-            if (array_key_exists($argumentName, $this->namedArguments)) {
-                return $this->namedArguments[$argumentName];
-            }
-
-            if (array_key_exists($key, $this->defaultArguments)) {
-                return $this->defaultArguments[$key];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Get the value of a named argument.
-     *
-     * @param string $key Argument key name (camelCase)
-     * @return string|bool|null The value of the argument, or NULL if it does not exist.
-     */
-    public function __get($key)
-    {
-        return $this->get($key);
+        return $this->get((string) $key);
     }
 }

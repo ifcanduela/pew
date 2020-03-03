@@ -62,16 +62,6 @@ abstract class Command
     }
 
     /**
-     * Specify default values for command-line arguments.
-     *
-     * @return array
-     */
-    public function getDefaultArguments()
-    {
-        return [];
-    }
-
-    /**
      * Print a command-line message.
      *
      * @param string|array $text
