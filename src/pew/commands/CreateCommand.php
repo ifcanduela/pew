@@ -83,7 +83,7 @@ class {$className} extends Command
 
 PHP;
 
-        $filename = root("app", "commands", "{$className}.php");
+        $filename = \root("app", "commands", "{$className}.php");
 
         $this->createFile($fileContents, $filename);
     }
@@ -122,7 +122,7 @@ class {$className} extends Controller
 
 PHP;
 
-        $filename = root("app", "controllers", "{$className}.php");
+        $filename = \root("app", "controllers", "{$className}.php");
         $this->createFile($fileContents, $filename);
     }
 
@@ -156,7 +156,7 @@ class {$className} extends \\request\\Middleware
 
 PHP;
 
-        $filename = root("app", "middleware", "{$className}.php");
+        $filename = \root("app", "middleware", "{$className}.php");
         $this->createFile($fileContents, $filename);
     }
 
@@ -190,7 +190,7 @@ class {$className} extends Model
 
 PHP;
 
-        $filename = root("app", "models", "{$className}.php");
+        $filename = \root("app", "models", "{$className}.php");
 
         $this->createFile($fileContents, $filename);
     }

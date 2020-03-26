@@ -28,6 +28,7 @@
         "phpunit/phpunit": "^7.4"
     },
     "autoload": {
+        "files": ["src/pew/config/functions.php"],
         "psr-0": {
             "pew": "src"
         },

@@ -47,7 +47,7 @@ if (!function_exists("flash")) {
         static $session;
 
         if (!$session) {
-            $session = pew("session");
+            $session = \pew("session");
         }
 
         if (null === $key) {
@@ -71,9 +71,9 @@ if (!function_exists("here")) {
         static $here;
 
         if (!$here) {
-            $query = pew("request")->query->all();
+            $query = \pew("request")->query->all();
 
-            $here = url(pew("path"), $query ?: "");
+            $here = \url(pew("path"), $query ?: "");
         }
 
         return $here;
@@ -119,7 +119,7 @@ if (!function_exists("root")) {
         static $root_path;
 
         if (!isset($root_path)) {
-            $root_path = pew("root_path");
+            $root_path = \pew("root_path");
         }
 
         array_unshift($path, $root_path);
@@ -146,7 +146,7 @@ if (!function_exists("session")) {
         static $session;
 
         if (!$session) {
-            $session = pew("session");
+            $session = \pew("session");
         }
 
         if (is_null($path)) {
@@ -176,7 +176,7 @@ if (!function_exists("url")) {
         static $base_url;
 
         if (!isset($base_url)) {
-            $base_url = pew('request')->appUrl();
+            $base_url = \pew('request')->appUrl();
             $base_url = rtrim($base_url, '/') . '/';
         }
 

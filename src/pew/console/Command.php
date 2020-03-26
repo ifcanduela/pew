@@ -142,10 +142,10 @@ abstract class Command
      * Ask a question and wait for input.
      *
      * @param string $question
-     * @param bool $defaultAnswer
-     * @return bool
+     * @param string $defaultAnswer
+     * @return string
      */
-    protected function ask($question, $defaultAnswer = "")
+    protected function ask(string $question, string $defaultAnswer = "")
     {
         $q = new Question($question, $defaultAnswer);
 
@@ -159,7 +159,7 @@ abstract class Command
      * @param bool $defaultAnswer
      * @return bool
      */
-    protected function confirm(string $question, $defaultAnswer = true)
+    protected function confirm(string $question, bool $defaultAnswer = true)
     {
         $q = new ConfirmationQuestion($question, $defaultAnswer);
 

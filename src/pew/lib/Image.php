@@ -172,7 +172,13 @@ class Image
         $this->setResource($resource, $imageType);
     }
 
-    protected function setResource($resource, $imageType = null)
+    /**
+     * Initialize the internal image resource.
+     *
+     * @param resource $resource
+     * @param int|null $imageType
+     */
+    protected function setResource($resource, ?int $imageType = null)
     {
         $this->resource = $resource;
 
@@ -646,6 +652,13 @@ class Image
         }
     }
 
+    /**
+     * Create a placeholder image.
+     *
+     * @param float|int $width
+     * @param float|int $height
+     * @return resource
+     */
     public function createImage($width, $height)
     {
         $image = imagecreatetruecolor($width, $height);

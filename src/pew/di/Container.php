@@ -3,6 +3,7 @@
 namespace pew\di;
 
 use Pimple\Container as Pimple;
+use Pimple\Exception\UnknownIdentifierException;
 use Psr\Container\ContainerInterface;
 
 class Container extends Pimple implements ContainerInterface
@@ -12,7 +13,7 @@ class Container extends Pimple implements ContainerInterface
      *
      * @param string $key
      * @return mixed
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws UnknownIdentifierException
      */
     public function get($key)
     {
