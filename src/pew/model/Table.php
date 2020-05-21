@@ -4,6 +4,8 @@ namespace pew\model;
 
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
+use pew\model\relation\HasAndBelongsToMany;
+use pew\model\relation\HasMany;
 use pew\model\relation\Relationship;
 use Stringy\Stringy as S;
 
@@ -594,13 +596,18 @@ class Table
                     $grouped = $relationship->find($relatedKeys);
 
                     foreach ($models as $model) {
+                        $model->serialize[] = $relationshipFieldName;
                         $keyValue = $model->{$groupingField};
 
                         if (isset($grouped[$keyValue])) {
-                            $model->serialize[] = $relationshipFieldName;
                             $model->attachRelated($getterMethodName, $grouped[$keyValue]);
+                        } else {
+                            $isMultiple = $relationship instanceof HasMany || $relationship instanceof HasAndBelongsToMany;
+                            $model->attachRelated($getterMethodName, $isMultiple ? new Collection([]) : null);
                         }
                     }
+                } else foreach ($models as $model) {
+                    $model->serialize[] = $relationshipFieldName;
                 }
             }
         }

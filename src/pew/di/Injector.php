@@ -142,7 +142,17 @@ class Injector
     protected function findKey(string $key)
     {
         foreach ($this->containers as $c) {
-            if (isset($c[$key]) || array_key_exists($key, $c)) {
+            if (isset($c[$key])) {
+                return $c[$key];
+            }
+
+            $isArrayLike = $c instanceof \ArrayAccess;
+
+            if ($isArrayLike) {
+                if ($c->offsetExists($key)) {
+                    return $c->offsetGet($key);
+                }
+            } elseif (array_key_exists($key, $c)) {
                 return $c[$key];
             }
         }
