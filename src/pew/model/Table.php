@@ -584,8 +584,10 @@ class Table
             foreach ($this->relationships as $relationshipFieldName) {
                 $getterMethodName = "get" . S::create($relationshipFieldName)->uppercamelize();
 
-                /** @var Relationship $relationship */
-                $relationship = $ref->$getterMethodName();
+                try {
+                    /** @var Relationship $relationship */
+                    $relationship = $ref->$getterMethodName();
+                } catch (\Exception $e) {}
 
                 if ($relationship instanceof Relationship) {
                     $groupingField = $relationship->getGroupingField();
