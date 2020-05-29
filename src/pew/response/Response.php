@@ -2,9 +2,9 @@
 
 namespace pew\response;
 
+use pew\lib\Session as Session;
 use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 
 /**
  * This class represents a response.
@@ -23,12 +23,12 @@ class Response
      * If no folder is provided, the current working directory is used.
      *
      * @param SymfonyResponse $response
-     * @param SymfonySession $session
+     * @param Session $session
      */
-    public function __construct(SymfonyResponse $response = null, SymfonySession $session = null)
+    public function __construct(SymfonyResponse $response = null, Session $session = null)
     {
         $this->response = $response ?? new SymfonyResponse();
-        $this->session = $session ?? new SymfonySession();
+        $this->session = $session ?? new Session();
     }
 
     /**
