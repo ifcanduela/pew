@@ -2,9 +2,10 @@
 
 namespace pew\response;
 
+use pew\lib\Session;
+use pew\response\Response;
 use pew\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 
 /**
  * This class encapsulates the template rendering functionality.
@@ -24,10 +25,14 @@ class HtmlResponse extends Response
      *
      * @param View $view
      * @param SymfonyResponse $response
-     * @param SymfonySession $session
+     * @param Session $session
      */
-    public function __construct(View $view, SymfonyResponse $response = null, SymfonySession $session = null)
+    public function __construct(View $view, $response = null, Session $session = null)
     {
+        if ($response instanceof \pew\response\Response) {
+            $response = $response->response;
+        }
+
         parent::__construct($response, $session);
 
         $this->view = $view;
