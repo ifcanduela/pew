@@ -11,6 +11,7 @@ use pew\lib\Session;
 use pew\lib\Url;
 use pew\model\TableManager;
 use pew\request\Request;
+use pew\response\Response;
 use pew\router\Route;
 use pew\router\Router;
 use pew\View;
@@ -24,6 +25,7 @@ use Whoops\Handler\PrettyPageHandler;
 use Whoops\Run;
 
 $container = new Container();
+$container[Container::class] = $container;
 
 #
 # CONFIG
@@ -54,7 +56,7 @@ if (php_sapi_name() === "cli") {
 # FACTORIES
 #
 
-$container["app_log"] = function (Container $c): LoggerInterface {
+$container[LoggerInterface::class] = function (Container $c): LoggerInterface {
     $logger = new Logger("App log");
     $logfile = $c["app_path"] . "/logs/app.log";
     $logger->pushHandler(new StreamHandler($logfile, $c["log_level"]));
@@ -62,13 +64,17 @@ $container["app_log"] = function (Container $c): LoggerInterface {
     return $logger;
 };
 
-$container["cache"] = function (Container $c): CacheInterface {
+$container->alias(LoggerInterface::class, "app_log");
+
+$container[CacheInterface::class] = function (Container $c): CacheInterface {
     return new FilesystemAdapter(
         "pew",
         $c["cache_duration"],
         $c["cache_path"]
     );
 };
+
+$container->alias(CacheInterface::class, "cache");
 
 $container["cache_path"] = function (Container $c): string {
     return $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
@@ -78,7 +84,7 @@ $container["controller_namespace"] = function (Container $c): string {
     return $c["app_namespace"] . "controllers\\";
 };
 
-$container["db"] = function (Container $c): Database {
+$container[Database::class] = function (Container $c): Database {
     $dbConfig = $c["db_config"];
     $useDb = $c["use_db"] ?? "default";
 
@@ -90,6 +96,8 @@ $container["db"] = function (Container $c): Database {
 
     return $tableManager->getConnection($useDb);
 };
+
+$container->alias(Database::class, "db");
 
 $container["db_config"] = function (Container $c): array {
     return require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
@@ -117,9 +125,12 @@ $container["error_handler"] = function (Container $c): Run {
     return $whoops;
 };
 
-$container["injector"] = function (Container $c): Injector {
+$container[\pew\di\Injector::class] = function (Container $c): Injector {
     return new Injector($c);
 };
+
+$container->alias(Injector::class, "injector");
+
 
 $container["path"] = function (Container $c): string {
     $request = $c["request"];
@@ -133,15 +144,19 @@ $container["path"] = function (Container $c): string {
     return "/" . trim($pathInfo, "/");
 };
 
-$container["request"] = function (Container $c): Request {
+$container[Request::class] = function (Container $c): Request {
     return Request::createFromGlobals();
 };
 
-$container["response"] = function (Container $c): SymfonyResponse {
-    return new SymfonyResponse();
+$container->alias(Request::class, "request");
+
+$container[Response::class] = function (Container $c): Response {
+    return new Response();
 };
 
-$container["route"] = function (Container $c): Route {
+$container->alias(Response::class, "response");
+
+$container[Route::class] = function (Container $c): Route {
     $request = $c["request"];
     $router = $c["router"];
     $pathInfo = $c["path"];
@@ -149,11 +164,15 @@ $container["route"] = function (Container $c): Route {
     return $router->route($pathInfo, $request->getMethod());
 };
 
-$container["router"] = function (Container $c): Router {
+$container->alias(Route::class, "route");
+
+$container[Router::class] = function (Container $c): Router {
     $routes = $c["routes"];
 
     return new Router($routes);
 };
+
+$container->alias(Router::class, "router");
 
 $container["routes"] = function (Container $c): array {
     $appFolder = $c["app_path"];
@@ -179,11 +198,13 @@ $container["routes"] = function (Container $c): array {
     return $routes;
 };
 
-$container["session"] = function (): Session {
+$container[\pew\lib\Session::class] = function (Container $c): Session {
     return new Session();
 };
 
-$container["tableManager"] = function (Container $c): TableManager {
+$container->alias(Session::class, "session");
+
+$container[TableManager::class] = function (Container $c): TableManager {
     $dbConfig = $c["db_config"];
     $tableManager = new TableManager();
     $tableManager->setDefaultConnection($c["use_db"]);
@@ -210,6 +231,8 @@ $container["tableManager"] = function (Container $c): TableManager {
     return $tableManager;
 };
 
+$container->alias(TableManager::class, "tableManager");
+
 $container["url"] = function (Container $c): Url {
     $request = $c["request"];
 
@@ -222,12 +245,14 @@ $container["use_db"] = function (Container $c): string {
     return $db_config["use_db"] ?? $c["env"] ?? "default";
 };
 
-$container["view"] = function (Container $c): View {
+$container[View::class] = function (Container $c): View {
     $view = new View($c["views_path"]);
     $view->layout($c["default_layout"]);
 
     return $view;
 };
+
+$container->alias(View::class, "view");
 
 $container["views_path"] = function (Container $c): string {
     $app_path = $c["app_path"];
