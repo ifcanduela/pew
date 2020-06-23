@@ -186,7 +186,7 @@ $container["routes"] = function (Container $c): array {
         if ($handler instanceof Route) {
             $routes[] = $handler;
         } elseif (is_string($handler) || is_callable($handler)) {
-            // convert simple route to array route
+            # convert simple route to array route
             $routes[] = Route::from($path)->handler($handler)->methods("GET", "POST");
         } elseif (isset($handler["handler"], $handler["path"])) {
             $routes[] = $handler;

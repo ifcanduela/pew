@@ -516,7 +516,7 @@ class App
     protected function transformActionResult($actionResult)
     {
         $request = $this->container->get("request");
-        $response = $this->container->get("response");
+        $response = $this->container->get("response")->getResponse();
 
         # If $actionResult is false, return an empty response
         if ($actionResult === false) {

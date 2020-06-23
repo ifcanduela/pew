@@ -213,8 +213,6 @@ class App extends \pew\App
         }
 
         $injector = $this->get("injector");
-
-        // $args = new CommandArguments($arguments["arguments"], $command->getDefaultArguments());
         $this->set(CommandArguments::class, $arguments);
 
         if (method_exists($command, "init")) {

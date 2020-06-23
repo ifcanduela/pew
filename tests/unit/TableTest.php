@@ -19,7 +19,13 @@ class TableTest extends \PHPUnit\Framework\TestCase
         $db->run('INSERT INTO projects (name) VALUES ("Project Beta")');
         $db->run('INSERT INTO projects (name) VALUES ("Project Gamma")');
 
-        $db->run('CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, project_id INTEGER)');
+        $db->run('CREATE TABLE users (
+            id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL,
+            project_id INTEGER NOT NULL,
+            created_at INTEGER NULL,
+            updated_at INTEGER NULL
+        )');
         $db->run('INSERT INTO users (username, project_id) VALUES ("User 1", 1)');
         $db->run('INSERT INTO users (username, project_id) VALUES ("User 2", 1)');
         $db->run('INSERT INTO users (username, project_id) VALUES ("User 3", 2)');
@@ -91,7 +97,13 @@ class TableTest extends \PHPUnit\Framework\TestCase
     public function testColumnNames()
     {
         $users = new Table("users", $this->db);
-        $expected = ["id" => null, "username" => null, "project_id" => null];
+        $expected = [
+            "id" => null,
+            "username" => null,
+            "project_id" => null,
+            "created_at" => null,
+            "updated_at" => null,
+        ];
         $this->assertEquals($expected, $users->columnNames());
         $this->assertEquals(array_keys($expected), $users->columnNames(false));
 

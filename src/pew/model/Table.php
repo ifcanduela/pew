@@ -123,6 +123,10 @@ class Table
      */
     public function init()
     {
+        if (!$this->db->tableExists($this->tableName)) {
+            throw new exception\TableNotFoundException("Table `{$this->tableName}` not found");
+        }
+
         # some metadata about the table
         $this->tableData["name"] = $this->tableName;
 

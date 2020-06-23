@@ -29,10 +29,6 @@ class HtmlResponse extends Response
      */
     public function __construct(View $view, $response = null, Session $session = null)
     {
-        if ($response instanceof \pew\response\Response) {
-            $response = $response->response;
-        }
-
         parent::__construct($response, $session);
 
         $this->view = $view;
@@ -67,7 +63,7 @@ class HtmlResponse extends Response
      * Adds content to the response
      * @return Response
      */
-    protected function prepareResponse(): SymfonyResponse
+    public function getResponse(): SymfonyResponse
     {
         if ($this->isJsonResponse) {
             $this->response->setContent(json_encode($this->variables));

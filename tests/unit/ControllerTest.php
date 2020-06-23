@@ -82,8 +82,10 @@ class ControllerTest extends PHPUnit\Framework\TestCase
     {
         $m = new TestMiddleware();
         $response = $m->redirect("/accounts/edit/1");
+        $this->assertInstanceOf(\pew\response\RedirectResponse::class, $response);
 
-        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\RedirectResponse::class, $response);
-        $this->assertEquals("/accounts/edit/1", $response->getTargetUrl());
+        $symfonyResponse = $response->getResponse();
+        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\RedirectResponse::class, $symfonyResponse);
+        $this->assertEquals("/accounts/edit/1", $response->getResponse()->getTargetUrl());
     }
 }

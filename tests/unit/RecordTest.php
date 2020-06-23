@@ -171,35 +171,26 @@ class RecordTest extends PHPUnit\Framework\TestCase
                 "name" => "test project",
             ]);
 
-        $expected = <<<JSON
-{
-    "extraField": "extraValue",
-    "id": 99,
-    "name": "test project"
-}
-JSON;
-        $this->assertEquals($expected, json_encode($model, JSON_PRETTY_PRINT));
+        $result = json_encode($model, JSON_PRETTY_PRINT);
+
+        $this->assertStringContainsString('"extraField": "extraValue"', $result);
+        $this->assertStringContainsString('"id": 99,', $result);
+        $this->assertStringContainsString('"name": "test project"', $result);
 
         $model->doNotSerialize = ["extraField"];
-        $expected = <<<JSON
-{
-    "id": 99,
-    "name": "test project"
-}
-JSON;
+        $result = json_encode($model, JSON_PRETTY_PRINT);
 
-        $this->assertEquals($expected, json_encode($model, JSON_PRETTY_PRINT));
+        $this->assertStringNotContainsString('"extraField": "extraValue"', $result);
+        $this->assertStringContainsString('"id": 99,', $result);
+        $this->assertStringContainsString('"name": "test project"', $result);
 
         $model->serialize = ["users"];
-        $expected = <<<JSON
-{
-    "id": 99,
-    "name": "test project",
-    "users": []
-}
-JSON;
+        $result = json_encode($model, JSON_PRETTY_PRINT);
 
-        $this->assertEquals($expected, json_encode($model, JSON_PRETTY_PRINT));
+        $this->assertStringNotContainsString('"extraField": "extraValue"', $result);
+        $this->assertStringContainsString('"id": 99,', $result);
+        $this->assertStringContainsString('"name": "test project"', $result);
+        $this->assertStringContainsString('"users": []', $result);
     }
 
     public function testSetterAndGetterMethods()

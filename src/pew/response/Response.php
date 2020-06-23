@@ -14,8 +14,11 @@ class Response
     /** @var bool */
     protected $isJsonResponse = false;
 
-    /** @var Response */
+    /** @var SymfonyResponse */
     protected $response;
+
+    /** @var string */
+    protected $content = false;
 
     /**
      * Creates a View object based on a folder.
@@ -27,6 +30,10 @@ class Response
      */
     public function __construct(SymfonyResponse $response = null, Session $session = null)
     {
+        if ($response instanceof \pew\response\Response) {
+            $response = $response->response;
+        }
+
         $this->response = $response ?? new SymfonyResponse();
         $this->session = $session ?? new Session();
     }
@@ -104,11 +111,34 @@ class Response
     }
 
     /**
+     * Set the text content of the response.
+     *
+     * @param string $content
+     * @return self
+     */
+    public function setContent(string $content)
+    {
+        $this->response->setContent($content);
+
+        return $this;
+    }
+
+    /**
+     * Get the text content of the response.
+     *
+     * @return string
+     */
+    public function getContent(): string
+    {
+        return $this->response->getContent();
+    }
+
+    /**
      * Preprocess the response.
      *
      * @return Response
      */
-    protected function prepareResponse(): SymfonyResponse
+    public function getResponse(): SymfonyResponse
     {
         return $this->response;
     }
@@ -120,7 +150,7 @@ class Response
      */
     public function __toString()
     {
-        $response = $this->prepareResponse();
+        $response = $this->getResponse();
 
         return (string) $response;
     }
@@ -132,7 +162,7 @@ class Response
      */
     public function send(): SymfonyResponse
     {
-        $response = $this->prepareResponse();
+        $response = $this->getResponse();
 
         return $response->send();
     }

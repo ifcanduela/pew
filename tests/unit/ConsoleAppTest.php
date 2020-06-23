@@ -48,7 +48,8 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
 
         $args = $this->app->getArguments();
         $this->assertEquals("test", $args["command"]);
-        $this->assertEquals([1, 2], $args["arguments"]);
+        $this->assertEquals(1, $args["arguments"]->at(0));
+        $this->assertEquals(2, $args["arguments"]->at(1));
 
         $result = $this->app->run();
 

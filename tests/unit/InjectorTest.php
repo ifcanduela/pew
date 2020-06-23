@@ -56,21 +56,6 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($injections, [$t2, false]);
     }
 
-    // public function testCallFunctionWithBinding()
-    // {
-    //     $object = (object) [
-    //         "foo" => "bar",
-    //     ];
-    //     $callback = function () {
-    //         return $this->foo;
-    //     };
-
-    //     $injector = new Injector();
-    //     $result = $injector->callFunction($callback, $object);
-
-    //     $this->assertEquals($result, "bar");
-    // }
-
     public function testCallStdFunction()
     {
         $injector = new Injector([
@@ -228,7 +213,8 @@ class InjectorTest extends PHPUnit\Framework\TestCase
             \types\Type::class => $type1,
         ]);
 
-        $result = $injector->call([\types\Type3::class, "method"]);
+        $type3 = $injector->createInstance(\types\Type3::class);
+        $result = $injector->call([$type3, "method"]);
         $this->assertEquals($type1, $result);
     }
 

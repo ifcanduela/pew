@@ -2,12 +2,10 @@
 
 namespace pew\request;
 
-use pew\response\HtmlResponse as PewHtmlResponse;
-use pew\response\JsonResponse as PewJsonResponse;
-use pew\response\RedirectResponse as PewRedirectResponse;
+use pew\response\HtmlResponse;
+use pew\response\JsonResponse;
+use pew\response\RedirectResponse;
 use pew\View;
-use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 
 /**
  * The basic controller class, with some common methods and fields.
@@ -34,26 +32,22 @@ class Controller
      * Redirect to a URL.
      *
      * @param string $uri
-     * @return PewRedirectResponse
+     * @return RedirectResponse
      */
     public function redirect(string $uri)
     {
-        $response = new SymfonyRedirectResponse($uri);
-
-        return new PewRedirectResponse($response);
+        return new RedirectResponse($uri);
     }
 
     /**
      * Render a JSON response
      *
      * @param mixed $data
-     * @return PewJsonResponse
+     * @return JsonResponse
      */
     public function json($data)
     {
-        $response = new SymfonyJsonResponse($data);
-
-        return new PewJsonResponse($response);
+        return new JsonResponse($data);
     }
 
     /**
@@ -64,7 +58,7 @@ class Controller
      *
      * @param string $template
      * @param array  $data
-     * @return PewHtmlResponse
+     * @return HtmlResponse
      * @throws \Exception
      */
     public function render(string $template, array $data = [])
@@ -75,6 +69,6 @@ class Controller
 
         $this->view->setData($data);
 
-        return new PewHtmlResponse($this->view);
+        return new HtmlResponse($this->view);
     }
 }

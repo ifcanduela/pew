@@ -18,8 +18,6 @@ abstract class Middleware
      */
     public function redirect(string $uri)
     {
-        $response = new SymfonyRedirectResponse($uri);
-
-        return new RedirectResponse($response);
+        return new RedirectResponse($uri);
     }
 }
