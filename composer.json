@@ -8,6 +8,7 @@
         }
     ],
     "homepage": "http://pew.ifcanduela.com",
+    "license": "MIT",
     "require": {
         "php": ">=7.1.0",
         "filp/whoops": "2.*",
@@ -25,7 +26,8 @@
         "symfony/var-dumper": "5.*"
     },
     "require-dev": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "*",
+        "vimeo/psalm": "^3.12"
     },
     "autoload": {
         "files": ["src/config/functions.php"],

@@ -130,7 +130,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
                 $this->acceptsJson = true;
             } else {
                 # search for an 'Accept' header containing 'application/json'
-                foreach ($this->getAcceptableContentTypes("Accept") as $contentType) {
+                foreach ($this->getAcceptableContentTypes() as $contentType) {
                     if ($contentType === "application/json") {
                         $this->acceptsJson = true;
                         break;

@@ -12,9 +12,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class HtmlResponse extends Response
 {
-    /** @var Response */
-    protected $response;
-
     /** @var View */
     protected $view;
 
@@ -27,7 +24,7 @@ class HtmlResponse extends Response
      * @param SymfonyResponse $response
      * @param Session $session
      */
-    public function __construct(View $view, $response = null, Session $session = null)
+    public function __construct(View $view, SymfonyResponse $response = null, Session $session = null)
     {
         parent::__construct($response, $session);
 
@@ -60,8 +57,9 @@ class HtmlResponse extends Response
     }
 
     /**
-     * Adds content to the response
-     * @return Response
+     * Get the response object.
+     *
+     * @return SymfonyResponse
      */
     public function getResponse(): SymfonyResponse
     {

@@ -20,20 +20,17 @@ class Response
     /** @var string */
     protected $content = false;
 
+    /** @var Session */
+    protected $session;
+
     /**
-     * Creates a View object based on a folder.
-     *
-     * If no folder is provided, the current working directory is used.
+     * Creates a generic Response wrapper.
      *
      * @param SymfonyResponse $response
      * @param Session $session
      */
     public function __construct(SymfonyResponse $response = null, Session $session = null)
     {
-        if ($response instanceof \pew\response\Response) {
-            $response = $response->response;
-        }
-
         $this->response = $response ?? new SymfonyResponse();
         $this->session = $session ?? new Session();
     }
@@ -126,7 +123,7 @@ class Response
     /**
      * Get the text content of the response.
      *
-     * @return string
+     * @return string|false
      */
     public function getContent(): string
     {
@@ -136,7 +133,7 @@ class Response
     /**
      * Preprocess the response.
      *
-     * @return Response
+     * @return SymfonyResponse
      */
     public function getResponse(): SymfonyResponse
     {

@@ -22,12 +22,8 @@ class JsonResponse extends Response
      * @param SymfonyResponse $response
      * @param Session $session
      */
-    public function __construct($data, $response = null, Session $session = null)
+    public function __construct($data, SymfonyResponse $response = null, Session $session = null)
     {
-        if ($response instanceof \pew\response\Response) {
-            $response = $response->response;
-        }
-
         if (!$response) {
             $response = new SymfonyJsonResponse();
         }
@@ -61,9 +57,9 @@ class JsonResponse extends Response
     }
 
     /**
-     * Prepare the response.
+     * Get the response object.
      *
-     * @return SymfonyJsonResponse
+     * @return SymfonyResponse
      */
     public function getResponse(): SymfonyResponse
     {

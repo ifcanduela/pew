@@ -11,6 +11,13 @@ class RedirectResponse extends Response
     /** @var string */
     protected $uri;
 
+    /**
+     * Creates a RedirectResponse wrapper.
+     *
+     * @param string $uri
+     * @param SymfonyResponse $response
+     * @param Session $session
+     */
     public function __construct(string $uri, SymfonyResponse $response = null, Session $session = null)
     {
         if (!$response) {
@@ -21,6 +28,11 @@ class RedirectResponse extends Response
         $this->uri = $uri;
     }
 
+    /**
+     * Retrieve the response object.
+     *
+     * @return SymfonyResponse
+     */
     public function getResponse(): SymfonyResponse
     {
         $this->response->setTargetUrl($this->uri);
