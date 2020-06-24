@@ -48,7 +48,7 @@ class RelationshipTest extends \PHPUnit\Framework\TestCase
         return $db;
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->db = $this->makeDatabase();
     }

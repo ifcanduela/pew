@@ -8,6 +8,7 @@ use Monolog\Logger;
 use pew\di\Container;
 use pew\di\Injector;
 use pew\model\TableManager;
+use pew\request\ActionResolver;
 use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
@@ -231,8 +232,9 @@ class App
             App::log("Middleware returned response");
         } else {
             # Resolve the route to a callable or a controller class
-            $handler = $this->resolveController($route);
-            $actionName = $this->resolveAction($route);
+            $resolver = new ActionResolver($route);
+            $handler = $resolver->getController($this->container->get("controller_namespace"));
+            $actionName = $resolver->getAction($this->container->get("default_action"));
 
             if (!$handler) {
                 throw new \RuntimeException("No handler specified for route `" . $request->getPathInfo() . "`");

@@ -12,7 +12,7 @@ class TableManagerTest extends PHPUnit\Framework\TestCase
 {
     public $db;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $db = Database::sqlite(':memory:');
 
@@ -96,7 +96,7 @@ class TableManagerTest extends PHPUnit\Framework\TestCase
         }
     }
 
-    public function testGuessTablename()
+    public function testGuessTableName()
     {
         $tm = new TableManager();
 

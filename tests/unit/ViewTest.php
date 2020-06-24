@@ -8,11 +8,6 @@ function rn($text) {
 
 class ViewTest extends PHPUnit\Framework\TestCase
 {
-    protected function setUp()
-    {
-
-    }
-
     public function testVoidConstructor()
     {
         $v = new View();

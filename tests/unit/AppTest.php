@@ -6,26 +6,22 @@ class AppTest extends PHPUnit\Framework\TestCase
 {
     public $appFolder;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->appFolder = __DIR__ . "/../fixtures/";
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage The app path does not exist:
-     */
     public function testAppRequiresExistingFolder()
     {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("The app path does not exist:");
         $app = new App('./non-existing-folder', 'test');
     }
 
-    /**
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage must return an array
-     */
     public function testAppRequiresExistingConfigFileReturnArray()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("must return an array");
         $app = new App($this->appFolder, 'bad-config');
     }
 

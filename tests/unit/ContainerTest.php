@@ -56,11 +56,9 @@ namespace {
             $this->assertEquals("testValue", $c->get("testKey"));
         }
 
-        /**
-         * @expectedException \RuntimeException
-         */
         public function testLoadBadFile()
         {
+            $this->expectException(\RuntimeException::class);
             $c = new Container();
 
             $bad_file = __DIR__ . "/../fixtures/config/bad-config.php";

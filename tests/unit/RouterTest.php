@@ -42,12 +42,11 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("homepage", $r->getName());
     }
 
-    /**
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Route not found
-     */
     public function testRouteNotFound()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Route not found");
+
         $routes = [
             ['path' => '/', 'handler' => 'HomeController@index'],
         ];
@@ -57,12 +56,11 @@ class RouterTest extends PHPUnit\Framework\TestCase
         $destination = $router->route('/not-found', 'GET');
     }
 
-    /**
-     * @expectedException RuntimeException
-     * @expectedExceptionMessage Method not allowed
-     */
     public function testMethodNotAllowed()
     {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Method not allowed");
+
         $routes = [
             ['path' => '/', 'handler' => 'HomeController@index', 'methods' => 'POST'],
         ];

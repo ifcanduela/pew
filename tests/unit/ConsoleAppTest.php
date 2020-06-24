@@ -9,7 +9,7 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
 {
     public $app;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->app = new App(__DIR__ . "/../fixtures/", "console");
         $this->app->output = new BufferedOutput();

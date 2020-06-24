@@ -22,7 +22,7 @@ class RecordTest extends PHPUnit\Framework\TestCase
         return $logger;
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $db = Database::sqlite(':memory:');
         $db->setLogger($this->getLogger());

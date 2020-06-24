@@ -9,13 +9,13 @@ const TEST_JPG = FIXTURES_DIR . DIRECTORY_SEPARATOR . "test.jpg";
 
 class ImageTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         $img = imagecreatetruecolor(400, 300);
         imagejpeg($img, TEST_JPG);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         unlink(TEST_JPG);
     }

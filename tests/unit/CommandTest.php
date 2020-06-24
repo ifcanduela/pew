@@ -10,7 +10,7 @@ class CommandTest extends \PHPUnit\Framework\TestCase
 {
     public $args;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->args = [
             new ArgvInput(),

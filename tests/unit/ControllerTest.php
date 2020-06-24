@@ -40,7 +40,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
         $response = $controller->myAction();
 
         $this->assertInstanceOf(\pew\response\JsonResponse::class, $response);
-        $this->assertContains('"myAction"', (string) $response);
+        $this->assertStringContainsString('"myAction"', (string) $response);
     }
 
     public function testControllerRedirect()
@@ -55,8 +55,8 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $this->assertInstanceOf(\pew\response\RedirectResponse::class, $response);
         $responseBody = (string) $response;
-        $this->assertContains("HTTP", $responseBody);
-        $this->assertContains("302", $responseBody);
+        $this->assertStringContainsString("HTTP", $responseBody);
+        $this->assertStringContainsString("302", $responseBody);
     }
 
     public function testControllerRender()
@@ -73,8 +73,8 @@ class ControllerTest extends PHPUnit\Framework\TestCase
         $this->assertInstanceOf(\pew\response\HtmlResponse::class, $response);
 
         $responseBody = (string) $response;
-        $this->assertContains("200 OK", $responseBody);
-        $this->assertContains("Cache-Control", $responseBody);
+        $this->assertStringContainsString("200 OK", $responseBody);
+        $this->assertStringContainsString("Cache-Control", $responseBody);
         $this->assertRegExp("/1$/", $responseBody);
     }
 
