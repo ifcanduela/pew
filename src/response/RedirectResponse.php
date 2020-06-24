@@ -1,6 +1,8 @@
 <?php
 
 namespace pew\response;
+
+use pew\lib\Session;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 

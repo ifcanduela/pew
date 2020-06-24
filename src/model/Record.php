@@ -45,9 +45,6 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /** @var Table Table data manager. */
     protected $tableManager;
 
-    /** @var Validator Record validation object. */
-    public $validator;
-
     /** @var string Name of the column holding the record creation timestamp. */
     public static $createdFieldName = "created";
 
@@ -717,32 +714,5 @@ class Record implements \JsonSerializable, \IteratorAggregate
     public function attachRelated($getter, $values)
     {
         $this->getterResults[$getter] = $values;
-    }
-
-    /**
-     * Apply validation rules to the model.
-     *
-     * The error list is available via $model->validator->getErrors()
-     *
-     * @return bool
-     */
-    public function validate()
-    {
-        $this->validator = Validator::object($this->validationRules());
-
-        return $this->validator->validate($this);
-    }
-
-    /**
-     * Get the validation rules for the model.
-     *
-     * The return value must be an array with field names as keys and Validator
-     * instances as values.
-     *
-     * @return Validator[]
-     */
-    public function validationRules()
-    {
-        return [];
     }
 }
