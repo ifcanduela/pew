@@ -29,6 +29,9 @@ class ActionResolver
     {
         # The handler can be a string like "controller@action" or a callback function
         $handler = $this->route->getHandler();
+        $controllerNamespace = (string) S::create($controllerNamespace)
+            ->ensureLeft("\\")
+            ->ensureRight("\\");
 
         if (is_string($handler)) {
             # Separate controller and action
@@ -43,7 +46,11 @@ class ActionResolver
             $controllerId = join("\\", $controllerParts);
             # The namespace is the default controller namespace with an optional,
             # additional namespace set in the route
-            $namespace = S::create($controllerNamespace . $this->route->getNamespace())->ensureLeft("\\")->ensureRight("\\");
+            $ns = implode("\\", [
+                    trim($controllerNamespace, "\\"),
+                    trim($this->route->getNamespace(), "\\")
+                ]);
+            $namespace = S::create($ns)->ensureLeft("\\")->ensureRight("\\");
 
             # Check if the controller class exists -- it may have an optional "Controller" suffix
             foreach ([$controllerId, $controllerId . "Controller"] as $c) {

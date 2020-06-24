@@ -15,7 +15,7 @@ class AppTest extends PHPUnit\Framework\TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("The app path does not exist:");
-        $app = new App('./non-existing-folder', 'test');
+        $app = new App('./non-existing-folder', "test");
     }
 
     public function testAppRequiresExistingConfigFileReturnArray()
@@ -27,14 +27,14 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testInitializeApp()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
 
         $this->assertInstanceOf(App::class, $app);
     }
 
     public function testTemplateResponse()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/test/template-response');
 
         ob_start();
@@ -46,7 +46,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testJsonResponse()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/test/json-response');
 
         ob_start();
@@ -58,7 +58,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testStringResponse()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/test/string-response');
 
         ob_start();
@@ -70,7 +70,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testFalseResponse()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/test/false-response');
 
         ob_start();
@@ -82,7 +82,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testCallback()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/callback');
 
         ob_start();
@@ -101,7 +101,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testConfigurationValues()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
 
         $this->assertEquals(realpath($this->appFolder), $app->get("app_path"));
 
@@ -132,7 +132,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testRouteNotFound()
     {
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/not-found');
 
         ob_start();
@@ -141,7 +141,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
         $this->assertEquals('Route not found', $response);
 
-        $app = new App($this->appFolder, 'test');
+        $app = new App($this->appFolder, "test");
         $app->set('path', '/not-found');
         $app->set('debug', true);
 
@@ -152,66 +152,8 @@ class AppTest extends PHPUnit\Framework\TestCase
         }
     }
 
-    public function testResolveController()
-    {
-        $r = new \pew\router\Route();
-        $r->setHandler("test@index");
-
-        $app = new App($this->appFolder, 'test');
-
-        $controllerClass = $app->resolveController($r);
-        $this->assertEquals("\\app\\controllers\\TestController", $controllerClass);
-    }
-
-    public function testResolveNamespacedController()
-    {
-        $r = new \pew\router\Route();
-        $r->setHandler("admin@index");
-        $r->setNamespace("admin");
-
-        $app = new App($this->appFolder, 'test');
-
-        $controllerClass = $app->resolveController($r);
-        $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
-
-        $r = new \pew\router\Route();
-        $r->setHandler("admin\\admin@index");
-
-        $app = new App($this->appFolder, 'test');
-
-        $controllerClass = $app->resolveController($r);
-        $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
-    }
-
-    public function testMissingController()
-    {
-        $r = new \pew\router\Route();
-        $r->setHandler("noController@index");
-
-        $app = new App($this->appFolder, 'test');
-
-        try {
-            $app->resolveController($r);
-        } catch (\Exception $e) {
-            $this->assertEquals("No controller found for handler `noController@index`", $e->getMessage());
-        }
-    }
-
-    public function testResolveControllerNotFound()
-    {
-        $r = new \pew\router\Route();
-        $r->setHandler("admin\\admin@index");
-
-        $app = new App($this->appFolder, 'test');
-
-        $controllerClass = $app->resolveController($r);
-        $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
-    }
-
     public function testMiddleware()
     {
-        $app = new App($this->appFolder, 'test');
-
         $r = new \pew\router\Route();
         $r->setHandler("test@stringResponse");
         $r->before([
@@ -221,31 +163,29 @@ class AppTest extends PHPUnit\Framework\TestCase
             \app\services\MiddlewareTest::class,
         ]);
 
+        $app = new App($this->appFolder, "test");
         $app->set("route", $r);
 
         ob_start();
         $app->run();
         $html = ob_get_clean();
-        $this->assertEquals('beforeresponse', $html);
+        $this->assertEquals("beforeresponse", $html);
     }
 
     public function testAfterMiddleware()
     {
-        $app = new App($this->appFolder, 'test');
-
         $r = new \pew\router\Route();
         $r->setHandler("test@stringResponse");
         $r->after([
             \app\services\MiddlewareTest::class,
         ]);
 
+        $app = new App($this->appFolder, "test");
         $app->set("route", $r);
-        $action = (string) $app->resolveAction($r);
-        $this->assertEquals("stringResponse", $action);
 
-        // ob_start();
-        // $app->run();
-        // $html = ob_get_clean();
-        // $this->assertEquals('noneresponse', $html);
+        ob_start();
+        $app->run();
+        $html = ob_get_clean();
+        $this->assertEquals("noneresponse", $html);
     }
 }

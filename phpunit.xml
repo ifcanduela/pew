@@ -9,7 +9,7 @@
     <!-- Whitelist for code coverage -->
     <filter>
         <whitelist>
-            <directory suffix=".php">./src/pew</directory>
+            <directory suffix=".php">./src</directory>
         </whitelist>
     </filter>
 </phpunit>
