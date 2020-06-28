@@ -51,7 +51,11 @@ class JsonResponse extends Response
      */
     public function setData(array $data)
     {
-        $this->response->setData($data);
+        if ($this->response instanceof SymfonyJsonResponse) {
+            $this->response->setData($data);
+        } else {
+            $this->response->setContent(json_encode($data));
+        }
 
         return $this;
     }
@@ -63,7 +67,8 @@ class JsonResponse extends Response
      */
     public function getResponse(): SymfonyResponse
     {
-        $this->response->setData($this->data);
+        $this->setData($this->data);
+        $this->response->headers->set("Content-Type", "application/json");
 
         return $this->response;
     }

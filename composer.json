@@ -9,8 +9,11 @@
     ],
     "homepage": "http://pew.ifcanduela.com",
     "license": "MIT",
+    "scripts": {
+        "test": "phpunit"
+    },
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.2.0",
         "filp/whoops": "2.*",
         "ifcanduela/abbrev": "1.*",
         "ifcanduela/db": "1.*",

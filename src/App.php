@@ -73,7 +73,7 @@ class App
 
         $this->emit("pew.init");
 
-        # import app-defined configuration
+        # Import app-defined configuration
         $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
 
@@ -465,10 +465,7 @@ class App
 
         # Check if the request is JSON and return an appropriate response
         if ($request->isJson()) {
-            $response->setContent(json_encode($actionResult));
-            $response->headers->set("Content-Type", "application/json");
-
-            return new JsonResponse($response);
+            return new JsonResponse($actionResult, $response);
         }
 
         # If the action result is a string, use as the content of the response
