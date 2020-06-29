@@ -2,6 +2,9 @@
 
 namespace pew\model\relation;
 
+use pew\model\Collection;
+use pew\model\Record;
+
 /**
  * A one-to-one relationship.
  */
@@ -10,7 +13,7 @@ class HasOne extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return array
+     * @return Record
      */
     public function fetch()
     {
@@ -23,7 +26,7 @@ class HasOne extends Relationship
      * Returns a list of records per foreign key.
      *
      * @param array $relatedKeys
-     * @return array
+     * @return Collection
      */
     public function find(array $relatedKeys)
     {

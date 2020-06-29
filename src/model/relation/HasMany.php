@@ -2,6 +2,8 @@
 
 namespace pew\model\relation;
 
+use pew\model\Collection;
+
 /**
  * A one-to-many relationship.
  */
@@ -23,7 +25,7 @@ class HasMany extends Relationship
      * Returns a list of records per foreign key.
      *
      * @param array $relatedKeys
-     * @return array
+     * @return Collection
      */
     public function find(array $relatedKeys)
     {

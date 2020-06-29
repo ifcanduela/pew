@@ -79,7 +79,7 @@ class Url
     /**
      * Get a URL to a path.
      *
-     * @param string|string[] ...$path
+     * @param string ...$path
      * @return string
      */
     public function to(string ...$path)
@@ -227,7 +227,7 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string|string[] ...$path
+     * @param string ...$path
      * @return Url
      */
     public function setPath(string ...$path)
@@ -247,7 +247,7 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string|string[] ...$segment
+     * @param string ...$segment
      * @return Url
      */
     public function addPath(string ...$segment)

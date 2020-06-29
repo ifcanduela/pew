@@ -33,7 +33,7 @@ class HasAndBelongsToMany extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return array
+     * @return Collection
      */
     public function fetch()
     {

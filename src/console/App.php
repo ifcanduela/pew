@@ -35,7 +35,6 @@ class App extends \pew\App
      * Run a command.
      *
      * @return mixed
-     * @throws \ReflectionException
      */
     public function run()
     {
@@ -193,7 +192,7 @@ class App extends \pew\App
      * Call a method on a command instance.
      *
      * @param CommandDefinition $commandDefinition
-     * @param array $arguments
+     * @param CommandArguments $arguments
      * @param string $action
      * @return mixed
      */

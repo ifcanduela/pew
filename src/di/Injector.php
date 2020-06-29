@@ -57,6 +57,7 @@ class Injector
      * `invokeArgs()`.
      *
      * @param ReflectionFunctionAbstract $method
+     * @param bool $autoResolve
      * @return array List of arguments
      * @throws KeyNotFoundException When an argument cannot be found
      * @throws ReflectionException
@@ -164,6 +165,7 @@ class Injector
      * Create an instance of the class.
      *
      * @param string $className A fully-qualified class name
+     * @param bool $autoResolve
      * @return object A new object of the class
      * @throws KeyNotFoundException
      * @throws ReflectionException

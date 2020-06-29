@@ -88,6 +88,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      * If `$key` is `null`, all values will be returned in an array.
      *
      * @param string|null $key
+     * @param mixed $default
      * @return string|array
      */
     public function post($key = null, $default = null)

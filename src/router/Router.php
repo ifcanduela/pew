@@ -23,13 +23,13 @@ class Router
     /** @var Dispatcher */
     protected $dispatcher;
 
-    /** @var array[] */
+    /** @var Route[] */
     public $routes = [];
 
     /**
      * Initialize a Router.
      *
-     * Routes require a 'path' key and may have optional 'methods' and 'defaults' keys.
+     * Routes require a "path" key and may have optional "methods" and "defaults" keys.
      *
      * @param array $routeData Array of routes
      */

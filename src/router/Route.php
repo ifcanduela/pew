@@ -223,7 +223,7 @@ class Route implements \ArrayAccess
     /**
      * Set the route methods.
      *
-     * @param string|string[] ...$methods
+     * @param string ...$methods
      * @return void
      */
     public function setMethods(string ...$methods)

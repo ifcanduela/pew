@@ -46,7 +46,6 @@ class View
      * If no folder is provided, the current working directory is used.
      *
      * @param string $templatesFolder
-     * @param SymfonyResponse $response
      */
     public function __construct(string $templatesFolder = "")
     {
@@ -428,7 +427,7 @@ class View
     {
         $output = ob_get_clean();
 
-        list($blockName, $replace) = $this->blockStack->pop();
+        [$blockName, $replace] = $this->blockStack->pop();
 
         if (!array_key_exists($blockName, $this->blocks)) {
             $this->blocks[$blockName] = [];

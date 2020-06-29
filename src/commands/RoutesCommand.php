@@ -20,6 +20,7 @@ class RoutesCommand extends Command
      * Run the command.
      *
      * @param CommandArguments $arguments
+     * @param Route[] $routes
      * @return void
      */
     public function run(CommandArguments $arguments, $routes)
@@ -64,6 +65,7 @@ class RoutesCommand extends Command
         $this->message($sep);
         $this->message($head);
         $this->message($sep);
+
         foreach ($list as $r) {
             $name    = "<info>"      . str_pad($r[0], $longest[0], " ", STR_PAD_RIGHT) . "</>";
             $method  = "<comment>"   . str_pad($r[1], $longest[1], " ", STR_PAD_RIGHT) . "</>";
@@ -71,6 +73,7 @@ class RoutesCommand extends Command
             $path    = "<info><options=bold>"      . $r[3] . "</></>";
             $this->message($name . "  " . $method . "  " . $handler . "  " . $path);
         }
+
         $this->message($sep);
     }
 

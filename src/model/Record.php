@@ -110,6 +110,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * Create a record from a array of keys and values.
      *
      * @param array $data
+     * @param bool $isNew
      * @return static
      */
     public static function fromArray(array $data, bool $isNew = true)

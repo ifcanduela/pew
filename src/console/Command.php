@@ -65,6 +65,8 @@ abstract class Command
      * Print a command-line message.
      *
      * @param string|array $text
+     * @param bool $newLine
+     * @param string $format
      * @return void
      */
     protected function message($text, bool $newLine = true, string $format = "")
@@ -86,6 +88,7 @@ abstract class Command
      * Print an info message with light blue text.
      *
      * @param string|array $text
+     * @param bool $newLine
      * @return void
      */
     protected function info($text, bool $newLine = true)
@@ -97,6 +100,7 @@ abstract class Command
      * Print a success message with green text.
      *
      * @param string|array $text
+     * @param bool $newLine
      * @return void
      */
     protected function success($text, bool $newLine = true)
@@ -108,6 +112,7 @@ abstract class Command
      * Print a warning message with yellow text.
      *
      * @param string|array $text
+     * @param bool $newLine
      * @return void
      */
     protected function warning($text, bool $newLine = true)
@@ -119,6 +124,7 @@ abstract class Command
      * Print an error message with red text.
      *
      * @param string|array $text
+     * @param bool $newLine
      * @return void
      */
     protected function error($text, bool $newLine = true)

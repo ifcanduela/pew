@@ -2,6 +2,8 @@
 
 namespace pew\model\relation;
 
+use pew\model\Collection;
+
 /**
  * A meny-to-one relationship.
  */
@@ -23,7 +25,7 @@ class BelongsTo extends Relationship
      * Returns one record per foreign key.
      *
      * @param array $relatedKeys
-     * @return array
+     * @return Collection
      */
     public function find(array $relatedKeys)
     {
