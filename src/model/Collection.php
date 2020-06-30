@@ -131,12 +131,12 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      *
      * If more than one array is passed, their order is retained.
      *
-     * @param array $array
+     * @param array ...$array
      * @return static
      */
-    public function append(array $array)
+    public function append(array ...$array)
     {
-        $items = array_merge($this->items, $array);
+        $items = array_merge($this->items, ...$array);
 
         return new static($items);
     }
@@ -444,10 +444,10 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      *
      * If more than one array is passed, their order is retained.
      *
-     * @param array $array
+     * @param array ...$array
      * @return static
      */
-    public function prepend(array $array)
+    public function prepend(array ...$array)
     {
         $array[] = $this->items;
         $items = array_merge(...$array);
