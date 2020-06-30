@@ -1,7 +1,5 @@
 <?php
 
-require __DIR__ . "/functions.php";
-
 use ifcanduela\db\Database;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -17,7 +15,6 @@ use pew\router\Router;
 use pew\View;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Contracts\Cache\CacheInterface;
 use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
@@ -125,7 +122,7 @@ $container["error_handler"] = function (Container $c): Run {
     return $whoops;
 };
 
-$container[\pew\di\Injector::class] = function (Container $c): Injector {
+$container[Injector::class] = function (Container $c): Injector {
     return new Injector($c);
 };
 
@@ -178,9 +175,13 @@ $container["routes"] = function (Container $c): array {
     $appFolder = $c["app_path"];
     $configFolder = $c["config_folder"];
     $routesPath = "{$appFolder}/{$configFolder}/routes.php";
-    $routes = [];
+
+    if (!is_readable($routesPath)) {
+        throw new \RuntimeException("Route definition file `{$routesPath}` is not readable.");
+    }
 
     $definitions = require $routesPath;
+    $routes = [];
 
     foreach ($definitions as $path => $handler) {
         if ($handler instanceof Route) {
@@ -198,7 +199,7 @@ $container["routes"] = function (Container $c): array {
     return $routes;
 };
 
-$container[\pew\lib\Session::class] = function (Container $c): Session {
+$container[Session::class] = function (Container $c): Session {
     return new Session();
 };
 

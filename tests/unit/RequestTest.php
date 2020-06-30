@@ -38,6 +38,7 @@ class RequestTest extends PHPUnit\Framework\TestCase
             ""
         );
     }
+
     public function testAppUrl()
     {
         $request = $this->makeRequest();

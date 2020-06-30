@@ -81,9 +81,10 @@ class RoutesCommand extends Command
      * Extract information from a route object or array.
      *
      * @param Route|array $route
+     * @param Group|null  $group
      * @return array
      */
-    public function processRoute($route)
+    public function processRoute($route, Group $group = null)
     {
         if ($route instanceof \pew\Router\Route) {
             $name = $route->getName();

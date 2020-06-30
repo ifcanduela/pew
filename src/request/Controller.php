@@ -15,7 +15,7 @@ class Controller
     /** @var Request */
     public $request;
 
-    /** @var \pew\View */
+    /** @var View */
     public $view;
 
     /**

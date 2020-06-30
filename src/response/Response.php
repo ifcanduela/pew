@@ -102,7 +102,7 @@ class Response
      */
     public function json($isJsonResponse = true)
     {
-        $this->isJsonResponse = true;
+        $this->isJsonResponse = $isJsonResponse;
 
         return $this;
     }

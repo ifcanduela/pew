@@ -253,7 +253,8 @@ class Injector
      *
      * @param string $className
      * @return object
-     * @throws RuntimeException
+     * @throws KeyNotFoundException
+     * @throws ReflectionException
      */
     public function autoResolve(string $className)
     {

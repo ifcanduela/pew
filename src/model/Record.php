@@ -362,15 +362,13 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         if ($methodName) {
             $this->$methodName($value);
-
-            return $this;
-        }
-
-        if (array_key_exists($key, $this->record)) {
+        } elseif (array_key_exists($key, $this->record)) {
             $this->record[$key] = $value;
         } else {
             throw new \RuntimeException("Record attribute `{$key}` does not exist");
         }
+
+        return $this;
     }
 
     /**

@@ -64,10 +64,10 @@ class CreateCommand extends Command
         $fileContents = <<<PHP
 <?php
 
-namespace app\commands;
+namespace app\\commands;
 
-use pew\console\Command;
-use pew\console\CommandArguments;
+use pew\\console\\Command;
+use pew\\console\\CommandArguments;
 
 class {$className} extends Command
 {
@@ -108,9 +108,9 @@ PHP;
         $fileContents = <<<PHP
 <?php
 
-namespace app\controllers;
+namespace app\\controllers;
 
-use pew\Controller;
+use pew\\Controller;
 
 class {$className} extends Controller
 {
@@ -139,9 +139,11 @@ PHP;
         $fileContents = <<<PHP
 <?php
 
-namespace app\middleware;
+namespace app\\middleware;
 
-class {$className} extends \\request\\Middleware
+use pew\\request\\Middleware;
+
+class {$className} extends Middleware
 {
     public function before()
     {
@@ -179,9 +181,9 @@ PHP;
         $fileContents = <<<PHP
 <?php
 
-namespace app\models;
+namespace app\\models;
 
-use pew\Model;
+use pew\\Model;
 
 class {$className} extends Model
 {

@@ -38,6 +38,12 @@ abstract class Command
     /** @var OutputInterface */
     public $output;
 
+    /** @var QuestionHelper */
+    private $questionHelper;
+
+    /** @var FormatterHelper */
+    private $formatterHelper;
+
     /**
      * Command constructor.
      *

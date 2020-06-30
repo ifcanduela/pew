@@ -204,7 +204,7 @@ class CommandArguments
     /**
      * Add a named argument.
      *
-     * Boolean arguments with a `no-` prefix will jave their name stripped of
+     * Boolean arguments with a `no-` prefix will have their name stripped of
      * the prefix and their value set to `false`.
      *
      * @param string $name
@@ -281,7 +281,7 @@ class CommandArguments
      *
      * Camel cased property accessors will be converted to dashed-lowercase.
      *
-     * @param string $key
+     * @param string $property
      * @return mixed
      */
     public function __get($property)

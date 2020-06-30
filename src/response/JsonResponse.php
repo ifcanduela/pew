@@ -46,10 +46,10 @@ class JsonResponse extends Response
     /**
      * Get the JSON data.
      *
-     * @param array $data
+     * @param mixed $data
      * @return self
      */
-    public function setData(array $data)
+    public function setData($data)
     {
         if ($this->response instanceof SymfonyJsonResponse) {
             $this->response->setData($data);

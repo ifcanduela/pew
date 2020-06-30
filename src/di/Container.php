@@ -65,7 +65,7 @@ class Container extends Pimple implements ContainerInterface
      */
     public function loadFile(string $filename)
     {
-        if (file_exists($filename)) {
+        if (is_readable($filename)) {
             $definitions = require $filename;
 
             if (!is_array($definitions)) {

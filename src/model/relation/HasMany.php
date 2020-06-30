@@ -12,7 +12,7 @@ class HasMany extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return \pew\model\Collection
+     * @return Collection
      */
     public function fetch()
     {

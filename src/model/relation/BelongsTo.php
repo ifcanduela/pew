@@ -5,7 +5,7 @@ namespace pew\model\relation;
 use pew\model\Collection;
 
 /**
- * A meny-to-one relationship.
+ * A many-to-one relationship.
  */
 class BelongsTo extends Relationship
 {

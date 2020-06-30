@@ -75,7 +75,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
         $responseBody = (string) $response;
         $this->assertStringContainsString("200 OK", $responseBody);
         $this->assertStringContainsString("Cache-Control", $responseBody);
-        $this->assertMatchesRegularExpression("/1$/", $responseBody);
+        $this->assertStringEndsWith("1", $responseBody);
     }
 
     public function testMiddlewareRedirect()

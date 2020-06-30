@@ -158,7 +158,7 @@ class App
         $configFolder = $this->container->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/bootstrap.php";
 
-        if (file_exists($filename)) {
+        if (is_readable($filename)) {
             require_once $filename;
 
             return true;
@@ -187,17 +187,7 @@ class App
         try {
             # Process the request
             $response = $this->handle();
-        } catch (RouteNotFound $e) {
-            # Bad route
-            $response = $this->handleError($e);
-        } catch (InvalidHttpMethod $e) {
-            # Bad method
-            $response = $this->handleError($e);
-        } catch (HttpException $e) {
-            # General HTTP errors
-            $response = $this->handleError($e);
         } catch (\Exception $e) {
-            # Other exceptions
             $response = $this->handleError($e);
         }
 
@@ -266,7 +256,7 @@ class App
     /**
      * Run configured middleware callbacks before the controller action.
      *
-     * @param Route $route
+     * @param Route    $route
      * @param Injector $injector
      * @return Response|null
      */
@@ -286,6 +276,8 @@ class App
                 return $result;
             }
         }
+
+        return null;
     }
 
     /**

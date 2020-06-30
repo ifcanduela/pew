@@ -51,7 +51,6 @@ class Router
      *
      * @param array $routeData
      * @return Route[]
-     * @throws \Exception
      */
     protected function processRouteData(array $routeData)
     {

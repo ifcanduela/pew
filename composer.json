@@ -32,6 +32,11 @@
         "phpunit/phpunit": "*",
         "vimeo/psalm": "^3.12"
     },
+    "suggest": {
+        "ext-gd": "To use the Image helper class",
+        "ext-json": "To use JSON functions in requests, responses and models",
+        "ext-pdo": "To use the model layer"
+    },
     "autoload": {
         "files": ["src/config/functions.php"],
         "psr-4": {

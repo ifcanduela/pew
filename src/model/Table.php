@@ -84,7 +84,7 @@ class Table
     /**
      * Current selection query.
      *
-     * @var \ifcanduela\db\Query
+     * @var Query
      */
     public $query;
 

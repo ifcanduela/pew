@@ -52,7 +52,7 @@ class App extends \pew\App
                 }
             }
 
-            return;
+            return null;
         }
 
         if (strpos($arguments["command"], ":") !== false) {
@@ -65,9 +65,9 @@ class App extends \pew\App
         $commandInfo = $this->findCommand($commandName);
 
         if (!($commandInfo instanceof CommandDefinition)) {
-            $suggestedClassName = $this->get("app_namespace") . "\\commands\\" . Str::create($commandName)->upperCamelize() . "Command";
             $this->commandMissing($commandName, $commandInfo ?? []);
-            return;
+
+            return null;
         }
 
         return $this->handleCommand($commandInfo, $arguments["arguments"], $action);
