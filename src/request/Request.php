@@ -114,6 +114,16 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     }
 
     /**
+     * Flag the request as accepting JSON.
+     *
+     * @return void
+     */
+    public function forceJsonResponse()
+    {
+        $this->acceptsJson = true;
+    }
+
+    /**
      * Check if the request expects a JSON response.
      *
      * The check is performed against the `Accepts` header of the HTTP request

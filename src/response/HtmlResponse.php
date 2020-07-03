@@ -63,12 +63,7 @@ class HtmlResponse extends Response
      */
     public function getResponse(): SymfonyResponse
     {
-        if ($this->isJsonResponse) {
-            $this->response->setContent(json_encode($this->variables));
-            $this->response->headers->set("Content-Type", "application/json");
-        } elseif ($this->view) {
-            $this->response->setContent($this->view->render());
-        }
+        $this->response->setContent($this->view->render());
 
         return $this->response;
     }

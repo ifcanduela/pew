@@ -23,7 +23,7 @@ class ActionResolver
      * Get the controller class name.
      *
      * @param string $controllerNamespace
-     * @return string
+     * @return string|callable
      */
     public function getController(string $controllerNamespace = "\\app\\controllers\\")
     {
