@@ -90,6 +90,6 @@ class ActionResolver
 
         $actionSlug = $this->route->getParam("action", $defaultAction);
 
-        return S::create($actionSlug)->camelize();
+        return (string) S::create($actionSlug)->camelize();
     }
 }

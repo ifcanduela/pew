@@ -13,9 +13,7 @@ use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
-use pew\router\InvalidHttpMethod;
 use pew\router\Route;
-use pew\router\RouteNotFound;
 use Stringy\Stringy as S;
 
 /**
@@ -224,7 +222,9 @@ class App
             # Resolve the route to a callable or a controller class
             $resolver = new ActionResolver($route);
             $handler = $resolver->getController($this->container->get("controller_namespace"));
+            $this->emit("request.handler", $handler);
             $actionName = $resolver->getAction($this->container->get("default_action"));
+            $this->emit("request.actionName", $actionName);
 
             if (!$handler) {
                 throw new \RuntimeException("No handler specified for route `" . $request->getPathInfo() . "`");
@@ -238,17 +238,21 @@ class App
                 $result = $this->handleAction($handler, $actionName, $injector);
             }
 
+            $this->emit("request.result", $result);
             $this->emit("timer.stop", ["app.action"]);
         }
 
         # Process whatever the handler returned into a Response object
         $response = $this->transformActionResult($result);
+        $this->emit("response.start", $response);
 
         try {
             $response = $this->runAfterMiddleware($route, $response, $injector);
         } catch (\Exception $e) {
             $response = $this->handleError($e);
         }
+
+        $this->emit("response.end", $response);
 
         return $response;
     }
