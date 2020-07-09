@@ -1,7 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\di;
 
+use ArrayAccess;
+use Closure;
+use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
@@ -71,7 +74,7 @@ class Injector
             $found = false;
             $injection = null;
             $classExists = false;
-            $typeName = null;
+            $typeName = "";
             $paramType = $param->getType();
             $paramName = $param->getName();
 
@@ -147,7 +150,7 @@ class Injector
                 return $c[$key];
             }
 
-            $isArrayLike = $c instanceof \ArrayAccess;
+            $isArrayLike = $c instanceof ArrayAccess;
 
             if ($isArrayLike) {
                 if ($c->offsetExists($key)) {
@@ -201,7 +204,7 @@ class Injector
 
         if (!is_object($object)) {
             $method = __METHOD__;
-            throw new \InvalidArgumentException("Invalid argument supplied to `{$method}`: \$object must be an object.");
+            throw new InvalidArgumentException("Invalid argument supplied to `{$method}`: \$object must be an object.");
         }
 
         $method = new ReflectionMethod($object, $methodName);
@@ -225,7 +228,7 @@ class Injector
         $injections = $this->getInjections($function);
 
         if (is_object($boundObject)) {
-            $callable = \Closure::bind($callable, $boundObject, $boundObject);
+            $callable = Closure::bind($callable, $boundObject, $boundObject);
         }
 
         return $callable(...$injections);
@@ -241,7 +244,7 @@ class Injector
      */
     public function call(callable $callable)
     {
-        if (is_string($callable) || $callable instanceof \Closure) {
+        if (is_string($callable) || $callable instanceof Closure) {
             return $this->callFunction($callable);
         }
 

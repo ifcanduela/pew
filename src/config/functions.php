@@ -1,8 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Assorted functions, helpers and shortcuts.
  */
+
+use pew\App;
 
 if (!function_exists("array_path")) {
     /**
@@ -47,7 +49,7 @@ if (!function_exists("flash")) {
         static $session;
 
         if (!$session) {
-            $session = \pew("session");
+            $session = pew("session");
         }
 
         if (null === $key) {
@@ -71,9 +73,9 @@ if (!function_exists("here")) {
         static $here;
 
         if (!$here) {
-            $query = \pew("request")->query->all();
+            $query = pew("request")->query->all();
 
-            $here = \url(pew("path"), $query ?: "");
+            $here = url(pew("path"), $query ?: "");
         }
 
         return $here;
@@ -89,10 +91,10 @@ if (!function_exists("pew")) {
      */
     function pew(string $key)
     {
-        $app = \pew\App::instance();
+        $app = App::instance();
 
         if (!$app) {
-            throw new \RuntimeException("The application has not been initialized");
+            throw new RuntimeException("The application has not been initialized");
         }
 
         return $app->get($key);
@@ -119,7 +121,7 @@ if (!function_exists("root")) {
         static $root_path;
 
         if (!isset($root_path)) {
-            $root_path = \pew("root_path");
+            $root_path = pew("root_path");
         }
 
         array_unshift($path, $root_path);
@@ -146,7 +148,7 @@ if (!function_exists("session")) {
         static $session;
 
         if (!$session) {
-            $session = \pew("session");
+            $session = pew("session");
         }
 
         if (is_null($path)) {
@@ -162,9 +164,9 @@ if (!function_exists("url")) {
      * Gets an absolute URL, having the location of the site as base URL.
      *
      * If the site is hosted at http://www.example.com/pewexample, the call
-     *     echo url('www/css/styles.css');
+     *     `echo url('www/css/styles.css');`
      * will print
-     *     http://www.example.com/pewexample/www/css/styles.css.
+     *     `http://www.example.com/pewexample/www/css/styles.css`.
      *
      * Pass associative arrays to add query parameters to the URL.
      *
@@ -176,7 +178,7 @@ if (!function_exists("url")) {
         static $base_url;
 
         if (!isset($base_url)) {
-            $base_url = \pew('request')->appUrl();
+            $base_url = pew('request')->appUrl();
             $base_url = rtrim($base_url, '/') . '/';
         }
 
@@ -217,7 +219,7 @@ if (!function_exists("file_get_json")) {
         $data = json_decode($json, $assoc, $depth, $options);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \InvalidArgumentException("JSON decoding error: " . json_last_error_msg());
+            throw new InvalidArgumentException("JSON decoding error: " . json_last_error_msg());
         }
 
         return $data;
@@ -242,7 +244,7 @@ if (!function_exists("file_put_json")) {
         $json = json_encode($data, $options, $depth);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \InvalidArgumentException("JSON encoding error: " . json_last_error_msg());
+            throw new InvalidArgumentException("JSON encoding error: " . json_last_error_msg());
         }
 
         file_put_contents($filename, $json);

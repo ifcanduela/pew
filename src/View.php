@@ -1,8 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew;
 
+use Exception;
 use ifcanduela\events\CanEmitEvents;
+use RuntimeException;
 use SplStack;
 use Stringy\Stringy as S;
 
@@ -123,8 +125,8 @@ class View
      * @param null|string|array $template Template name, relative to one of the template directories.
      * @param array $data Template data
      * @return string
-     * @throws \Exception
-     * @throws \RuntimeException
+     * @throws Exception
+     * @throws RuntimeException
      */
     public function render($template = "", array $data = [])
     {
@@ -137,7 +139,7 @@ class View
 
         if (!$template) {
             if (!$this->template) {
-                throw new \RuntimeException("No template specified");
+                throw new RuntimeException("No template specified");
             }
 
             $template = $this->template;
@@ -147,7 +149,7 @@ class View
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new \RuntimeException("Template `{$template}` not found");
+            throw new RuntimeException("Template `{$template}` not found");
         }
 
         # make previous and received variables available using the index operator
@@ -158,7 +160,7 @@ class View
             $layoutFile = $this->resolve($this->layout);
 
             if ($layoutFile === false) {
-                throw new \RuntimeException("Layout `{$this->layout}` not found");
+                throw new RuntimeException("Layout `{$this->layout}` not found");
             }
 
             $this->output = $this->renderFile($layoutFile, ["output" => $output]);
@@ -177,7 +179,7 @@ class View
     {
         if (!$template) {
             if (!$this->template) {
-                throw new \RuntimeException("No template specified");
+                throw new RuntimeException("No template specified");
             }
 
             $template = $this->template;
@@ -337,15 +339,15 @@ class View
      * @param string $template The snippet to be loaded, relative to the templates folder
      * @param array $data Additional variables for use in the partial template
      * @return string
-     * @throws \Exception
-     * @throws \RuntimeException
+     * @throws Exception
+     * @throws RuntimeException
      */
     public function insert(string $template, array $data = [])
     {
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new \RuntimeException("Partial template `{$template}` not found");
+            throw new RuntimeException("Partial template `{$template}` not found");
         }
 
         # Render the element.
@@ -361,7 +363,7 @@ class View
      * @param string $filename Template file name
      * @param array $data Template data
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     protected function renderFile()
     {
@@ -373,7 +375,7 @@ class View
         try {
             require func_get_arg(0);
             return ob_get_clean();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             ob_end_clean();
             throw $e;
         }

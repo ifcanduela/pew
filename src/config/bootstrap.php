@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use ifcanduela\db\Database;
 use Monolog\Handler\StreamHandler;
@@ -177,7 +177,7 @@ $container["routes"] = function (Container $c): array {
     $routesPath = "{$appFolder}/{$configFolder}/routes.php";
 
     if (!is_readable($routesPath)) {
-        throw new \RuntimeException("Route definition file `{$routesPath}` is not readable.");
+        throw new RuntimeException("Route definition file `{$routesPath}` is not readable.");
     }
 
     $definitions = require $routesPath;

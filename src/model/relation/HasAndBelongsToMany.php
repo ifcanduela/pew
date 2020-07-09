@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\model\relation;
 
+use Exception;
 use pew\model\Collection;
 
 /**
@@ -49,7 +50,7 @@ class HasAndBelongsToMany extends Relationship
      *
      * @param array $relatedKeys
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function find(array $relatedKeys)
     {

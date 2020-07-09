@@ -1,6 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\lib;
+
+use BadMethodCallException;
+use ErrorException;
+use Exception;
+use RuntimeException;
 
 /**
  * A class to facilitate the creation of thumbnails.
@@ -62,7 +67,7 @@ class Image
      * Build a new image object.
      *
      * @param string|array $file Image file to load
-     * @throws \Exception When the file does not exist
+     * @throws Exception When the file does not exist
      */
     public function __construct($file = null)
     {
@@ -90,12 +95,12 @@ class Image
      *
      * @param string $filename Location of the image file
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function load(string $filename)
     {
         if (!file_exists($filename)) {
-            throw new \Exception("File `{$filename}` not found");
+            throw new Exception("File `{$filename}` not found");
         }
 
         $this->sourceFileName = $this->filename = $filename;
@@ -111,7 +116,7 @@ class Image
      *
      * @param array $file An uploaded file
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function upload(array $file)
     {
@@ -119,7 +124,7 @@ class Image
             $filename = $file["filename"];
             $tmpname = $file["tmp_name"];
 
-            throw new \Exception("Uploaded file `{$filename}` not found [temp={$tmpname}]");
+            throw new Exception("Uploaded file `{$filename}` not found [temp={$tmpname}]");
         }
 
         $this->sourceFileName = $file["tmp_name"];
@@ -136,7 +141,7 @@ class Image
      *
      * @param string $filename The image file name
      * @param int $imageType One of the IMAGETYPE_* constants
-     * @throws \Exception
+     * @throws Exception
      */
     protected function loadFile(string $filename, $imageType)
     {
@@ -160,13 +165,13 @@ class Image
                 break;
 
             default:
-                throw new \Exception("The image format of file `{$filename}` is not supported");
+                throw new Exception("The image format of file `{$filename}` is not supported");
         }
 
         if (!$resource) {
             $error = error_get_last();
             $message = $error["message"];
-            throw new \Exception("The file `{$filename}` is not a valid image resource. {$message}");
+            throw new Exception("The file `{$filename}` is not a valid image resource. {$message}");
         }
 
         $this->setResource($resource, $imageType);
@@ -193,7 +198,7 @@ class Image
      *
      * @param resource $resource
      * @return resource|self The image data or the Image object
-     * @throws \Exception
+     * @throws Exception
      */
     public function image($resource = null)
     {
@@ -216,7 +221,7 @@ class Image
     protected function init()
     {
         $fileinfo = getimagesize($this->sourceFileName);
-        list($this->width, $this->height, $this->imageType) = $fileinfo;
+        [$this->width, $this->height, $this->imageType] = $fileinfo;
         $this->mimeType = $fileinfo["mime"];
 
         return $this;
@@ -228,12 +233,12 @@ class Image
      * This method undoes resizing and cropping.
      *
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function reload()
     {
         if (!$this->sourceFileName) {
-            throw new \Exception("Image not loaded");
+            throw new Exception("Image not loaded");
         }
 
         $this->init();
@@ -254,7 +259,7 @@ class Image
      * @param int $imageType One of the IMAGETYPE_* constants
      * @param int $quality Output quality
      * @return bool Result of the image* functions
-     * @throws \Exception
+     * @throws Exception
      */
     public function save($destination, int $imageType = null, int $quality = -1)
     {
@@ -299,7 +304,7 @@ class Image
 
             default:
                 $filename = $this->sourceFileName;
-                throw new \Exception("The image format of file `{$filename}` (`{$imageType}`) is not supported");
+                throw new Exception("The image format of file `{$filename}` (`{$imageType}`) is not supported");
         }
     }
 
@@ -308,7 +313,7 @@ class Image
      *
      * @param string $filename New file name
      * @return string|self The image object, or the file name
-     * @throws \Exception
+     * @throws Exception
      */
     public function filename($filename = null)
     {
@@ -328,13 +333,13 @@ class Image
      * @param boolean $dot Whether to include a dot before the extension or not
      * @param int $imageType One of the IMAGETYPE_* constants
      * @return string The extension corresponding to the image
-     * @throws \Exception
+     * @throws Exception
      */
     public function extension($dot = true, $imageType = null)
     {
         if (is_null($imageType)) {
             if (!$this->imageType) {
-                throw new \Exception("Cannot find extension");
+                throw new Exception("Cannot find extension");
             }
 
             $imageType = $this->imageType;
@@ -349,7 +354,7 @@ class Image
      * Get the aspect ratio of the loaded image.
      *
      * @return float Aspect ratio of the loaded image
-     * @throws \Exception
+     * @throws Exception
      */
     public function ratio()
     {
@@ -362,7 +367,7 @@ class Image
      * Get the width nof the loaded image.
      *
      * @return int Width in pixels
-     * @throws \Exception
+     * @throws Exception
      */
     public function width()
     {
@@ -375,7 +380,7 @@ class Image
      * Get the height nof the loaded image.
      *
      * @return int Height in pixels
-     * @throws \Exception
+     * @throws Exception
      */
     public function height()
     {
@@ -388,7 +393,7 @@ class Image
      * Get the MIME type of the loaded image.
      *
      * @return string The MIME type
-     * @throws \Exception
+     * @throws Exception
      */
     public function mimeType()
     {
@@ -406,14 +411,14 @@ class Image
      * @param int|null $w The target width
      * @param int|null $h The target height
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function resize($w, $h)
     {
         $this->checkResource();
 
         if (!is_numeric($w) && !is_numeric($h)) {
-            throw new \BadMethodCallException("Image::resize() requires its first or second argument to be integers");
+            throw new BadMethodCallException("Image::resize() requires its first or second argument to be integers");
         }
 
         $newWidth = (int) $w;
@@ -453,7 +458,7 @@ class Image
      *
      * @param int $width
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function resizeWidth(int $width)
     {
@@ -465,7 +470,7 @@ class Image
      *
      * @param int $height
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function resizeHeight(int $height)
     {
@@ -479,7 +484,7 @@ class Image
      * @param int $h Cropped height
      * @param string $anchor One of the ANCHOR constants of the class.
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function crop(int $w, int $h, $anchor = self::ANCHOR_CENTER)
     {
@@ -498,7 +503,7 @@ class Image
         ];
 
         if (!in_array($anchor, $validAnchors)) {
-            throw new \BadMethodCallException("Invalid anchor point for Image::crop()");
+            throw new BadMethodCallException("Invalid anchor point for Image::crop()");
         }
 
         $oldWidth = $this->width();
@@ -541,7 +546,7 @@ class Image
      * @param int $height
      * @param string $anchor Anchor location for the resizing
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function box($width, $height, $anchor = self::ANCHOR_CENTER)
     {
@@ -566,7 +571,7 @@ class Image
      * @param int $width  Thumbnail width
      * @param int $height Thumbnail height
      * @return self
-     * @throws \Exception
+     * @throws Exception
      */
     public function fit(int $width, int $height)
     {
@@ -582,7 +587,7 @@ class Image
      *
      * @param int $imageType One of the IMAGETYPE_* constants
      * @param int $quality Quality of the PNG or JPEG output, from 0 to 100
-     * @throws \Exception
+     * @throws Exception
      */
     public function serve($imageType = IMAGETYPE_JPEG, $quality = null)
     {
@@ -608,7 +613,7 @@ class Image
                 break;
 
             default:
-                throw new \Exception("The image type supplied to Image::serve() is not supported");
+                throw new Exception("The image type supplied to Image::serve() is not supported");
         }
 
         $stream = ob_get_clean();
@@ -622,8 +627,8 @@ class Image
      * @param int $x Horizontal coordinate
      * @param int $y Vertical coordinate
      * @return array Red, green and blue values, from 0 to 255
-     * @throws \ErrorException
-     * @throws \Exception
+     * @throws ErrorException
+     * @throws Exception
      */
     public function colorAt($x, $y)
     {
@@ -631,8 +636,8 @@ class Image
 
         try {
             $rgb = imagecolorat($this->resource, $x, $y);
-        } catch (\Exception $e) {
-            throw new \ErrorException($e->getMessage());
+        } catch (Exception $e) {
+            throw new ErrorException($e->getMessage());
         }
 
         $r = ($rgb >> 16) & 0xFF;
@@ -643,12 +648,12 @@ class Image
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     protected function checkResource()
     {
         if (!$this->resource) {
-            throw new \RuntimeException("No image loaded");
+            throw new RuntimeException("No image loaded");
         }
     }
 

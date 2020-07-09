@@ -1,19 +1,26 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\model;
 
+use ArrayIterator;
+use BadMethodCallException;
+use Exception;
+use IteratorAggregate;
+use JsonSerializable;
 use pew\model\relation\BelongsTo;
 use pew\model\relation\HasAndBelongsToMany;
 use pew\model\relation\HasMany;
 use pew\model\relation\HasOne;
 use ReflectionClass;
-
+use ReflectionException;
+use ReflectionProperty;
+use RuntimeException;
 use Stringy\Stringy as S;
 
 /**
  * Active Record-like class.
  */
-class Record implements \JsonSerializable, \IteratorAggregate
+class Record implements JsonSerializable, IteratorAggregate
 {
     /** @var string Database table for the subject of the model. */
     public $tableName;
@@ -158,6 +165,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      *
      * @param array $attributes Associative array of column names and values
      * @return self|array An associative array of current column names and values or the object itself
+     * @throws ReflectionException
      */
     public function attributes(array $attributes = null)
     {
@@ -173,8 +181,8 @@ class Record implements \JsonSerializable, \IteratorAggregate
 
         $include = array_merge(get_object_vars($this), $this->record);
 
-        $reflectionClass = new \ReflectionClass(__CLASS__);
-        $modelProperties = array_map(function (\ReflectionProperty $reflectionProperty) {
+        $reflectionClass = new ReflectionClass(__CLASS__);
+        $modelProperties = array_map(function (ReflectionProperty $reflectionProperty) {
             return $reflectionProperty->name;
         }, $reflectionClass->getProperties());
 
@@ -272,11 +280,11 @@ class Record implements \JsonSerializable, \IteratorAggregate
     /**
      * Allow iteration over the current record fields.
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->record);
+        return new ArrayIterator($this->record);
     }
 
     /**
@@ -365,7 +373,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
         } elseif (array_key_exists($key, $this->record)) {
             $this->record[$key] = $value;
         } else {
-            throw new \RuntimeException("Record attribute `{$key}` does not exist");
+            throw new RuntimeException("Record attribute `{$key}` does not exist");
         }
 
         return $this;
@@ -377,7 +385,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param mixed $key Key for the value
      *
      * @return mixed Stored value
-     * @throws \Exception
+     * @throws Exception
      */
     public function __get($key)
     {
@@ -404,7 +412,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             return $this->record[$key];
         }
 
-        throw new \Exception("Record attribute `{$key}` does not exist");
+        throw new Exception("Record attribute `{$key}` does not exist");
     }
 
     /**
@@ -453,7 +461,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
             return static::find()->where([$field => $value])->one();
         }
 
-        throw new \BadMethodCallException("Method `" . static::class . "::{$method}()` does not exist");
+        throw new BadMethodCallException("Method `" . static::class . "::{$method}()` does not exist");
     }
 
     /**
@@ -499,7 +507,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string $localKeyName
      * @param string $foreignKeyName
      * @return BelongsTo
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function belongsTo(string $className, string $localKeyName = null, string $foreignKeyName = null)
     {
@@ -539,7 +547,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string $foreignKeyName
      * @param string $localKeyName
      * @return HasMany
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function hasMany(string $className, string $foreignKeyName = null, string $localKeyName = null)
     {
@@ -579,7 +587,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string $foreignKeyName
      * @param string $localKeyName
      * @return HasOne
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function hasOne(string $className, string $foreignKeyName = null, string $localKeyName = null)
     {
@@ -626,7 +634,7 @@ class Record implements \JsonSerializable, \IteratorAggregate
      * @param string $farForeignKeyName
      * @param string $farKeyName
      * @return HasAndBelongsToMany
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function hasAndBelongsToMany(
         string $className,

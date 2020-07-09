@@ -14,6 +14,9 @@
     },
     "require": {
         "php": ">=7.2.0",
+        "ext-json": "*",
+        "ext-gd": "*",
+        "ext-pdo": "*",
         "filp/whoops": "2.*",
         "ifcanduela/abbrev": "1.*",
         "ifcanduela/db": "1.*",
@@ -31,11 +34,6 @@
     "require-dev": {
         "phpunit/phpunit": "*",
         "vimeo/psalm": "^3.12"
-    },
-    "suggest": {
-        "ext-gd": "To use the Image helper class",
-        "ext-json": "To use JSON functions in requests, responses and models",
-        "ext-pdo": "To use the model layer"
     },
     "autoload": {
         "files": ["src/config/functions.php"],

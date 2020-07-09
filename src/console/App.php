@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
+use ReflectionClass;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -114,14 +115,14 @@ class App extends \pew\App
         $className = pathinfo($commandFilename, PATHINFO_FILENAME);
         $fullClassName = "{$namespace}{$className}";
 
-        $r = new \ReflectionClass($fullClassName);
+        $r = new ReflectionClass($fullClassName);
         $defaultProperties = $r->getDefaultProperties();
-        $name = $defaultProperties["name"] ?? Str::create($className)
+        $name = (string) $defaultProperties["name"] ?? Str::create($className)
             ->removeRight("Command")
             ->underscored()
             ->slugify();
 
-        $description = $defaultProperties["description"] ?? null;
+        $description = $defaultProperties["description"] ?? "";
 
         $definition = new CommandDefinition($name, $fullClassName, $description);
         $this->availableCommands[$definition->name] = $definition;

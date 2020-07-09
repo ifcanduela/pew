@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\console;
 
@@ -70,7 +70,7 @@ class CommandArguments
         $this->positional = [];
         $this->named = [];
 
-        $name = null;
+        $name = "";
 
         foreach ($input as $param) {
             if ($param[0] === "-") {
@@ -90,7 +90,7 @@ class CommandArguments
                             # the value is attached to the key
                             [$name, $value] = explode("=", $name, 2);
                             $this->addNamed($name, $value);
-                            $name = null;
+                            $name = "";
                         }
                     } else {
                         # it's a short param
@@ -110,13 +110,13 @@ class CommandArguments
                             $this->addNamed($name, $value);
                         }
 
-                        $name = null;
+                        $name = "";
                     }
                 }
             } else {
                 if ($name) {
                     $this->addNamed($name, $param);
-                    $name = null;
+                    $name = "";
                 } else {
                     $this->addPositional($param);
                 }

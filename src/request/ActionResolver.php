@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\request;
 
 use pew\router\Route;
+use RuntimeException;
 use Stringy\Stringy as S;
 
 class ActionResolver
@@ -60,7 +61,7 @@ class ActionResolver
                 }
             }
 
-            throw new \RuntimeException("No controller found for handler `{$handler}`");
+            throw new RuntimeException("No controller found for handler `{$handler}`");
         }
 
         return $handler;

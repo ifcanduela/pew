@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\request;
 
+use Exception;
 use pew\response\HtmlResponse;
 use pew\response\JsonResponse;
 use pew\response\RedirectResponse;
@@ -59,7 +60,7 @@ class Controller
      * @param string $template
      * @param array  $data
      * @return HtmlResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function render(string $template, array $data = [])
     {

@@ -1,8 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\di;
 
-class KeyNotFoundException extends \Exception
+use Exception;
+
+class KeyNotFoundException extends Exception
 {
 
 }

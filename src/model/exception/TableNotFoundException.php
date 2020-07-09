@@ -1,7 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\model\exception;
 
-class TableNotFoundException extends \RuntimeException
+use RuntimeException;
+
+class TableNotFoundException extends RuntimeException
 {
+
 }

@@ -1,11 +1,16 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\router;
+
+use ArrayAccess;
+use BadMethodCallException;
+use Exception;
+use InvalidArgumentException;
 
 /**
  * The Route class specifies the properties of a routable URL.
  */
-class Route implements \ArrayAccess
+class Route implements ArrayAccess
 {
     /** @var string */
     protected $path;
@@ -39,7 +44,7 @@ class Route implements \ArrayAccess
      *
      * @param array $data
      * @return Route
-     * @throws \Exception
+     * @throws Exception
      */
     public static function fromArray(array $data)
     {
@@ -143,12 +148,12 @@ class Route implements \ArrayAccess
      *
      * @param string|callable $handler
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function setHandler($handler)
     {
         if (!$handler) {
-            throw new \Exception("Route handler cannot be empty");
+            throw new Exception("Route handler cannot be empty");
         }
 
         $this->handler = $handler;
@@ -161,7 +166,7 @@ class Route implements \ArrayAccess
      *
      * @param string|callable $handler
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function setTo($handler)
     {
@@ -382,11 +387,11 @@ class Route implements \ArrayAccess
      * @param string $key
      * @param mixed $value
      * @return void
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public function offsetSet($key, $value)
     {
-        throw new \BadMethodCallException("Route is read-only: cannot set value `{$key}`");
+        throw new BadMethodCallException("Route is read-only: cannot set value `{$key}`");
     }
 
     /**
@@ -396,11 +401,11 @@ class Route implements \ArrayAccess
      *
      * @param string $key
      * @return void
-     * @throws \BadMethodCallException
+     * @throws BadMethodCallException
      */
     public function offsetUnset($key)
     {
-        throw new \BadMethodCallException("Route is read-only: cannot unset value `{$key}`");
+        throw new BadMethodCallException("Route is read-only: cannot unset value `{$key}`");
     }
 
     /**
@@ -419,6 +424,6 @@ class Route implements \ArrayAccess
             return $this;
         }
 
-        throw new \InvalidArgumentException("Method `{$method}` does not exist");
+        throw new InvalidArgumentException("Method `{$method}` does not exist");
     }
 }

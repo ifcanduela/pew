@@ -1,8 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\response;
 
-class HttpException extends \Exception
+use Exception;
+
+class HttpException extends Exception
 {
     public function __toString()
     {

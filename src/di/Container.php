@@ -1,10 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\di;
 
 use Pimple\Container as Pimple;
 use Pimple\Exception\UnknownIdentifierException;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 
 class Container extends Pimple implements ContainerInterface
 {
@@ -61,7 +62,7 @@ class Container extends Pimple implements ContainerInterface
      *
      * @param string $filename
      * @return bool
-     * @throws \RuntimeException When the file does not return an array
+     * @throws RuntimeException When the file does not return an array
      */
     public function loadFile(string $filename)
     {
@@ -69,7 +70,7 @@ class Container extends Pimple implements ContainerInterface
             $definitions = require $filename;
 
             if (!is_array($definitions)) {
-                throw new \RuntimeException("Definitions file `{$filename}` must return an array");
+                throw new RuntimeException("Definitions file `{$filename}` must return an array");
             }
 
             $this->import($definitions);

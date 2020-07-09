@@ -147,7 +147,7 @@ class AppTest extends PHPUnit\Framework\TestCase
 
         try {
             $app->run();
-        } catch (\pew\router\RouteNotFound $e) {
+        } catch (\pew\router\exception\RouteNotFound $e) {
             $this->assertEquals("Route not found", $e->getMessage());
         }
     }

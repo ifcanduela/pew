@@ -1,6 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\router;
+
+use Exception;
 
 /**
  * The Group class represents a grouping of routes with common properties.
@@ -40,7 +42,7 @@ class Group extends Route
      * Get the routes in the group.
      *
      * @return Route[]
-     * @throws \Exception
+     * @throws Exception
      */
     public function getRoutes()
     {

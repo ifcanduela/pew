@@ -1,12 +1,18 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\model;
 
+use BadMethodCallException;
+use Exception;
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
+use PDOException;
+use PdoStatement;
+use pew\model\exception\TableNotFoundException;
 use pew\model\relation\HasAndBelongsToMany;
 use pew\model\relation\HasMany;
 use pew\model\relation\Relationship;
+use RuntimeException;
 use Stringy\Stringy as S;
 
 /**
@@ -124,7 +130,7 @@ class Table
     public function init()
     {
         if (!$this->db->tableExists($this->tableName)) {
-            throw new exception\TableNotFoundException("Table `{$this->tableName}` not found");
+            throw new TableNotFoundException("Table `{$this->tableName}` not found");
         }
 
         # some metadata about the table
@@ -258,7 +264,8 @@ class Table
      *
      * @param string $query The query to run
      * @param array $data Array of PDO placeholders and/or values
-     * @return mixed An array of rows or an integer with the amount of affected rows
+     * @return array|int An array of rows or an integer with the amount of affected rows
+     * @throws PDOException When the query fails
      */
     public function query($query, array $data = [])
     {
@@ -269,17 +276,16 @@ class Table
 
         # prepare the SQL query
         $stm = $this->db->prepare($query);
+
         # run the prepared statement with the received keys and values
-        $success = $stm->execute($data);
+        $stm->execute($data);
 
-        if ($success) {
-            if ($clause == "SELECT") {
-                # return an array of Models
-                return $stm->fetchAll();
-            }
-
-            return $stm->rowCount();
+        if ($clause == "SELECT") {
+            # return an array of Models
+            return $stm->fetchAll();
         }
+
+        return $stm->rowCount();
     }
 
     /**
@@ -376,7 +382,7 @@ class Table
         }
 
         if (!$this->db->isWritable()) {
-            throw new \RuntimeException("Database file is not writable.");
+            throw new RuntimeException("Database file is not writable.");
         }
 
         $primaryKeyName = $this->primaryKey();
@@ -467,7 +473,7 @@ class Table
             return $this->db->run($this->query->where([$this->primaryKey() => $id]));
         }
 
-        throw new \RuntimeException("Delete requires conditions or parameters");
+        throw new RuntimeException("Delete requires conditions or parameters");
     }
 
     /**
@@ -527,7 +533,7 @@ class Table
      * This method should be used after creating a query with createSelect(), createUpdate(),
      * createInsert() or createDelete().
      *
-     * @return array|int|\PdoStatement
+     * @return array|int|PdoStatement
      */
     public function run()
     {
@@ -544,7 +550,7 @@ class Table
     public function __call($method, $arguments)
     {
         if (!$this->query) {
-            throw new \RuntimeException("Method `{$method}` called before initializing a query");
+            throw new RuntimeException("Method `{$method}` called before initializing a query");
         }
 
         if (method_exists($this->query, $method)) {
@@ -553,7 +559,7 @@ class Table
             return $this;
         }
 
-        throw new \BadMethodCallException("Invalid method `{$method}`");
+        throw new BadMethodCallException("Invalid method `{$method}`");
     }
 
     /**
@@ -591,7 +597,7 @@ class Table
                 try {
                     /** @var Relationship $relationship */
                     $relationship = $ref->$getterMethodName();
-                } catch (\Exception $e) {}
+                } catch (Exception $e) {}
 
                 if ($relationship instanceof Relationship) {
                     $groupingField = $relationship->getGroupingField();

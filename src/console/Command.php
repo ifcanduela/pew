@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\console;
 
+use ReflectionClass;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -58,7 +59,7 @@ abstract class Command
         $this->formatterHelper = new FormatterHelper();
 
         if (!$this->name) {
-            $className = (new \ReflectionClass($this))->getShortName();
+            $className = (new ReflectionClass($this))->getShortName();
 
             $this->name = (string) Str::create($className)
                 ->removeLeft("Command")

@@ -1,9 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\model;
 
 use ifcanduela\db\Database;
+use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionException;
 use Stringy\Stringy;
 
 class TableManager
@@ -102,7 +104,7 @@ class TableManager
             return $this->connections[$connectionName];
         }
 
-        throw new \InvalidArgumentException("Connection `{$connectionName}` not found");
+        throw new InvalidArgumentException("Connection `{$connectionName}` not found");
     }
 
     /**
@@ -111,7 +113,7 @@ class TableManager
      * @param string $recordClass
      * @param string|null $connectionName
      * @return Table
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function create(string $recordClass, $connectionName = null)
     {
@@ -129,7 +131,7 @@ class TableManager
         }
 
         # Fetch tableName and connectionName
-        list($tableName, $connectionName) = $this->cachedRecordClasses[$recordClass];
+        [$tableName, $connectionName] = $this->cachedRecordClasses[$recordClass];
 
         # Fetch the connection
         $db = $this->getConnection($connectionName);

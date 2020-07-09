@@ -1,12 +1,21 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\model;
+
+use ArrayAccess;
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
+use JsonSerializable;
+use RecursiveArrayIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
 
 /**
  * Collection wraps an array and provides an object-oriented interface to the most common
  * array functions, and some extra functionality.
  */
-class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable
+class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
     /**
      *
@@ -109,11 +118,11 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
     /**
      * Get an iterator for the collection.
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->items);
+        return new ArrayIterator($this->items);
     }
 
     /**
@@ -248,7 +257,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
      */
     public function flatten()
     {
-        $it = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($this->items));
+        $it = new RecursiveIteratorIterator(new RecursiveArrayIterator($this->items));
 
         return new static(iterator_to_array($it, false));
     }
@@ -644,7 +653,7 @@ class Collection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonS
         $encode = json_encode($this->items, $options, $depth);
 
         if (false === $encode) {
-            throw new \RuntimeException(json_last_error_msg());
+            throw new RuntimeException(json_last_error_msg());
         }
 
         return $encode;

@@ -1,9 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew;
 
+use Exception;
 use ifcanduela\events\CanEmitEvents;
 use ifcanduela\events\CanListenToEvents;
+use InvalidArgumentException;
 use Monolog\Logger;
 use pew\di\Container;
 use pew\di\Injector;
@@ -14,6 +16,7 @@ use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
 use pew\router\Route;
+use RuntimeException;
 use Stringy\Stringy as S;
 
 /**
@@ -23,8 +26,8 @@ use Stringy\Stringy as S;
  */
 class App
 {
-    use CanEmitEvents,
-        CanListenToEvents;
+    use CanEmitEvents;
+    use CanListenToEvents;
 
     /** @var array */
     protected $middleware = [];
@@ -44,8 +47,8 @@ class App
      *
      * @param string $appFolder The path to the app folder
      * @param string $configFileName Base name of the file to use for configuration.
-     * @throws \RuntimeException
-     * @throws \InvalidArgumentException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
      */
     public function __construct(string $appFolder, string $configFileName = "config")
     {
@@ -60,7 +63,7 @@ class App
         $appPath = realpath($guessedAppPath);
 
         if ($appPath === false) {
-            throw new \InvalidArgumentException("The app path does not exist: `{$guessedAppPath}`");
+            throw new InvalidArgumentException("The app path does not exist: `{$guessedAppPath}`");
         }
 
         $this->container->set("app_path", $appPath);
@@ -134,7 +137,7 @@ class App
      *
      * @param string $configFileName The file name, relative to the base path
      * @return bool TRUE when the file exists, FALSE otherwise
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function loadAppConfig(string $configFileName)
     {
@@ -173,7 +176,7 @@ class App
      * the controller call.
      *
      * @return void
-     * @throws \Exception
+     * @throws Exception
      */
     public function run()
     {
@@ -185,7 +188,7 @@ class App
         try {
             # Process the request
             $response = $this->handle();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response = $this->handleError($e);
         }
 
@@ -198,7 +201,7 @@ class App
      * Handle the current request.
      *
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
     protected function handle()
     {
@@ -227,7 +230,7 @@ class App
             $this->emit("request.actionName", $actionName);
 
             if (!$handler) {
-                throw new \RuntimeException("No handler specified for route `" . $request->getPathInfo() . "`");
+                throw new RuntimeException("No handler specified for route `" . $request->getPathInfo() . "`");
             }
 
             $this->emit("timer.start", ["app.action", "Handle action"]);
@@ -248,7 +251,7 @@ class App
 
         try {
             $response = $this->runAfterMiddleware($route, $response, $injector);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $response = $this->handleError($e);
         }
 
@@ -260,7 +263,7 @@ class App
     /**
      * Run configured middleware callbacks before the controller action.
      *
-     * @param Route    $route
+     * @param Route $route
      * @param Injector $injector
      * @return Response|null
      */
@@ -346,8 +349,8 @@ class App
     {
         # Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->container->get("controller_namespace"));
-        $actionId = S::create($actionName)->underscored();
-        $actionMethod = S::create($actionName)->camelize();
+        $actionId = (string) S::create($actionName)->underscored();
+        $actionMethod = (string) S::create($actionName)->camelize();
         $template = $controllerPath . DIRECTORY_SEPARATOR . $actionId;
 
         $this->container->set("controller_slug", basename($controllerPath));
@@ -379,11 +382,11 @@ class App
     /**
      * Generate an error response.
      *
-     * @param \Exception $e
+     * @param Exception $e
      * @return Response
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function handleError(\Exception $e)
+    protected function handleError(Exception $e)
     {
         # If debug mode is on, let the error handler take care of it
         if ($this->container->get("debug")) {
@@ -422,7 +425,7 @@ class App
     {
         # Get the namespace of the controller relative to the base controller namespace
         # by removing \app\controllers (by default) from the beginning
-        $relativeNamespace = S::create($controllerClass)->removeLeft($baseNamespace);
+        $relativeNamespace = (string) S::create($controllerClass)->removeLeft($baseNamespace);
         $parts = explode("\\", $relativeNamespace);
         # The last segment is the short class name
         $controllerClassName = array_pop($parts);

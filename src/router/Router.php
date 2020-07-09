@@ -1,18 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\router;
 
+use Exception;
+use pew\router\exception\InvalidHttpMethod;
+use pew\router\exception\RouteNotFound;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use RuntimeException;
 use function FastRoute\simpleDispatcher;
-
-class RouteNotFound extends \RuntimeException
-{
-}
-
-class InvalidHttpMethod extends \RuntimeException
-{
-}
 
 /**
  * The Router class wraps the `nikic\FastRoute` library for slightly
@@ -77,8 +73,8 @@ class Router
      * @param string $pathInfo
      * @param string $httpMethod
      * @return Route
-     * @throws \RuntimeException
-     * @throws \Exception
+     * @throws RuntimeException
+     * @throws Exception
      */
     public function route(string $pathInfo, string $httpMethod)
     {
