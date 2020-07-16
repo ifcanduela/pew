@@ -598,7 +598,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
                 $items,
                 function ($a, $b) use ($field) {
                     $_a = $a->$field ?? $a[$field] ?? null;
-                    $_b = $a->$field ?? $a[$field] ?? null;
+                    $_b = $b->$field ?? $b[$field] ?? null;
 
                     return $_a <=> $_b;
                 }

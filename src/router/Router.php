@@ -28,6 +28,7 @@ class Router
      * Routes require a "path" key and may have optional "methods" and "defaults" keys.
      *
      * @param array $routeData Array of routes
+     * @throws Exception
      */
     public function __construct(array $routeData)
     {
@@ -47,6 +48,7 @@ class Router
      *
      * @param array $routeData
      * @return Route[]
+     * @throws Exception
      */
     protected function processRouteData(array $routeData)
     {

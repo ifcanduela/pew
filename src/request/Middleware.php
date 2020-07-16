@@ -2,7 +2,6 @@
 
 namespace pew\request;
 
-use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse;
 use pew\response\RedirectResponse;
 
 /**

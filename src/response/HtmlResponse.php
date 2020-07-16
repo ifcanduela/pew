@@ -2,8 +2,8 @@
 
 namespace pew\response;
 
+use Exception;
 use pew\lib\Session;
-use pew\response\Response;
 use pew\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -60,6 +60,7 @@ class HtmlResponse extends Response
      * Get the response object.
      *
      * @return SymfonyResponse
+     * @throws Exception
      */
     public function getResponse(): SymfonyResponse
     {

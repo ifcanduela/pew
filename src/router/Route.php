@@ -113,6 +113,50 @@ class Route implements ArrayAccess
     }
 
     /**
+     * Build a GET route.
+     *
+     * @param  string $path
+     * @return Route
+     */
+    public static function get(string $path): Route
+    {
+        return static::from($path)->methods("get");
+    }
+
+    /**
+     * Build a POST route.
+     *
+     * @param  string $path
+     * @return Route
+     */
+    public static function post(string $path): Route
+    {
+        return static::from($path)->methods("post");
+    }
+
+    /**
+     * Build a PUT route.
+     *
+     * @param  string $path
+     * @return Route
+     */
+    public static function put(string $path): Route
+    {
+        return static::from($path)->methods("put");
+    }
+
+    /**
+     * Build a DELETE route.
+     *
+     * @param  string $path
+     * @return Route
+     */
+    public static function delete(string $path): Route
+    {
+        return static::from($path)->methods("delete");
+    }
+
+    /**
      * Get the path matched by the route.
      *
      * @return string

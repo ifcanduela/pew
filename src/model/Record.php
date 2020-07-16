@@ -81,6 +81,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * Get the table manager.
      *
      * @return Table
+     * @throws ReflectionException
      */
     public function getTableManager()
     {
@@ -165,7 +166,6 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @param array $attributes Associative array of column names and values
      * @return self|array An associative array of current column names and values or the object itself
-     * @throws ReflectionException
      */
     public function attributes(array $attributes = null)
     {
@@ -311,6 +311,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * Returns a Table object to perform queries against.
      *
      * @return Table
+     * @throws ReflectionException
      */
     public static function find()
     {
@@ -328,6 +329,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @param mixed $id A primary key value
      * @return static
+     * @throws ReflectionException
      */
     public static function findOne($id)
     {
@@ -344,6 +346,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * Returns a Table object to perform update queries against.
      *
      * @return Table
+     * @throws ReflectionException
      */
     public static function update()
     {
@@ -440,8 +443,9 @@ class Record implements JsonSerializable, IteratorAggregate
      * Shortcuts for the find() method.
      *
      * @param string $method
-     * @param array $arguments
+     * @param array  $arguments
      * @return mixed
+     * @throws ReflectionException
      */
     public static function __callStatic($method, $arguments)
     {
@@ -480,6 +484,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * Restore the database manager after deserialization.
      *
      * @return void
+     * @throws ReflectionException
      */
     public function __wakeup()
     {

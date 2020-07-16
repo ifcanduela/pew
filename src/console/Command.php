@@ -3,6 +3,7 @@
 namespace pew\console;
 
 use ReflectionClass;
+use ReflectionException;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -50,6 +51,7 @@ abstract class Command
      *
      * @param InputInterface  $input
      * @param OutputInterface $output
+     * @throws ReflectionException
      */
     public function __construct(InputInterface $input, OutputInterface $output)
     {

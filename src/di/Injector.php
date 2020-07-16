@@ -20,7 +20,7 @@ class Injector
     /**
      * Create an injector.
      *
-     * @param array[] $containers One or more arrays or array-like objects.
+     * @param Container|array ...$containers One or more arrays or array-like objects.
      */
     public function __construct(...$containers)
     {
@@ -265,6 +265,6 @@ class Injector
             return $this->createInstance($className, true);
         }
 
-        throw new \RuntimeException("Cannot auto-resolve `{$className}`: class not found");
+        throw new RuntimeException("Cannot auto-resolve `{$className}`: class not found");
     }
 }

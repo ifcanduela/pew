@@ -16,6 +16,7 @@ use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
 use pew\router\Route;
+use ReflectionException;
 use RuntimeException;
 use Stringy\Stringy as S;
 
@@ -266,6 +267,8 @@ class App
      * @param Route $route
      * @param Injector $injector
      * @return Response|null
+     * @throws ReflectionException
+     * @throws di\KeyNotFoundException
      */
     protected function runBeforeMiddleware(Route $route, Injector $injector)
     {
@@ -294,6 +297,8 @@ class App
      * @param Response $response
      * @param Injector $injector
      * @return Response
+     * @throws ReflectionException
+     * @throws di\KeyNotFoundException
      */
     protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
     {
@@ -326,6 +331,8 @@ class App
      * @param callable $handler
      * @param Injector $injector
      * @return mixed
+     * @throws ReflectionException
+     * @throws di\KeyNotFoundException
      */
     protected function handleCallback(callable $handler, Injector $injector)
     {
@@ -344,6 +351,8 @@ class App
      * @param string $actionName
      * @param Injector $injector
      * @return mixed
+     * @throws ReflectionException
+     * @throws di\KeyNotFoundException
      */
     protected function handleAction(string $controllerClass, string $actionName, Injector $injector)
     {

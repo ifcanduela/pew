@@ -2,6 +2,7 @@
 
 namespace pew\commands;
 
+use Exception;
 use pew\console\Command;
 use pew\console\CommandArguments;
 
@@ -22,6 +23,7 @@ class RoutesCommand extends Command
      * @param CommandArguments $arguments
      * @param Route[] $routes
      * @return void
+     * @throws Exception
      */
     public function run(CommandArguments $arguments, $routes)
     {
@@ -81,7 +83,7 @@ class RoutesCommand extends Command
      * Extract information from a route object or array.
      *
      * @param Route|array $route
-     * @param Group|null  $group
+     * @param Group|null $group
      * @return array
      */
     public function processRoute($route, Group $group = null)

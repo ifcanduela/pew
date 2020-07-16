@@ -4,8 +4,8 @@ namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
 use ReflectionClass;
+use ReflectionException;
 use Stringy\Stringy as Str;
-use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -78,6 +78,8 @@ class App extends \pew\App
      * Initialize the list of available commands.
      *
      * @return void
+     * @throws ReflectionException
+     * @throws ReflectionException
      */
     protected function initCommandList()
     {
@@ -109,6 +111,8 @@ class App extends \pew\App
      * @param string $commandFilename
      * @param string $namespace
      * @return void
+     * @throws ReflectionException
+     * @throws ReflectionException
      */
     protected function addCommand(string $commandFilename, string $namespace)
     {
