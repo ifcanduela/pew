@@ -86,6 +86,6 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $symfonyResponse = $response->getResponse();
         $this->assertInstanceOf(\Symfony\Component\HttpFoundation\RedirectResponse::class, $symfonyResponse);
-        $this->assertEquals("/accounts/edit/1", $response->getResponse()->getTargetUrl());
+        $this->assertEquals("/accounts/edit/1", $symfonyResponse->getTargetUrl());
     }
 }
