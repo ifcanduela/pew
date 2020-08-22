@@ -63,7 +63,10 @@ class Url
         $this->host = $this->request->getHost();
         $this->port = $this->request->getPort();
         $this->path = array_filter(explode("/", $this->request->getPathInfo()));
-        parse_str($this->request->getQueryString(), $this->query);
+
+        if ($this->request->getQueryString()) {
+            parse_str($this->request->getQueryString(), $this->query);
+        }
     }
 
     /**

@@ -7,6 +7,7 @@ use pew\router\exception\InvalidHttpMethod;
 use pew\router\exception\RouteNotFound;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use FastRoute\RouteParser\Std as StdRouteParser;
 use RuntimeException;
 use function FastRoute\simpleDispatcher;
 
@@ -108,5 +109,50 @@ class Router
         }
 
         return $route;
+    }
+
+    /**
+     * Create a URL from a route name and a list of parameters.
+     *
+     * @param string $routeName
+     * @param array $routeParams
+     * @return string A URL, path only
+     */
+    public function createUrlFromRoute(string $routeName, array $routeParams): string
+    {
+        $route = array_find_value($this->routes, function ($r) use ($routeName) {
+            return $r->getName() == $routeName;
+        });
+
+        if (!$route) {
+            throw new \LogicException("Named route not found: `{$routeName}`");
+        }
+
+        $routeParser = new StdRouteParser();
+        $routes = $routeParser->parse($route->getPath());
+
+        foreach ($routes as $route) {
+            $url = "";
+            $paramIndex = 0;
+
+            foreach ($route as $segment) {
+                if (is_string($segment)) {
+                    $url .= $segment;
+                    continue;
+                }
+
+                if ($paramIndex === count($routeParams)) {
+                    throw new \LogicException("Not enough parameters given");
+                }
+
+                $url .= $routeParams[$paramIndex++];
+            }
+
+            if ($paramIndex === count($routeParams)) {
+                return $url;
+            }
+        }
+
+        throw new \LogicException("Too many parameters given");
     }
 }

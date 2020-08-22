@@ -178,17 +178,17 @@ if (!function_exists("url")) {
         static $base_url;
 
         if (!isset($base_url)) {
-            $base_url = pew('request')->appUrl();
-            $base_url = rtrim($base_url, '/') . '/';
+            $base_url = pew("request")->appUrl();
+            $base_url = rtrim($base_url, "/") . "/";
         }
 
         $params = array_filter($path, "is_array");
         $segments = array_filter($path, function ($segment) {
             return is_scalar($segment) || method_exists($segment, "__toString");
         });
-        $path = preg_replace('~\/+~', '/', join('/', $segments));
+        $path = preg_replace('~\/+~', "/", join("/", $segments));
 
-        $url = $base_url . ltrim($path, '/');
+        $url = $base_url . ltrim($path, "/");
 
         if (count($params)) {
             $query = array_merge(...$params);
@@ -197,6 +197,31 @@ if (!function_exists("url")) {
         }
 
         return $url;
+    }
+}
+
+if (!function_exists("route")) {
+    /**
+     * Create an absolute URL from its route name.
+     *
+     * Pass as many arguments as the reoute needs, in order of appearance
+     * in the URL.
+     *
+     * @param string $path The route name
+     * @param string ...$params Route parametes
+     * @return \pew\lib\Url A URL object
+     */
+    function route(string $routeName, string ...$params )
+    {
+        static $router;
+
+        if (!$router) {
+            $router = pew("router");
+        }
+
+        $url = $router->getUrlFromRoute($routeName, $params);
+
+        return new \pew\lib\Url($url);
     }
 }
 
