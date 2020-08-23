@@ -118,7 +118,7 @@ class Router
      * @param array $routeParams
      * @return string A URL, path only
      */
-    public function createUrlFromRoute(string $routeName, array $routeParams): string
+    public function createUrlFromRoute(string $routeName, array $routeParams = []): string
     {
         $route = array_find_value($this->routes, function ($r) use ($routeName) {
             return $r->getName() == $routeName;

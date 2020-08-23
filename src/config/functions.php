@@ -219,7 +219,7 @@ if (!function_exists("route")) {
             $router = pew("router");
         }
 
-        $url = $router->getUrlFromRoute($routeName, $params);
+        $url = $router->createUrlFromRoute($routeName, $params);
 
         return new \pew\lib\Url($url);
     }

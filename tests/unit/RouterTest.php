@@ -205,4 +205,40 @@ class RouterTest extends PHPUnit\Framework\TestCase
             $this->assertEquals("Route handler cannot be empty", $e->getMessage());
         }
     }
+
+    public function testGenerateUrl()
+    {
+        $routes = [
+            Route::from("/admin[/{action}[/{id}]]")->to("admin@index")->name("admin"),
+            Route::from("/users/login")->to("users@login")->name("login"),
+            Route::from("/")->to("home@index")->name("home"),
+        ];
+
+        $router = new Router($routes);
+
+        $this->assertEquals(
+            "/admin/my-action/my-id",
+            $router->createUrlFromRoute("admin", ["my-action", "my-id"])
+        );
+
+        $this->assertEquals(
+            "/admin/my-action",
+            $router->createUrlFromRoute("admin", ["my-action"])
+        );
+
+        $this->assertEquals(
+            "/admin",
+            $router->createUrlFromRoute("admin")
+        );
+
+        $this->assertEquals(
+            "/users/login",
+            $router->createUrlFromRoute("login")
+        );
+
+        $this->assertEquals(
+            "/",
+            $router->createUrlFromRoute("home")
+        );
+    }
 }
