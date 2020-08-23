@@ -265,7 +265,7 @@ class View
     public function extension(string $extension = "")
     {
         if ($extension) {
-            $this->extension = S::create($extension)->ensureLeft(".");
+            $this->extension = (string) S::create($extension)->ensureLeft(".");
 
             return $this;
         }

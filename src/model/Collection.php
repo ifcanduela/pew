@@ -648,7 +648,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param int $depth
      * @return string
      */
-    public function toJson($options = null, $depth = 512)
+    public function toJson(int $options = 0, $depth = 512)
     {
         $encode = json_encode($this->items, $options, $depth);
 
