@@ -241,4 +241,23 @@ class RouterTest extends PHPUnit\Framework\TestCase
             $router->createUrlFromRoute("home")
         );
     }
+
+    public function testIsRoute()
+    {
+        $routes = [
+            Route::from("/admin[/{action}[/{id}]]")->to("admin@index")->name("admin"),
+            Route::from("/users/login")->to("users@login")->name("login"),
+            Route::from("/")->to("home@index")->name("home"),
+        ];
+
+        $router = new Router($routes);
+
+        $this->assertTrue($router->isRoute("admin", "/admin/my-action", "get"));
+        $this->assertTrue($router->isRoute("admin", "/admin/my-action", "post"));
+        $this->assertTrue($router->isRoute("admin", "/admin/my-action/6", "get"));
+        $this->assertTrue($router->isRoute("admin", "/admin/", "get"));
+
+        $this->assertFalse($router->isRoute("login", "/users/login/rediret", "get"));
+        $this->assertFalse($router->isRoute("home", "/", "get"));
+    }
 }

@@ -155,4 +155,24 @@ class Router
 
         throw new \LogicException("Too many parameters given");
     }
+
+    /**
+     * Check if a path matches the given named route.
+     *
+     * @param string $routeName
+     * @param string $path
+     * @param string $method
+     * @return bool
+     */
+    public function isRoute(string $routeName, string $path , string $method): bool
+    {
+        try {
+            $route = $this->route(rtrim($path, "/"), strtoupper($method));
+
+            return $route->getName() === $routeName;
+        } catch (Exception $e) {
+        }
+
+        return false;
+    }
 }

@@ -204,10 +204,10 @@ if (!function_exists("route")) {
     /**
      * Create an absolute URL from its route name.
      *
-     * Pass as many arguments as the reoute needs, in order of appearance
+     * Pass as many arguments as the route needs, in order of appearance
      * in the URL.
      *
-     * @param string $path The route name
+     * @param string $routeName The route name
      * @param string ...$params Route parametes
      * @return \pew\lib\Url A URL object
      */
@@ -222,6 +222,32 @@ if (!function_exists("route")) {
         $url = $router->createUrlFromRoute($routeName, $params);
 
         return new \pew\lib\Url($url);
+    }
+}
+
+if (!function_exists("is_route")) {
+    /**
+     * Check if a path matches a named route.
+     *
+     * @param string $routeName The route name
+     * @param string|null $path The path to check
+     * @param string|null $method The request method
+     * @return bool
+     */
+    function is_route(string $routeName, string $path = null, string $method = null)
+    {
+        static $router;
+        static $request;
+
+        if (!$router) {
+            $router = pew("router");
+        }
+
+        if (!$request) {
+            $request = pew("request");
+        }
+
+        return $router->isRoute($routeName, $path ?? $request->getPathInfo(), $method ?? $request->getMethod());
     }
 }
 
