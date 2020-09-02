@@ -1,19 +1,17 @@
 <?php
 
-use pew\router\Route;
+use pew\router\RouteBuilder as R;
 
-return [
-    '/callback' => function () {
-        return 'callback response';
-    },
+R::from("/callback")->to(function () {
+    return "callback response";
+});
 
-    Route::from("/admin/index")->to("admin@index")->namespace("admin"),
-    Route::from("/name/index")->to("admin\\admin@index"),
+R::from("/admin/index")->to("admin@index")->namespace("admin");
+R::from("/name/index")->to("admin\\admin@index");
 
-    Route::from('/middleware')
-        ->to('TestController@useMiddleware')
-        ->before([\fixtures\services\MiddlewareTest::class])
-        ->after([\fixtures\services\MiddlewareTest::class]),
+R::from("/middleware")
+    ->to("TestController@useMiddleware")
+    ->before([\fixtures\services\MiddlewareTest::class])
+    ->after([\fixtures\services\MiddlewareTest::class]);
 
-    '/test/{action}' => 'TestController',
-];
+R::get("/test/{action}")->to("TestController");

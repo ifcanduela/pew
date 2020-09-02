@@ -180,23 +180,9 @@ $container["routes"] = function (Container $c): array {
         throw new RuntimeException("Route definition file `{$routesPath}` is not readable.");
     }
 
-    $definitions = require $routesPath;
-    $routes = [];
+    require $routesPath;
 
-    foreach ($definitions as $path => $handler) {
-        if ($handler instanceof Route) {
-            $routes[] = $handler;
-        } elseif (is_string($handler) || is_callable($handler)) {
-            # convert simple route to array route
-            $routes[] = Route::from($path)->handler($handler)->methods("GET", "POST");
-        } elseif (isset($handler["handler"], $handler["path"])) {
-            $routes[] = $handler;
-        } else {
-            throw new InvalidArgumentException("Invalid route: missing path or handler");
-        }
-    }
-
-    return $routes;
+    return \pew\router\RouteBuilder::collect();
 };
 
 $container[Session::class] = function (Container $c): Session {

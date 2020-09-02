@@ -39,6 +39,19 @@ class Group extends Route
     }
 
     /**
+     * Add a route to the group.
+     *
+     * @param Route|array $route
+     * @return self
+     */
+    public function add($route)
+    {
+        $this->routes[] = $route;
+
+        return $this;
+    }
+
+    /**
      * Get the routes in the group.
      *
      * @return Route[]

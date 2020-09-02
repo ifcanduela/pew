@@ -277,7 +277,7 @@ class Route implements ArrayAccess
      */
     public function setMethods(string ...$methods)
     {
-        $this->methods = array_map("strtoupper", $methods);
+        $this->methods = array_unique(array_map("strtoupper", $methods));
     }
 
     /**

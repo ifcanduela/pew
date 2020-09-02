@@ -1,7 +1,9 @@
 <?php
 
-use pew\router\Router;
+use pew\router\Group;
 use pew\router\Route;
+use pew\router\RouteBuilder;
+use pew\router\Router;
 
 class RouterTest extends PHPUnit\Framework\TestCase
 {
@@ -77,6 +79,22 @@ class RouterTest extends PHPUnit\Framework\TestCase
                     Route::from('[/{action}]')
                 ])->to('AdminController')->prefix('/admin'),
         ];
+
+        $router = new Router($routes);
+
+        $destination = $router->route('/admin/index', 'GET');
+
+        $this->assertInstanceOf(Route::class, $destination);
+        $this->assertEquals('AdminController', $destination->getHandler());
+    }
+
+    public function testRouteBuilderGroups()
+    {
+        RouteBuilder::group(function () {
+            RouteBuilder::from('[/{action}]');
+        })->to('AdminController')->prefix('/admin');
+
+        $routes = RouteBuilder::collect();
 
         $router = new Router($routes);
 
