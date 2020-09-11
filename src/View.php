@@ -156,15 +156,20 @@ class View
         $this->variables = array_merge($this->variables, $data);
         $this->output = $output = $this->renderFile($templateFile, $this->variables);
 
-        if ($this->layout) {
+        $templateLayout = $this->layout;
+
+        while ($this->layout) {
             $layoutFile = $this->resolve($this->layout);
 
             if ($layoutFile === false) {
                 throw new RuntimeException("Layout `{$this->layout}` not found");
             }
 
+            $this->layout = null;
             $this->output = $this->renderFile($layoutFile, ["output" => $output]);
         }
+
+        $this->layout = $templateLayout;
 
         return $this->output;
     }
