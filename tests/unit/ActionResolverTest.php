@@ -1,13 +1,14 @@
 <?php
 
+use ifcanduela\router\Route;
 use pew\request\ActionResolver;
 
 class ActionResolverTest extends PHPUnit\Framework\TestCase
 {
     public function testResolveController()
     {
-        $r = new \pew\router\Route();
-        $r->setHandler("test@index");
+        $r = new Route();
+        $r->to("test@index");
 
         $resolver = new ActionResolver($r);
 
@@ -17,17 +18,17 @@ class ActionResolverTest extends PHPUnit\Framework\TestCase
 
     public function testResolveNamespacedController()
     {
-        $r = new \pew\router\Route();
-        $r->setHandler("admin@index");
-        $r->setNamespace("admin");
+        $r = new Route();
+        $r->to("admin@index");
+        $r->namespace("admin");
 
         $app = new ActionResolver($r);
 
         $controllerClass = $app->getController("app\\controllers");
         $this->assertEquals("\\app\\controllers\\admin\\AdminController", $controllerClass);
 
-        $r = new \pew\router\Route();
-        $r->setHandler("admin\\admin@index");
+        $r = new Route();
+        $r->to("admin\\admin@index");
 
         $app = new ActionResolver($r);
 
@@ -38,8 +39,8 @@ class ActionResolverTest extends PHPUnit\Framework\TestCase
 
     public function testMissingController()
     {
-        $r = new \pew\router\Route();
-        $r->setHandler("noController@index");
+        $r = new Route();
+        $r->to("noController@index");
 
         $app = new ActionResolver($r);
 

@@ -147,21 +147,17 @@ class AppTest extends PHPUnit\Framework\TestCase
 
         try {
             $app->run();
-        } catch (\pew\router\exception\RouteNotFound $e) {
+        } catch (\ifcanduela\router\exception\RouteNotFound $e) {
             $this->assertEquals("Route not found", $e->getMessage());
         }
     }
 
     public function testMiddleware()
     {
-        $r = new \pew\router\Route();
+        $r = new \ifcanduela\router\Route();
         $r->setHandler("test@stringResponse");
-        $r->before([
-            \app\services\MiddlewareTest::class,
-        ]);
-        $r->after([
-            \app\services\MiddlewareTest::class,
-        ]);
+        $r->before(\app\services\MiddlewareTest::class);
+        $r->after(\app\services\MiddlewareTest::class);
 
         $app = new App($this->appFolder, "test");
         $app->set("route", $r);
@@ -174,11 +170,9 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testAfterMiddleware()
     {
-        $r = new \pew\router\Route();
+        $r = new \ifcanduela\router\Route();
         $r->setHandler("test@stringResponse");
-        $r->after([
-            \app\services\MiddlewareTest::class,
-        ]);
+        $r->after(\app\services\MiddlewareTest::class);
 
         $app = new App($this->appFolder, "test");
         $app->set("route", $r);

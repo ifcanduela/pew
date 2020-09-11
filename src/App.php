@@ -5,6 +5,7 @@ namespace pew;
 use Exception;
 use ifcanduela\events\CanEmitEvents;
 use ifcanduela\events\CanListenToEvents;
+use ifcanduela\router\Route;
 use InvalidArgumentException;
 use Monolog\Logger;
 use pew\di\Container;
@@ -15,7 +16,6 @@ use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
-use pew\router\Route;
 use ReflectionException;
 use RuntimeException;
 use Stringy\Stringy as S;
@@ -214,7 +214,7 @@ class App
 
         $route = $this->container->get("route");
         # Add route parameters to the injection container
-        $injector->appendContainer($route);
+        $injector->appendContainer($route->getParams());
 
         App::log("Matched route " . $route->getPath());
 

@@ -29,7 +29,8 @@
         "symfony/cache": "5.*",
         "symfony/console": "5.*",
         "symfony/http-foundation": "5.*",
-        "symfony/var-dumper": "5.*"
+        "symfony/var-dumper": "5.*",
+        "ifcanduela/router": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "*",

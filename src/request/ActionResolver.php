@@ -2,7 +2,7 @@
 
 namespace pew\request;
 
-use pew\router\Route;
+use ifcanduela\router\Route;
 use RuntimeException;
 use Stringy\Stringy as S;
 

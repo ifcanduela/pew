@@ -2,12 +2,13 @@
 
 namespace pew\commands;
 
+
 use Exception;
+use ifcanduela\router\Group;
+use ifcanduela\router\Route;
+use ifcanduela\router\Router;
 use pew\console\Command;
 use pew\console\CommandArguments;
-
-use pew\router\Group;
-use pew\router\Route;
 
 class RoutesCommand extends Command
 {
@@ -25,20 +26,14 @@ class RoutesCommand extends Command
      * @return void
      * @throws Exception
      */
-    public function run(CommandArguments $arguments, $routes)
+    public function run(CommandArguments $arguments, Router $router)
     {
         $list = [
             ["Methods", "Path", "Handler", "Name"],
         ];
 
-        foreach ($routes as $route) {
-            if ($route instanceof Group) {
-                foreach ($route->getRoutes() as $r) {
-                    $list[] = $this->processRoute($r, $route);
-                }
-            } else {
-                $list[] = $this->processRoute($route);
-            }
+        foreach ($router->getRoutes() as $route) {
+            $list[] = $this->processRoute($route);
         }
 
         $longest = [0, 0, 0, 0];
@@ -86,21 +81,17 @@ class RoutesCommand extends Command
      * @param Group|null $group
      * @return array
      */
-    public function processRoute($route, Group $group = null)
+    public function processRoute(Route $route)
     {
-        if ($route instanceof \pew\Router\Route) {
-            $name = $route->getName();
-            $handler = $route->getHandler();
-            $methods = $route->getMethods();
+        $name = $route->getName();
+        $handler = $route->getHandler();
+        $methods = $route->getMethods();
 
-            return [
-                implode(", ", $methods),
-                $route->getPath(),
-                is_string($handler) ? $handler : "<callback>",
-                $name ?: "-",
-            ];
-        }
-
-        return ["-", "GET, POST", $route["handler"], $route["path"]];
+        return [
+            implode(", ", $methods),
+            $route->getPath(),
+            is_string($handler) ? $handler : "<callback>",
+            $name ?: "-",
+        ];
     }
 }

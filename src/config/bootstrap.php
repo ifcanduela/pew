@@ -1,8 +1,12 @@
 <?php declare(strict_types=1);
 
 use ifcanduela\db\Database;
+use ifcanduela\router\Router;
+use ifcanduela\router\Route;
+
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+
 use pew\di\Container;
 use pew\di\Injector;
 use pew\lib\Session;
@@ -10,12 +14,13 @@ use pew\lib\Url;
 use pew\model\TableManager;
 use pew\request\Request;
 use pew\response\Response;
-use pew\router\Route;
-use pew\router\Router;
 use pew\View;
+
 use Psr\Log\LoggerInterface;
+
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\Cache\CacheInterface;
+
 use Whoops\Handler\JsonResponseHandler;
 use Whoops\Handler\PlainTextHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -158,32 +163,23 @@ $container[Route::class] = function (Container $c): Route {
     $router = $c["router"];
     $pathInfo = $c["path"];
 
-    return $router->route($pathInfo, $request->getMethod());
+    return $router->resolve($pathInfo, $request->getMethod());
 };
 
 $container->alias(Route::class, "route");
 
 $container[Router::class] = function (Container $c): Router {
-    $routes = $c["routes"];
-
-    return new Router($routes);
-};
-
-$container->alias(Router::class, "router");
-
-$container["routes"] = function (Container $c): array {
     $appFolder = $c["app_path"];
     $configFolder = $c["config_folder"];
     $routesPath = "{$appFolder}/{$configFolder}/routes.php";
 
-    if (!is_readable($routesPath)) {
-        throw new RuntimeException("Route definition file `{$routesPath}` is not readable.");
-    }
+    $router = new Router();
+    $router->loadFile($routesPath);
 
-    require $routesPath;
-
-    return \pew\router\RouteBuilder::collect();
+    return $router;
 };
+
+$container->alias(Router::class, "router");
 
 $container[Session::class] = function (Container $c): Session {
     return new Session();

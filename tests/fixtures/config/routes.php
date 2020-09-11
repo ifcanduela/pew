@@ -1,17 +1,19 @@
 <?php
 
-use pew\router\RouteBuilder as R;
+/** @var Router $router */
 
-R::from("/callback")->to(function () {
+use ifcanduela\router\Router;
+
+$router->from("/callback")->to(function () {
     return "callback response";
 });
 
-R::from("/admin/index")->to("admin@index")->namespace("admin");
-R::from("/name/index")->to("admin\\admin@index");
+$router->from("/admin/index")->to("admin@index")->namespace("admin");
+$router->from("/name/index")->to("admin\\admin@index");
 
-R::from("/middleware")
+$router->from("/middleware")
     ->to("TestController@useMiddleware")
-    ->before([\fixtures\services\MiddlewareTest::class])
-    ->after([\fixtures\services\MiddlewareTest::class]);
+    ->before(\fixtures\services\MiddlewareTest::class)
+    ->after(\fixtures\services\MiddlewareTest::class);
 
-R::get("/test/{action}")->to("TestController");
+$router->get("/test/{action}")->to("TestController");
