@@ -1,8 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 
 namespace pew\lib;
 
-use pew\request\Request;
+use Symfony\Component\HttpFoundation\Request;
 use Stringy\Stringy as S;
 
 /**
@@ -63,34 +63,55 @@ class Url
         $this->host = $this->request->getHost();
         $this->port = $this->request->getPort();
         $this->path = array_filter(explode("/", $this->request->getPathInfo()));
+        parse_str($this->request->getQueryString(), $this->query);
+    }
 
-        if ($this->request->getQueryString()) {
-            parse_str($this->request->getQueryString(), $this->query);
-        }
+    /**
+     * Get the current request URL.
+     *
+     * @return Url
+     */
+    public static function here()
+    {
+        $url = new static();
+
+        $url->setPath($url->request->getPathInfo());
+        $url->setQuery($url->request->query->all());
+
+        return $url;
     }
 
     /**
      * Get the base URL.
      *
-     * @return string
+     * @return Url
      */
-    public function base()
+    public static function base()
     {
-        return $this->to();
+        $url = new static();
+        $url->setPath("/");
+        $url->setQuery([]);
+
+        return $url;
     }
 
     /**
      * Get a URL to a path.
      *
-     * @param string ...$path
-     * @return string
+     * @param string|string[] ...$path
+     * @return Url
      */
-    public function to(string ...$path)
+    public static function to(string ...$path)
     {
+        $url = new static;
+
         $path = rtrim("/" . join("/", array_filter($path)), "/");
         $path = preg_replace('~\/+~', "/", $path);
 
-        return $this->request->getSchemeAndHttpHost() . $path;
+        $url->setPath($path);
+        $url->setQuery([]);
+
+        return $url;
     }
 
     /**
@@ -230,7 +251,7 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string ...$path
+     * @param string|string[] ...$path
      * @return Url
      */
     public function setPath(string ...$path)
@@ -250,7 +271,7 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string ...$segment
+     * @param string|string[] ...$segment
      * @return Url
      */
     public function addPath(string ...$segment)
@@ -408,12 +429,12 @@ class Url
     public function toString()
     {
         return $this->getScheme()
-             . $this->getAuth()
-             . $this->getHost()
-             . $this->getPort()
-             . $this->getPath()
-             . $this->getQueryString()
-             . $this->getFragment();
+            . $this->getAuth()
+            . $this->getHost()
+            . $this->getPort()
+            . $this->getPath()
+            . $this->getQueryString()
+            . $this->getFragment();
     }
 
     /**
