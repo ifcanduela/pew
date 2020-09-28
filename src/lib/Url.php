@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace pew\lib;
 
-use Symfony\Component\HttpFoundation\Request;
+use pew\request\Request;
 use Stringy\Stringy as S;
 
 /**
@@ -10,6 +10,9 @@ use Stringy\Stringy as S;
  */
 class Url
 {
+    /** @var Request */
+    protected static $staticRequest;
+
     /** @var Request */
     public $request;
 
@@ -40,30 +43,53 @@ class Url
     /**
      * Create a URL object.
      *
-     * @param string|Url|Request $request
+     * @param string|null $path
+     * @param Request|null $request
      */
-    public function __construct($request = null)
+    public function __construct(string $path = "", Request $request = null)
     {
-        if (is_string($request) || ($request instanceof Url)) {
-            $request = (string) $request;
-            $this->request = Request::create($request);
+        $this->setRequest($request ?? static::getStaticRequest());
+        $this->init($path);
+    }
 
-            if (false !== strpos($request, "#")) {
-                $this->fragment = (string) S::create($request)->substr(strpos($request, "#"))->removeLeft("#");
-            }
-        } elseif ($request instanceof Request) {
-            $this->request = $request;
-        } else {
-            $this->request = Request::createFromGlobals();
+    /**
+     * Initialize the URL components.
+     *
+     * @param string $path
+     * @return void
+     */
+    public function init(string $path = "")
+    {
+        $parts = parse_url($path);
+
+        $this->setScheme($parts["scheme"] ?? $this->request->getScheme());
+        $this->setAuth(
+            $parts["user"] ?? $this->request->getUser(),
+            $parts["pass"] ?? $this->request->getPassword()
+        );
+        $this->setHost($parts["host"] ?? $this->request->getHost());
+        $this->setPath($parts["path"] ?? $this->request->getPathInfo());
+        $this->setPort($parts["port"] ?? $this->request->getPort());
+        $this->setFragment($parts["fragment"] ?? "");
+
+        $queryString = $parts["query"] ?? $this->request->getQueryString();
+        parse_str($queryString ?? "", $queryParams);
+        $this->setQuery($queryParams);
+    }
+
+    /**
+     * Get an initialized request.
+     *
+     * @return Request
+     */
+    private static function getStaticRequest()
+    {
+        if (!static::$staticRequest) {
+            dump("creating static request");
+            static::$staticRequest = Request::createFromGlobals();
         }
 
-        $this->scheme = $this->request->getScheme();
-        $this->user = $this->request->getUser();
-        $this->password = $this->request->getPassword();
-        $this->host = $this->request->getHost();
-        $this->port = $this->request->getPort();
-        $this->path = array_filter(explode("/", $this->request->getPathInfo()));
-        parse_str($this->request->getQueryString(), $this->query);
+        return static::$staticRequest;
     }
 
     /**
@@ -74,7 +100,7 @@ class Url
     public static function here()
     {
         $url = new static();
-
+        
         $url->setPath($url->request->getPathInfo());
         $url->setQuery($url->request->query->all());
 
@@ -91,6 +117,7 @@ class Url
         $url = new static();
         $url->setPath("/");
         $url->setQuery([]);
+        $url->setFragment("");
 
         return $url;
     }
@@ -112,6 +139,27 @@ class Url
         $url->setQuery([]);
 
         return $url;
+    }
+
+    /**
+     * Set the request to be used by the URL object.
+     *
+     * @param Request $request
+     * @return Url
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    /**
+     * Get the Request.
+     *
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 
     /**
