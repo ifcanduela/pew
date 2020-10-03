@@ -24,8 +24,6 @@ use Stringy\Stringy as S;
  */
 class CommandArguments
 {
-    const ESCAPE_CHAR = "\\";
-
     /** @var array */
     private $named = [];
 
@@ -35,13 +33,13 @@ class CommandArguments
     /**
      * Create a command-line argument parser.
      *
-     * This method accepts both a string or an array (for example, the `$argv` global
-     * variable). If `$argv` is passed, the script name will be added to the list of
-     * positional arguments.
+     * This method accepts both an array with the command-line arguments. If
+     * `$argv` is passed without preprocessing, the script name will be added
+     * to the list of positional arguments, which may be undesirable.
      *
-     * @param string|array $arguments
+     * @param array $arguments
      */
-    public function __construct($arguments = "")
+    public function __construct(array $arguments = [])
     {
         $this->parse($arguments);
     }
@@ -49,22 +47,13 @@ class CommandArguments
     /**
      * Parse the list or arguments.
      *
-     * This method accepts both a string or an array (for example, the `$argv` global
-     * variable). If `$argv` is passed, the script name will be added to the list of
-     * positional arguments.
-     *
-     * @param string|array $arguments
+     * @param array $arguments
      * @return void
      */
-    public function parse($arguments)
+    public function parse(array $arguments = null)
     {
-        # make sure we have a string
-        if (is_array($arguments)) {
-            $arguments = implode(" ", $arguments);
-        }
-
         # tokenize the string
-        $input = $this->tokenize($arguments);
+        $input = $arguments ?? $this->arguments;
 
         # reset the argument list
         $this->positional = [];
@@ -218,62 +207,6 @@ class CommandArguments
         }
 
         $this->named[$name] = $value;
-    }
-
-    /**
-     * Split a command-line list of parameters into an array.
-     *
-     * This method will separate the parts of the command-line string, respecting
-     * strings wrapped in single or double quotes.
-     *
-     * @param string $commandLine
-     * @return array
-     */
-    protected function tokenize(string $commandLine)
-    {
-        $input = str_split($commandLine, 1);
-        # add a terminating character
-        $input[] = " ";
-        $inputCount = count($input);
-
-        $value = "";
-        $quoteStack = [];
-        $escapeChar = false;
-        $tokens = [];
-
-        for ($i = 0; $i < $inputCount; $i++) {
-            $char = $input[$i];
-
-            if ($char === static::ESCAPE_CHAR) {
-                $escapeChar = true;
-            } elseif ($escapeChar) {
-                $value .= $char;
-                $escapeChar = false;
-            } else {
-                if (in_array($char, ["\"", "'"])) {
-                    if (isset($quoteStack[0]) && $quoteStack[0] === $char) {
-                        # end of quoted chunk
-                        $tokens[] = $value;
-                        $value = "";
-                        array_shift($quoteStack);
-                    } else {
-                        # beginning of quoted chunk
-                        array_unshift($quoteStack, $char);
-                    }
-                } elseif ($char === " ") {
-                    if (count($quoteStack)) {
-                        $value .= $char;
-                    } else {
-                        $tokens[] = $value;
-                        $value = "";
-                    }
-                } else {
-                    $value .= $char;
-                }
-            }
-        }
-
-        return array_filter($tokens);
     }
 
     /**
