@@ -19,7 +19,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
 
         if ($this->isPost()) {
             # check for a JSON request body
-            $bodyIsJson = strpos($this->headers->get("Content-Type"), "application/json") === 0;
+            $bodyIsJson = strpos($this->headers->get("Content-Type", ""), "application/json") === 0;
 
             if ($bodyIsJson) {
                 # decode the JSON body and replace the POST parameter bag
