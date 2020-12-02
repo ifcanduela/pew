@@ -516,4 +516,22 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
         $this->assertEquals($c->toArray(), $clone->toArray());
     }
+
+    public function testFindKeyAndValue()
+    {
+        $c = new Collection([1, 2, 3, 4]);
+
+        $key = $c->findIndex(function ($item) {
+            return $item % 2 === 0;
+        });
+
+        $this->assertEquals($key, 1);
+
+
+        $value = $c->findValue(function ($item) {
+            return $item % 2 === 0;
+        });
+
+        $this->assertEquals($value, 2);
+    }
 }

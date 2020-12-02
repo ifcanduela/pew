@@ -377,6 +377,51 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
+     * Find the index of the first element in the collection that satisfies a condition.
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    public function findIndex(callable $callback)
+    {
+        foreach ($this->items as $key => $value) {
+            if ($callback($value, $key)) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find the index of the first element in the collection that satisfies a condition.
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    public function findKey(callable $callback)
+    {
+        return $this->findIndex($callback);
+    }
+
+    /**
+     * Find the first value in the collection that satifies a condition.
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    public function findValue(callable $callback)
+    {
+        foreach ($this->items as $key => $value) {
+            if ($callback($value, $key)) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Get the underlying items of the collection.
      *
      * @return array
