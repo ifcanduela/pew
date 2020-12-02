@@ -55,7 +55,7 @@ class Record implements JsonSerializable, IteratorAggregate
     /** @var string Name of the column holding the record creation timestamp. */
     public static $createdFieldName = "created";
 
-    /** @var string Name of the column holding the record update  timestamp. */
+    /** @var string Name of the column holding the record update timestamp. */
     public static $updatedFieldName = "updated";
 
     /** @var bool Flag to signify a record not retrieved from or yet stored into the database  */
@@ -75,6 +75,10 @@ class Record implements JsonSerializable, IteratorAggregate
         if (!$this->tableName) {
             $this->tableName = $this->tableManager->tableName();
         }
+
+        $className = get_class($this);
+        static::$getterMethods[$className] ??= [];
+        static::$setterMethods[$className] ??= [];
     }
 
     /**
@@ -364,12 +368,14 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function __set($key, $value)
     {
-        if (!array_key_exists($key, static::$setterMethods)) {
+        $className = get_class($this);
+
+        if (!array_key_exists($key, static::$setterMethods[$className])) {
             $methodName = "set" . S::create($key)->upperCamelize();
-            static::$setterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
+            static::$setterMethods[$className][$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
-        $methodName = static::$setterMethods[$key];
+        $methodName = static::$setterMethods[$className][$key];
 
         if ($methodName) {
             $this->$methodName($value);
@@ -696,13 +702,15 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function hasRelationship($key)
     {
+        $className = get_class($this);
+
         # generate a getter method name if it does not yet exist
-        if (!array_key_exists($key, static::$getterMethods)) {
+        if (!array_key_exists($key, static::$getterMethods[$className])) {
             $methodName = "get" . S::create($key)->upperCamelize();
-            static::$getterMethods[$key] = method_exists($this, $methodName) ? $methodName : false;
+            static::$getterMethods[$className][$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
-        return static::$getterMethods[$key];
+        return static::$getterMethods[$className][$key];
     }
 
     /**

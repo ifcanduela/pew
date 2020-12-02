@@ -3,6 +3,7 @@
 use pew\model\Table;
 use pew\model\TableManager;
 use ifcanduela\db\Database;
+use app\models\ParentModel;
 use app\models\Project;
 use app\models\User;
 use app\models\Profile;
@@ -64,6 +65,9 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $db->run('INSERT INTO profiles (full_name, user_id) VALUES ("Three Gamma", 4)');
 
         $db->run('CREATE TABLE complex_table_names (id INTEGER PRIMARY KEY)');
+
+        $db->run('CREATE TABLE parent_models (id INTEGER PRIMARY KEY)');
+        $db->run('CREATE TABLE child_models (id INTEGER PRIMARY KEY, parent_model_id INTEGER)');
 
         $this->db = $db;
 
@@ -349,5 +353,12 @@ class RecordTest extends PHPUnit\Framework\TestCase
         # delete all records in the table
         Project::deleteAll();
         $this->assertEquals(0, Project::find()->count());
+    }
+
+    public function testChildModelWithSameGetter()
+    {
+        $p = new ParentModel();
+
+        $this->assertEquals("ChildModel::\$value", $p->testValue);
     }
 }
