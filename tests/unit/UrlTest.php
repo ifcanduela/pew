@@ -8,12 +8,11 @@ class UrlTest extends PHPUnit\Framework\TestCase
     public function testBasics()
     {
         $url = new Url();
-        $this->assertEquals("http:///", (string) $url);
-        
-        
-        $url = new Url(Request::create('/original/path'));
+        $this->assertEquals("/", (string) $url);
+        $this->assertEquals("http://example.com/", (string) $url->setHost("example.com"));
+
+        $url = new Url("/original/path", Request::create('http://localhost/original/path'));
         $this->assertEquals("http://localhost/original/path", (string) $url);
-        $this->assertEquals("http://localhost", $url->base());
 
         $url->setPath('/path/to/route');
         $this->assertEquals("http://localhost/path/to/route", (string) $url);
@@ -37,23 +36,22 @@ class UrlTest extends PHPUnit\Framework\TestCase
 
     public function testUrlToPath()
     {
-        $url = new Url(Request::create('/path/to/route'));
-        $this->assertEquals("http://localhost/other/route", $url->to('/other/route'));
+        $this->assertEquals("http://localhost/other/route", (string) Url::to('/other/route')->setHost("localhost"));
     }
 
     public function testQueryParameters()
     {
-        $url = new Url(Request::create('/path/to/route?one=1'));
+        $url = new Url("/path/to/route?one=1", Request::create(""));
 
-        $this->assertEquals(['one' => '1'], $url->getQuery());
-        $this->assertEquals('1', $url->getQueryParam('one'));
+        $this->assertEquals(["one" => "1"], $url->getQuery());
+        $this->assertEquals("1", $url->getQueryParam("one"));
 
-        $url->setQueryParam('two', 2);
-        $this->assertEquals(['one' => '1', 'two' => '2'], $url->getQuery());
-        $this->assertEquals('2', $url->getQueryParam('two'));
+        $url->setQueryParam("two", 2);
+        $this->assertEquals(["one" => "1", "two" => "2"], $url->getQuery());
+        $this->assertEquals("2", $url->getQueryParam("two"));
 
-        $url->mergeQueryParams(['two' => 'dos', 'three' => 'tres']);
-        $this->assertEquals(['one' => '1', 'two' => 'dos', 'three' => 'tres'], $url->getQuery());
+        $url->mergeQueryParams(["two" => "dos", "three" => "tres"]);
+        $this->assertEquals(["one" => "1", "two" => "dos", "three" => "tres"], $url->getQuery());
     }
 
     public function testAddAndRemovePathSegments()

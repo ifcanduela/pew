@@ -14,31 +14,31 @@ class Url
     protected static $staticRequest;
 
     /** @var Request */
-    public $request;
+    private $request;
 
     /** @var string */
-    public $scheme = "http";
+    private $scheme = "http";
 
     /** @var string|null */
-    public $user;
+    private $user;
 
     /** @var string|null */
-    public $password;
+    private $password;
 
     /** @var string */
-    public $host = "";
+    private $host = "";
 
     /** @var int */
-    public $port = 80;
+    private $port = 80;
 
     /** @var array */
-    public $path = [];
+    private $path = [];
 
     /** @var array */
-    public $query = [];
+    private $query = [];
 
     /** @var string */
-    public $fragment = "";
+    private $fragment = "";
 
     /**
      * Create a URL object.
@@ -69,7 +69,7 @@ class Url
         );
         $this->setHost($parts["host"] ?? $this->request->getHost());
         $this->setPath($parts["path"] ?? $this->request->getPathInfo());
-        $this->setPort($parts["port"] ?? $this->request->getPort());
+        $this->setPort($parts["port"] ?? $this->request->getPort() ?? 80);
         $this->setFragment($parts["fragment"] ?? "");
 
         $queryString = $parts["query"] ?? $this->request->getQueryString();
@@ -85,7 +85,6 @@ class Url
     private static function getStaticRequest()
     {
         if (!static::$staticRequest) {
-            dump("creating static request");
             static::$staticRequest = Request::createFromGlobals();
         }
 
@@ -184,6 +183,10 @@ class Url
      */
     public function getScheme()
     {
+        if (!$this->host) {
+            return "";
+        }
+
         return S::create($this->scheme ?: "http")->ensureRight("://");
     }
 
