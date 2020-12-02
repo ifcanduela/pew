@@ -50,19 +50,16 @@ class CommandArguments
      * @param array $arguments
      * @return void
      */
-    public function parse(array $arguments = null)
+    public function parse(array $arguments = [])
     {
-        # tokenize the string
-        $input = $arguments ?? $this->arguments;
-
         # reset the argument list
         $this->positional = [];
         $this->named = [];
 
         $name = "";
 
-        foreach ($input as $param) {
-            if ($param[0] === "-") {
+        foreach ($arguments as $param) {
+            if (is_string($param) && $param[0] === "-") {
                 if ($name) {
                     # there's a named param without value
                     $this->addNamed($name, true);
