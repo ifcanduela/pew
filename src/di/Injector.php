@@ -15,7 +15,7 @@ use RuntimeException;
 class Injector
 {
     /** @var array */
-    protected $containers = [];
+    protected array $containers = [];
 
     /**
      * Create an injector.
@@ -30,10 +30,10 @@ class Injector
     /**
      * Add a value container to the end of the list.
      *
-     * @param array $container An array or array-like object
+     * @param array|ArrayAccess $container An array or array-like object
      * @return self
      */
-    public function appendContainer($container)
+    public function appendContainer($container): self
     {
         array_push($this->containers, $container);
 
@@ -43,10 +43,10 @@ class Injector
     /**
      * Add a value container to the beginning of the list.
      *
-     * @param array $container An array or array-like object
+     * @param array|ArrayAccess $container An array or array-like object
      * @return self
      */
-    public function prependContainer($container)
+    public function prependContainer($container): self
     {
         array_unshift($this->containers, $container);
 
@@ -65,7 +65,7 @@ class Injector
      * @throws KeyNotFoundException When an argument cannot be found
      * @throws ReflectionException
      */
-    public function getInjections(ReflectionFunctionAbstract $method, bool $autoResolve = false)
+    public function getInjections(ReflectionFunctionAbstract $method, bool $autoResolve = false): array
     {
         $injections = [];
         $parameters = $method->getParameters();
@@ -173,7 +173,7 @@ class Injector
      * @throws KeyNotFoundException
      * @throws ReflectionException
      */
-    public function createInstance(string $className, bool $autoResolve = false)
+    public function createInstance(string $className, bool $autoResolve = false): object
     {
         $class = new ReflectionClass($className);
         $constructor = $class->getConstructor();
@@ -259,7 +259,7 @@ class Injector
      * @throws KeyNotFoundException
      * @throws ReflectionException
      */
-    public function autoResolve(string $className)
+    public function autoResolve(string $className): object
     {
         if (class_exists($className)) {
             return $this->createInstance($className, true);

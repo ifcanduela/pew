@@ -28,7 +28,7 @@ class Container extends Pimple implements ContainerInterface
      * @param mixed $value
      * @return void
      */
-    public function set($key, $value)
+    public function set(string $key, $value)
     {
         $this[$key] = $value;
     }
@@ -64,7 +64,7 @@ class Container extends Pimple implements ContainerInterface
      * @return bool
      * @throws RuntimeException When the file does not return an array
      */
-    public function loadFile(string $filename)
+    public function loadFile(string $filename): bool
     {
         if (is_readable($filename)) {
             $definitions = require $filename;
@@ -88,7 +88,7 @@ class Container extends Pimple implements ContainerInterface
      * @param string $alias
      * @return static
      */
-    public function alias(string $existingKey, string $alias)
+    public function alias(string $existingKey, string $alias): self
     {
         $this[$alias] = function (Container $c) use ($existingKey)  {
             return $c[$existingKey];
