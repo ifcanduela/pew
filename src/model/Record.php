@@ -38,19 +38,19 @@ class Record implements JsonSerializable, IteratorAggregate
     public $doNotSerialize = [];
 
     /** @var array Cached results for model get methods. */
-    protected $getterResults = [];
+    protected array $getterResults = [];
 
     /** @var string[] List of getter method names. */
-    protected static $getterMethods = [];
+    protected static array $getterMethods = [];
 
     /** @var string[] List of setter method names. */
-    protected static $setterMethods = [];
+    protected static array $setterMethods = [];
 
     /** @var array Current record data. */
-    protected $record = [];
+    protected array $record = [];
 
     /** @var Table Table data manager. */
-    protected $tableManager;
+    protected Table $tableManager;
 
     /** @var string Name of the column holding the record creation timestamp. */
     public static $createdFieldName = "created";
@@ -59,7 +59,7 @@ class Record implements JsonSerializable, IteratorAggregate
     public static $updatedFieldName = "updated";
 
     /** @var bool Flag to signify a record not retrieved from or yet stored into the database  */
-    public $isNew = true;
+    public bool $isNew = true;
 
     /**
      * Create an empty, new record.
@@ -502,9 +502,11 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * In a relationship like this:
      *
+     * ```
      * NEAR TABLE | FAR TABLE
      * -----------------------
      * far_id     | id (PK)
+     * ```
      *
      * The arguments should be as follows:
      *
@@ -515,12 +517,12 @@ class Record implements JsonSerializable, IteratorAggregate
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string $localKeyName
-     * @param string $foreignKeyName
+     * @param ?string $localKeyName
+     * @param ?string $foreignKeyName
      * @return BelongsTo
      * @throws ReflectionException
      */
-    public function belongsTo(string $className, string $localKeyName = null, string $foreignKeyName = null)
+    public function belongsTo(string $className, ?string $localKeyName = null, ?string $foreignKeyName = null): BelongsTo
     {
         if (!$localKeyName) {
             $reflectionClass = new ReflectionClass($className);
@@ -542,9 +544,11 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * In a relationship like this:
      *
+     * ```
      * NEAR TABLE | FAR TABLE
      * ----------------------
      * id (PK)    | near_id
+     * ```
      *
      * The arguments should be as follows:
      *
@@ -555,12 +559,11 @@ class Record implements JsonSerializable, IteratorAggregate
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string $foreignKeyName
-     * @param string $localKeyName
+     * @param ?string $foreignKeyName
+     * @param ?string $localKeyName
      * @return HasMany
-     * @throws ReflectionException
      */
-    public function hasMany(string $className, string $foreignKeyName = null, string $localKeyName = null)
+    public function hasMany(string $className, ?string $foreignKeyName = null, ?string $localKeyName = null): HasMany
     {
         if (!$foreignKeyName) {
             $reflectionClass = new ReflectionClass($this);
@@ -582,9 +585,11 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * In a relationship like this:
      *
+     * ```
      * NEAR TABLE | FAR TABLE
      * ----------------------
      * id (PK)    | near_id
+     * ```
      *
      * The arguments should be as follows:
      *
@@ -595,12 +600,11 @@ class Record implements JsonSerializable, IteratorAggregate
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string $foreignKeyName
-     * @param string $localKeyName
+     * @param ?string $foreignKeyName
+     * @param ?string $localKeyName
      * @return HasOne
-     * @throws ReflectionException
      */
-    public function hasOne(string $className, string $foreignKeyName = null, string $localKeyName = null)
+    public function hasOne(string $className, ?string $foreignKeyName = null, ?string $localKeyName = null): HasOne
     {
         if (!$foreignKeyName) {
             $reflectionClass = new ReflectionClass($this);
@@ -622,9 +626,11 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * In a relationship like this:
      *
+     * ```
      * NEAR TABLE | ASSOCIATION TABLE  | FAR TABLE
      * -------------------------------------------
      * id (PK)    | near_id <=> far_id | id (PK)
+     * ```
      *
      * The arguments should be as follows:
      *
@@ -639,22 +645,22 @@ class Record implements JsonSerializable, IteratorAggregate
      * All arguments except `$className` can be guessed.
      *
      * @param string $className
-     * @param string $associationTableName
-     * @param string $nearKeyName
-     * @param string $nearForeignKeyName
-     * @param string $farForeignKeyName
-     * @param string $farKeyName
+     * @param ?string $associationTableName
+     * @param ?string $nearKeyName
+     * @param ?string $nearForeignKeyName
+     * @param ?string $farForeignKeyName
+     * @param ?string $farKeyName
      * @return HasAndBelongsToMany
      * @throws ReflectionException
      */
     public function hasAndBelongsToMany(
         string $className,
-        string $associationTableName = null,
-        string $nearKeyName = null,
-        string $nearForeignKeyName = null,
-        string $farForeignKeyName = null,
-        string $farKeyName = null
-    ) {
+        ?string $associationTableName = null,
+        ?string $nearKeyName = null,
+        ?string $nearForeignKeyName = null,
+        ?string $farForeignKeyName = null,
+        ?string $farKeyName = null
+    ): HasAndBelongsToMany {
         $nearTableName = $this->tableName;
         $farTableName = (new $className)->tableName;
 
@@ -700,7 +706,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param string $key
      * @return string|bool False if the relationship does not exist, the getter name otherwise.
      */
-    public function hasRelationship($key)
+    public function hasRelationship(string $key)
     {
         $className = get_class($this);
 
@@ -719,7 +725,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param string $key
      * @return bool
      */
-    protected function hasGetterResults($key)
+    protected function hasGetterResults(string $key): bool
     {
         $methodName = "get" . S::create($key)->upperCamelize();
 
@@ -731,7 +737,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param array|Record $values Value of the related property
      * @return void
      */
-    public function attachRelated($getter, $values)
+    public function attachRelated(string $getter, $values)
     {
         $this->getterResults[$getter] = $values;
     }
