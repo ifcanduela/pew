@@ -16,31 +16,31 @@ class View
     use CanEmitEvents;
 
     /** @var SplStack Base templates directory */
-    protected $folderStack;
+    protected SplStack $folderStack;
 
     /** @var string Template name */
-    protected $template = "";
+    protected string $template = "";
 
     /** @var string Layout name */
-    protected $layout = "";
+    protected string $layout = "";
 
     /** @var string View title */
-    protected $title = "";
+    protected string $title = "";
 
     /** @var string Templates file extension */
-    protected $extension = ".php";
+    protected string $extension = ".php";
 
     /** @var string Result of rendering the view */
-    protected $output = "";
+    protected string $output = "";
 
     /** @var array Rendered partial blocks */
-    protected $blocks = [];
+    protected array $blocks = [];
 
     /** @var SplStack Stack of block names */
-    protected $blockStack;
+    protected SplStack $blockStack;
 
     /** @var array */
-    protected $variables = [];
+    protected array $variables = [];
 
     /**
      * Creates a View object based on a folder.
@@ -64,7 +64,7 @@ class View
      * @param mixed $value
      * @return self
      */
-    public function set(string $key, $value)
+    public function set(string $key, $value): self
     {
         $this->variables[$key] = $value;
 
@@ -89,7 +89,7 @@ class View
      * @param array $data
      * @return self
      */
-    public function setData(array $data)
+    public function setData(array $data): self
     {
         $this->variables = array_replace($this->variables, $data);
 
@@ -101,7 +101,7 @@ class View
      *
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         return $this->variables;
     }
@@ -112,7 +112,7 @@ class View
      * @param string $key
      * @return bool
      */
-    public function has(string $key)
+    public function has(string $key): bool
     {
         return array_key_exists($key, $this->variables);
     }
@@ -128,7 +128,7 @@ class View
      * @throws Exception
      * @throws RuntimeException
      */
-    public function render($template = "", array $data = [])
+    public function render($template = "", array $data = []): string
     {
         if (count(func_get_args()) === 1) {
             if (is_array($template)) {
@@ -165,7 +165,7 @@ class View
                 throw new RuntimeException("Layout `{$this->layout}` not found");
             }
 
-            $this->layout = null;
+            $this->layout = "";
             $this->output = $this->renderFile($layoutFile, ["output" => $output]);
         }
 
@@ -180,7 +180,7 @@ class View
      * @param string $template Base file name (without extension)
      * @return bool True if the file can be read, false otherwise
      */
-    public function exists(string $template = "")
+    public function exists(string $template = ""): bool
     {
         if (!$template) {
             if (!$this->template) {
@@ -302,7 +302,7 @@ class View
      *
      * @return self
      */
-    public function noLayout()
+    public function noLayout(): self
     {
         $this->layout = "";
 
@@ -331,7 +331,7 @@ class View
      *
      * @return string View output
      */
-    public function content()
+    public function content(): string
     {
         return $this->output;
     }
@@ -347,7 +347,7 @@ class View
      * @throws Exception
      * @throws RuntimeException
      */
-    public function insert(string $template, array $data = [])
+    public function insert(string $template, array $data = []): string
     {
         $templateFile = $this->resolve($template);
 
@@ -370,7 +370,7 @@ class View
      * @return string
      * @throws Exception
      */
-    protected function renderFile()
+    protected function renderFile(): string
     {
         $this->emit("view.render", func_get_args());
 
@@ -392,7 +392,7 @@ class View
      * @param string $name
      * @return bool
      */
-    public function hasBlock(string $name)
+    public function hasBlock(string $name): bool
     {
         return array_key_exists($name, $this->blocks);
     }
@@ -403,7 +403,7 @@ class View
      * @param string $name
      * @return string
      */
-    public function block(string $name)
+    public function block(string $name): string
     {
         if (array_key_exists($name, $this->blocks)) {
             return join("", $this->blocks[$name]);
@@ -456,7 +456,7 @@ class View
      * @param string $value
      * @return string
      */
-    public function escape($value)
+    public function escape($value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, "UTF-8");
     }

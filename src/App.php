@@ -31,13 +31,13 @@ class App
     use CanListenToEvents;
 
     /** @var array */
-    protected $middleware = [];
+    protected array $middleware = [];
 
     /** @var Container */
-    protected $container;
+    protected Container $container;
 
     /** @var static */
-    protected static $instance;
+    protected static App $instance;
 
     /**
      * Bootstrap a web app.
@@ -116,7 +116,7 @@ class App
      * @param string $key
      * @return boolean
      */
-    public function has(string $key)
+    public function has(string $key): bool
     {
         return $this->container->has($key);
     }
@@ -128,7 +128,7 @@ class App
      *
      * @return static|null
      */
-    public static function instance()
+    public static function instance(): ?App
     {
         return static::$instance;
     }
@@ -140,7 +140,7 @@ class App
      * @return bool TRUE when the file exists, FALSE otherwise
      * @throws RuntimeException
      */
-    protected function loadAppConfig(string $configFileName)
+    protected function loadAppConfig(string $configFileName): bool
     {
         $appPath = $this->container->get("app_path");
         $configFolder = $this->container->get("config_folder");
@@ -154,7 +154,7 @@ class App
      *
      * @return bool TRUE when the file exists, FALSE otherwise
      */
-    protected function loadAppBootstrap()
+    protected function loadAppBootstrap(): bool
     {
         $appPath = $this->container->get("app_path");
         $configFolder = $this->container->get("config_folder");
@@ -204,7 +204,7 @@ class App
      * @return Response
      * @throws Exception
      */
-    protected function handle()
+    protected function handle(): Response
     {
         $injector = $this->container->get("injector");
         $request = $this->container->get("request");
@@ -270,7 +270,7 @@ class App
      * @throws ReflectionException
      * @throws di\KeyNotFoundException
      */
-    protected function runBeforeMiddleware(Route $route, Injector $injector)
+    protected function runBeforeMiddleware(Route $route, Injector $injector): ?Response
     {
         # Get the "before" middleware services for the route
         $middlewareClasses = $route->getBefore() ?: [];
@@ -300,7 +300,7 @@ class App
      * @throws ReflectionException
      * @throws di\KeyNotFoundException
      */
-    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector)
+    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector): ?Response
     {
         # Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
@@ -395,7 +395,7 @@ class App
      * @return Response
      * @throws Exception
      */
-    protected function handleError(Exception $e)
+    protected function handleError(Exception $e): Response
     {
         # If debug mode is on, let the error handler take care of it
         if ($this->container->get("debug")) {
@@ -430,7 +430,7 @@ class App
      * @param string $baseNamespace
      * @return string
      */
-    public function getControllerPath(string $controllerClass, string $baseNamespace)
+    public function getControllerPath(string $controllerClass, string $baseNamespace): string
     {
         # Get the namespace of the controller relative to the base controller namespace
         # by removing \app\controllers (by default) from the beginning
@@ -456,7 +456,7 @@ class App
      * @param mixed $actionResult
      * @return Response
      */
-    protected function transformActionResult($actionResult)
+    protected function transformActionResult($actionResult): Response
     {
         $request = $this->container->get("request");
         $response = $this->container->get("response")->getResponse();
