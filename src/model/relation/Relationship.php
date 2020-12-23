@@ -44,7 +44,7 @@ abstract class Relationship
      * @param array $arguments
      * @return self
      */
-    public function __call($method, $arguments)
+    public function __call(string $method, array $arguments): Relationship
     {
         $this->finder->$method(...$arguments);
 
@@ -73,5 +73,5 @@ abstract class Relationship
      *
      * @return string
      */
-    abstract public function getGroupingField();
+    abstract public function getGroupingField(): string;
 }

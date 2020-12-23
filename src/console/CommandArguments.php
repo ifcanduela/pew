@@ -181,8 +181,9 @@ class CommandArguments
      * Add a positional argument.\
      *
      * @param mixed $value
+     * @return void
      */
-    protected function addPositional($value)
+    protected function addPositional($value): void
     {
         $this->positional[] = $value;
     }
@@ -195,8 +196,9 @@ class CommandArguments
      *
      * @param string $name
      * @param mixed $value
+     * @return void
      */
-    protected function addNamed(string $name, $value)
+    protected function addNamed(string $name, $value): void
     {
         if ($value === true && substr($name, 0, 3) === "no-") {
             $name = substr($name, 3);

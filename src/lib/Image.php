@@ -142,8 +142,9 @@ class Image
      * @param string $filename The image file name
      * @param int $imageType One of the IMAGETYPE_* constants
      * @throws Exception
+     * @return void
      */
-    protected function loadFile(string $filename, $imageType)
+    protected function loadFile(string $filename, int $imageType): void
     {
         $resource = null;
 
@@ -181,9 +182,10 @@ class Image
      * Initialize the internal image resource.
      *
      * @param resource $resource
-     * @param int|null $imageType
+     * @param ?int $imageType
+     * @return void
      */
-    protected function setResource($resource, ?int $imageType = null)
+    protected function setResource($resource, ?int $imageType = null): void
     {
         $this->resource = $resource;
 
@@ -196,13 +198,13 @@ class Image
     /**
      * Get the image resource.
      *
-     * @param resource $resource
-     * @return resource|self The image data or the Image object
+     * @param ?resource $resource
+     * @return Image|resource The image data or the Image object
      * @throws Exception
      */
     public function image($resource = null)
     {
-        if (!is_null($resource)) {
+        if (is_resource($resource)) {
             $this->setResource($resource);
 
             return $this;
@@ -216,15 +218,13 @@ class Image
     /**
      * Initialize some image properties.
      *
-     * @return self
+     * @return void
      */
-    protected function init()
+    protected function init(): void
     {
         $fileinfo = getimagesize($this->sourceFileName);
         [$this->width, $this->height, $this->imageType] = $fileinfo;
         $this->mimeType = $fileinfo["mime"];
-
-        return $this;
     }
 
     /**
@@ -586,10 +586,11 @@ class Image
      * @see http://www.php.net/manual/en/function.image-type-to-mime-type.php
      *
      * @param int $imageType One of the IMAGETYPE_* constants
-     * @param int $quality Quality of the PNG or JPEG output, from 0 to 100
+     * @param ?int $quality Quality of the PNG or JPEG output, from 0 to 100
      * @throws Exception
+     * @return void
      */
-    public function serve($imageType = IMAGETYPE_JPEG, $quality = null)
+    public function serve(int $imageType = IMAGETYPE_JPEG, ?int $quality = null): void
     {
         $this->checkResource();
 
@@ -630,7 +631,7 @@ class Image
      * @throws ErrorException
      * @throws Exception
      */
-    public function colorAt($x, $y)
+    public function colorAt(int $x, int $y): array
     {
         $this->checkResource();
 
@@ -648,11 +649,14 @@ class Image
     }
 
     /**
+     * Check if an image resource is loaded.
+     *
      * @throws Exception
+     * @return void
      */
-    protected function checkResource()
+    protected function checkResource(): void
     {
-        if (!$this->resource) {
+        if (!is_resource($this->resource)) {
             throw new RuntimeException("No image loaded");
         }
     }

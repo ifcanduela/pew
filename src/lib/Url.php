@@ -10,43 +10,43 @@ use Stringy\Stringy as S;
  */
 class Url
 {
-    /** @var Request */
-    protected static $staticRequest;
+    /** @var ?Request */
+    protected static ?Request $staticRequest = null;
 
-    /** @var Request */
-    private $request;
-
-    /** @var string */
-    private $scheme = "http";
-
-    /** @var string|null */
-    private $user;
-
-    /** @var string|null */
-    private $password;
+    /** @var ?Request */
+    private ?Request $request = null;
 
     /** @var string */
-    private $host = "";
+    private string $scheme = "http";
+
+    /** @var string|null */
+    private ?string $user;
+
+    /** @var string|null */
+    private ?string $password;
+
+    /** @var string */
+    private string $host = "";
 
     /** @var int */
-    private $port = 80;
+    private int $port = 80;
 
     /** @var array */
-    private $path = [];
+    private array $path = [];
 
     /** @var array */
-    private $query = [];
+    private array $query = [];
 
     /** @var string */
-    private $fragment = "";
+    private string $fragment = "";
 
     /**
      * Create a URL object.
      *
-     * @param string|null $path
-     * @param Request|null $request
+     * @param string $path
+     * @param ?Request $request
      */
-    public function __construct(string $path = "", Request $request = null)
+    public function __construct(string $path = "", ?Request $request = null)
     {
         $this->setRequest($request ?? static::getStaticRequest());
         $this->init($path);
@@ -82,7 +82,7 @@ class Url
      *
      * @return Request
      */
-    private static function getStaticRequest()
+    private static function getStaticRequest(): Request
     {
         if (!static::$staticRequest) {
             static::$staticRequest = Request::createFromGlobals();
@@ -96,7 +96,7 @@ class Url
      *
      * @return Url
      */
-    public static function here()
+    public static function here(): Url
     {
         $url = new static();
         
@@ -111,7 +111,7 @@ class Url
      *
      * @return Url
      */
-    public static function base()
+    public static function base(): Url
     {
         $url = new static();
         $url->setPath("/");
@@ -124,10 +124,10 @@ class Url
     /**
      * Get a URL to a path.
      *
-     * @param string|string[] ...$path
+     * @param string ...$path
      * @return Url
      */
-    public static function to(string ...$path)
+    public static function to(string ...$path): Url
     {
         $url = new static;
 
@@ -144,9 +144,9 @@ class Url
      * Set the request to be used by the URL object.
      *
      * @param Request $request
-     * @return Url
+     * @return void
      */
-    public function setRequest(Request $request)
+    public function setRequest(Request $request): void
     {
         $this->request = $request;
     }
@@ -156,7 +156,7 @@ class Url
      *
      * @return Request
      */
-    public function getRequest()
+    public function getRequest(): Request
     {
         return $this->request;
     }
@@ -167,9 +167,9 @@ class Url
      * @param string $scheme
      * @return Url
      */
-    public function setScheme(string $scheme)
+    public function setScheme(string $scheme): Url
     {
-        $this->scheme = S::create($scheme)->removeRight("://");
+        $this->scheme = (string) S::create($scheme)->removeRight("://");
 
         return $this;
     }
@@ -181,13 +181,13 @@ class Url
      *
      * @return string
      */
-    public function getScheme()
+    public function getScheme(): string
     {
         if (!$this->host) {
             return "";
         }
 
-        return S::create($this->scheme ?: "http")->ensureRight("://");
+        return (string) S::create($this->scheme ?: "http")->ensureRight("://");
     }
 
     /**
@@ -199,7 +199,7 @@ class Url
      * @param string|null $password
      * @return Url
      */
-    public function setAuth(string $user = null, string $password = null)
+    public function setAuth(string $user = null, string $password = null): Url
     {
         $this->user = null;
         $this->password = null;
@@ -222,7 +222,7 @@ class Url
      *
      * @return string
      */
-    public function getAuth()
+    public function getAuth(): string
     {
         $auth = "";
 
@@ -245,7 +245,7 @@ class Url
      * @param string $host
      * @return Url
      */
-    public function setHost(string $host)
+    public function setHost(string $host): Url
     {
         $this->host = $host;
 
@@ -257,7 +257,7 @@ class Url
      *
      * @return string
      */
-    public function getHost()
+    public function getHost(): string
     {
         return $this->host;
     }
@@ -268,7 +268,7 @@ class Url
      * @param int $port
      * @return Url
      */
-    public function setPort(int $port)
+    public function setPort(int $port): Url
     {
         $this->port = $port;
 
@@ -284,7 +284,7 @@ class Url
      * @param boolean $asNumber Avoid prefixing the port number with a `:`
      * @return string|int
      */
-    public function getPort($asNumber = false)
+    public function getPort(bool $asNumber = false)
     {
         if ($asNumber) {
             return $this->port;
@@ -302,10 +302,10 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string|string[] ...$path
+     * @param string ...$path
      * @return Url
      */
-    public function setPath(string ...$path)
+    public function setPath(string ...$path): Url
     {
         $this->path = [];
 
@@ -322,10 +322,10 @@ class Url
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
-     * @param string|string[] ...$segment
+     * @param string ...$segment
      * @return Url
      */
-    public function addPath(string ...$segment)
+    public function addPath(string ...$segment): Url
     {
         return $this->setPath($this->getPath(), ...$segment);
     }
@@ -336,7 +336,7 @@ class Url
      * @param string $segment
      * @return Url
      */
-    public function removePath(string $segment)
+    public function removePath(string $segment): Url
     {
         $path = $this->path;
 
@@ -356,7 +356,7 @@ class Url
      *
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return "/" . join("/", $this->path);
     }
@@ -368,7 +368,7 @@ class Url
      * @param mixed $value
      * @return Url
      */
-    public function setQueryParam(string $param, $value)
+    public function setQueryParam(string $param, $value): Url
     {
         $this->query[$param] = $value;
 
@@ -381,7 +381,7 @@ class Url
      * @param string $queryString
      * @return Url
      */
-    public function setQueryString(string $queryString)
+    public function setQueryString(string $queryString): Url
     {
         parse_str($queryString, $this->query);
 
@@ -394,7 +394,7 @@ class Url
      * @param array $query
      * @return Url
      */
-    public function setQuery(array $query)
+    public function setQuery(array $query): Url
     {
         $this->query = $query;
 
@@ -404,10 +404,10 @@ class Url
     /**
      * Get the query params.
      *
-     * @param array $keys
+     * @param ?array $keys
      * @return array
      */
-    public function getQuery(array $keys = null)
+    public function getQuery(array $keys = null): array
     {
         return $keys ? array_intersect_key($this->query, array_flip($keys)) : $this->query;
     }
@@ -430,7 +430,7 @@ class Url
      * @param array $query
      * @return Url
      */
-    public function mergeQueryParams(array $query)
+    public function mergeQueryParams(array $query): Url
     {
         $this->query = array_merge($this->query, $query);
 
@@ -444,7 +444,7 @@ class Url
      *
      * @return string
      */
-    public function getQueryString()
+    public function getQueryString(): string
     {
         return $this->query ? "?" . http_build_query($this->query) : "";
     }
@@ -455,7 +455,7 @@ class Url
      * @param string $fragment
      * @return Url
      */
-    public function setFragment(string $fragment)
+    public function setFragment(string $fragment): Url
     {
         $this->fragment = (string) S::create($fragment)->substr(strpos($fragment, "#"))->removeLeft("#");
 
@@ -467,7 +467,7 @@ class Url
      *
      * @return string
      */
-    public function getFragment()
+    public function getFragment(): string
     {
         return $this->fragment ? "#" . $this->fragment : "";
     }
@@ -477,7 +477,7 @@ class Url
      *
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return $this->getScheme()
             . $this->getAuth()
@@ -493,7 +493,7 @@ class Url
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->toString();
     }

@@ -3,6 +3,7 @@
 namespace pew\model\relation;
 
 use pew\model\Collection;
+use pew\model\Record;
 
 /**
  * A many-to-one relationship.
@@ -12,7 +13,7 @@ class BelongsTo extends Relationship
     /**
      * Get the related record or records.
      *
-     * @return mixed
+     * @return Record|array|null
      */
     public function fetch()
     {
@@ -27,7 +28,7 @@ class BelongsTo extends Relationship
      * @param array $relatedKeys
      * @return Collection
      */
-    public function find(array $relatedKeys)
+    public function find(array $relatedKeys): Collection
     {
         $related = $this->finder->where([$this->foreignKeyName => ["IN", $relatedKeys]])->all();
 
@@ -37,7 +38,7 @@ class BelongsTo extends Relationship
     /**
      * {@inheritDoc}
      */
-    public function getGroupingField()
+    public function getGroupingField(): string
     {
         return $this->localKeyName;
     }

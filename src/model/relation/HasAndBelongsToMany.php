@@ -11,7 +11,7 @@ use pew\model\Collection;
 class HasAndBelongsToMany extends Relationship
 {
     /** @var string Association table name */
-    protected $through;
+    protected string $through = "";
 
     /** @var array|string Join condition */
     protected $on;
@@ -23,7 +23,7 @@ class HasAndBelongsToMany extends Relationship
      * @param array $on Condition to join the far table to the association table.
      * @return self
      */
-    public function through($table, array $on)
+    public function through(string $table, array $on): HasAndBelongsToMany
     {
         $this->through = $table;
         $this->on = $on;
@@ -36,7 +36,7 @@ class HasAndBelongsToMany extends Relationship
      *
      * @return Collection
      */
-    public function fetch()
+    public function fetch(): Collection
     {
         $fk = $this->through . "." . $this->foreignKeyName;
 
@@ -52,7 +52,7 @@ class HasAndBelongsToMany extends Relationship
      * @return array
      * @throws Exception
      */
-    public function find(array $relatedKeys)
+    public function find(array $relatedKeys): array
     {
         $fk = $this->through . "." . $this->foreignKeyName;
 
@@ -74,7 +74,7 @@ class HasAndBelongsToMany extends Relationship
      * @param string $field
      * @return array
      */
-    private function groupRecords($records, $field)
+    private function groupRecords($records, $field): array
     {
         $recordClass = $this->finder->recordClass();
         $result = [];
@@ -91,7 +91,7 @@ class HasAndBelongsToMany extends Relationship
     /**
      * {@inheritDoc}
      */
-    public function getGroupingField()
+    public function getGroupingField(): string
     {
         return $this->localKeyName;
     }

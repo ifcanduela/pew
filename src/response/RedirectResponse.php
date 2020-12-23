@@ -9,14 +9,14 @@ use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse
 class RedirectResponse extends Response
 {
     /** @var string */
-    protected $uri;
+    protected string $uri;
 
     /**
      * Creates a RedirectResponse wrapper.
      *
      * @param string $uri
-     * @param SymfonyResponse $response
-     * @param Session $session
+     * @param ?SymfonyResponse $response
+     * @param ?Session $session
      */
     public function __construct(string $uri, SymfonyResponse $response = null, Session $session = null)
     {

@@ -84,10 +84,9 @@ class Record implements JsonSerializable, IteratorAggregate
     /**
      * Get the table manager.
      *
-     * @return Table
-     * @throws ReflectionException
+     * @return ?Table
      */
-    public function getTableManager()
+    public function getTableManager(): ?Table
     {
         return TableManager::instance()->create(static::class);
     }
@@ -97,7 +96,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @return array
      */
-    public function columns()
+    public function columns(): array
     {
         static $columns;
 
@@ -111,7 +110,7 @@ class Record implements JsonSerializable, IteratorAggregate
     /**
      * Get the value of the primary key for the current record.
      *
-     * @return string
+     * @return mixed
      */
     public function primaryKeyValue()
     {
@@ -125,7 +124,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param bool $isNew
      * @return static
      */
-    public static function fromArray(array $data, bool $isNew = true)
+    public static function fromArray(array $data, bool $isNew = true): Record
     {
         $record = new static;
         $record->attributes($data);
@@ -141,7 +140,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param array $parameters
      * @return Collection
      */
-    public static function fromQuery(string $query, array $parameters = [])
+    public static function fromQuery(string $query, array $parameters = []): Collection
     {
         $record = new static();
 
@@ -157,7 +156,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->attributes();
     }
@@ -168,7 +167,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * This method will only update values for fields set in the $attributes
      * argument.
      *
-     * @param array $attributes Associative array of column names and values
+     * @param ?array $attributes Associative array of column names and values
      * @return self|array An associative array of current column names and values or the object itself
      */
     public function attributes(array $attributes = null)
@@ -201,7 +200,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param string $key
      * @return boolean
      */
-    public function hasAttribute($key)
+    public function hasAttribute(string $key): bool
     {
         return array_key_exists($key, $this->record) || property_exists($this, $key);
     }
@@ -211,7 +210,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @return bool
      */
-    public function save()
+    public function save(): bool
     {
         $result = $this->tableManager->save($this);
 
@@ -228,7 +227,7 @@ class Record implements JsonSerializable, IteratorAggregate
     /**
      * Deletes the current record.
      *
-     * @return int
+     * @return \PdoStatement|array|int
      */
     public function delete()
     {
@@ -246,8 +245,9 @@ class Record implements JsonSerializable, IteratorAggregate
      * Update all records that match a condition.
      *
      * @param array $values
-     * @param array|null $condition
-     * @return int Number of affected rows.
+     * @param ?array $condition
+     *
+     * @return \PdoStatement|array|int Number of affected rows.
      */
     public static function updateAll(array $values, array $condition = null)
     {
@@ -267,7 +267,8 @@ class Record implements JsonSerializable, IteratorAggregate
      * Delete all records that match a condition.
      *
      * @param array|null $condition
-     * @return int Number of affected rows.
+     *
+     * @return \PdoStatement|array|int Number of affected rows.
      */
     public static function deleteAll(array $condition = null)
     {
@@ -286,7 +287,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @return ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->record);
     }
@@ -296,7 +297,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @return object
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): object
     {
         $include = $this->attributes();
         $exclude = array_flip($this->doNotSerialize);
@@ -315,7 +316,6 @@ class Record implements JsonSerializable, IteratorAggregate
      * Returns a Table object to perform queries against.
      *
      * @return Table
-     * @throws ReflectionException
      */
     public static function find()
     {
@@ -332,8 +332,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * Find one record by primary key.
      *
      * @param mixed $id A primary key value
-     * @return static
-     * @throws ReflectionException
+     * @return null|self
      */
     public static function findOne($id)
     {
@@ -350,9 +349,8 @@ class Record implements JsonSerializable, IteratorAggregate
      * Returns a Table object to perform update queries against.
      *
      * @return Table
-     * @throws ReflectionException
      */
-    public static function update()
+    public static function update(): Table
     {
         $table = TableManager::instance()->create(static::class);
 
@@ -366,7 +364,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param mixed $value Value to store
      * @return self
      */
-    public function __set($key, $value)
+    public function __set(string $key, $value)
     {
         $className = get_class($this);
 
@@ -396,7 +394,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @return mixed Stored value
      * @throws Exception
      */
-    public function __get($key)
+    public function __get(string $key)
     {
         $methodName = $this->hasRelationship($key);
 
@@ -430,7 +428,7 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param mixed $key Key to check
      * @return bool True if the key has been set, false otherwise.
      */
-    public function __isset($key)
+    public function __isset(string $key): bool
     {
         return $this->hasAttribute($key);
     }
@@ -451,9 +449,8 @@ class Record implements JsonSerializable, IteratorAggregate
      * @param string $method
      * @param array  $arguments
      * @return mixed
-     * @throws ReflectionException
      */
-    public static function __callStatic($method, $arguments)
+    public static function __callStatic(string $method, array $arguments)
     {
         $methodStr = S::create($method);
 
@@ -479,7 +476,7 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @return array
      */
-    public function __sleep()
+    public function __sleep(): array
     {
         $this->tableManager = null;
 
@@ -490,7 +487,6 @@ class Record implements JsonSerializable, IteratorAggregate
      * Restore the database manager after deserialization.
      *
      * @return void
-     * @throws ReflectionException
      */
     public function __wakeup()
     {

@@ -12,22 +12,22 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class Response
 {
     /** @var bool */
-    protected $isJsonResponse = false;
+    protected bool $isJsonResponse = false;
 
     /** @var SymfonyResponse */
-    protected $response;
+    protected SymfonyResponse $response;
 
     /** @var string */
-    protected $content = false;
+    protected string $content = "";
 
     /** @var Session */
-    protected $session;
+    protected Session $session;
 
     /**
      * Creates a generic Response wrapper.
      *
-     * @param SymfonyResponse $response
-     * @param Session $session
+     * @param ?SymfonyResponse $response
+     * @param ?Session $session
      */
     public function __construct(SymfonyResponse $response = null, Session $session = null)
     {
@@ -41,7 +41,7 @@ class Response
      * @param int $httpStatusCode
      * @return self
      */
-    public function code(int $httpStatusCode)
+    public function code(int $httpStatusCode): Response
     {
         $this->response->setStatusCode($httpStatusCode);
 
@@ -55,7 +55,7 @@ class Response
      * @param string|null $value
      * @return self
      */
-    public function cookie($cookie, string $value = null)
+    public function cookie($cookie, string $value = null): Response
     {
         if ($cookie instanceof SymfonyCookie) {
             $this->response->headers->setCookie($cookie);
@@ -73,7 +73,7 @@ class Response
      * @param string $message
      * @return self
      */
-    public function flash(string $type, string $message)
+    public function flash(string $type, string $message): Response
     {
         $this->session->getFlashBag()->add($type, $message);
 
@@ -87,7 +87,7 @@ class Response
      * @param string $value
      * @return self
      */
-    public function header(string $header, string $value)
+    public function header(string $header, string $value): Response
     {
         $this->response->headers->set($header, $value);
 
@@ -100,7 +100,7 @@ class Response
      * @param bool $isJsonResponse
      * @return self
      */
-    public function json($isJsonResponse = true)
+    public function json($isJsonResponse = true): Response
     {
         $this->isJsonResponse = $isJsonResponse;
 
@@ -113,7 +113,7 @@ class Response
      * @param string $content
      * @return self
      */
-    public function setContent(string $content)
+    public function setContent(string $content): Response
     {
         $this->response->setContent($content);
 
@@ -123,7 +123,7 @@ class Response
     /**
      * Get the text content of the response.
      *
-     * @return string|false
+     * @return string
      */
     public function getContent(): string
     {
@@ -145,7 +145,7 @@ class Response
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         $response = $this->getResponse();
 

@@ -71,9 +71,10 @@ class ActionResolver
      * Get the action method name.
      *
      * @param string $defaultAction
-     * @return string
+     *
+     * @return ?string
      */
-    public function getAction(string $defaultAction = "index")
+    public function getAction(string $defaultAction = "index"): ?string
     {
         $handler = $this->route->getHandler();
 

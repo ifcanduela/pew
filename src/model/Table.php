@@ -126,8 +126,10 @@ class Table
 
     /**
      * Initialize a database table gateway.
+     *
+     * @return void
      */
-    public function init()
+    public function init(): void
     {
         if (!$this->db->tableExists($this->tableName)) {
             throw new TableNotFoundException("Table `{$this->tableName}` not found");
@@ -306,7 +308,9 @@ class Table
     /**
      * Retrieve one record matching the query.
      *
-     * @return Record|null
+     * If a class for the retrieved record cannot be found, an array will be returned.
+     *
+     * @return Record|array|null
      */
     public function one()
     {
@@ -319,9 +323,11 @@ class Table
     /**
      * Fetch a list of records.
      *
+     * If a class for the retrieved records cannot be found, arrays will be returned.
+     *
      * @return Collection
      */
-    public function all()
+    public function all(): Collection
     {
         $className = $this->recordClass;
         $models = [];
@@ -343,7 +349,7 @@ class Table
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         # clone the current query
         $query = clone $this->query;
@@ -354,7 +360,7 @@ class Table
         # query the database
         $result = $this->db->run($query);
 
-        return $result[0]["row_count"];
+        return (int) $result[0]["row_count"];
     }
 
     /**
@@ -363,8 +369,8 @@ class Table
      * If the $primary_key field is set, it performs an UPDATE. If not, it
      * INSERTs the data.
      *
-     * @param Record|array $model An array or array-like object with column names and values
-     * @return array The saved item on success, false otherwise
+     * @param Record $model
+     * @return Record|array The saved item on success, false otherwise
      */
     public function save(Record $model)
     {
@@ -406,7 +412,7 @@ class Table
      * Inserts a record into the table.
      *
      * @param array $record An array or array-like object with column names and values
-     * @param string $timestampField The name of the column that stores the creation timestamp
+     * @param ?string $timestampField The name of the column that stores the creation timestamp
      * @return mixed The primary key value of the inserted item.
      */
     protected function insertRecord(array $record, string $timestampField = null)
@@ -426,7 +432,7 @@ class Table
      * Updates a record in the table.
      *
      * @param array $record An array or array-like object with column names and values
-     * @param string $timestampField The name of the column that stores the update timestamp
+     * @param ?string $timestampField The name of the column that stores the update timestamp
      * @return mixed The primary key value of the updated item.
      */
     protected function updateRecord(array $record, string $timestampField = null)
@@ -456,7 +462,8 @@ class Table
      * @param mixed $id The value of the PK field of the row to delete, null to
      *                  use the model's $where conditions, or boolean true to
      *                  delete every record in the table
-     * @return bool True on success, false other wise
+     *
+     * @return PdoStatement|array|int True on success, false other wise
      */
     public function deleteRecord($id = null)
     {

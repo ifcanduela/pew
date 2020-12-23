@@ -14,7 +14,7 @@ class HasMany extends Relationship
      *
      * @return Collection
      */
-    public function fetch()
+    public function fetch(): Collection
     {
         return $this->finder->where([$this->foreignKeyName => $this->keyValue])->all();
     }
@@ -37,7 +37,7 @@ class HasMany extends Relationship
     /**
      * {@inheritDoc}
      */
-    public function getGroupingField()
+    public function getGroupingField(): string
     {
         return $this->localKeyName;
     }

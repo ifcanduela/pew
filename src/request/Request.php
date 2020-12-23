@@ -7,12 +7,23 @@ namespace pew\request;
  */
 class Request extends \Symfony\Component\HttpFoundation\Request
 {
-    /** @var string */
-    protected $appUrl;
+    /** @var string|null */
+    protected ?string $appUrl;
 
     /** @var bool|null */
-    protected $acceptsJson;
+    protected ?bool $acceptsJson;
 
+    /**
+     * Request constructor.
+     *
+     * @param ?array $query
+     * @param ?array $request
+     * @param ?array $attributes
+     * @param ?array $cookies
+     * @param ?array $files
+     * @param ?array $server
+     * @param ?string $content
+     */
     public function __construct(array $query = [], array $request = [], array $attributes = [], array $cookies = [], array $files = [], array $server = [], $content = null)
     {
         parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
@@ -34,9 +45,9 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return string
      */
-    public function appUrl()
+    public function appUrl(): string
     {
-        if (!$this->appUrl) {
+        if (!isset($this->appUrl)) {
             $appUrl = $this->getSchemeAndHttpHost() . $this->getBaseUrl();
             # find out the script filename
             $scriptFileName = preg_quote(pathinfo($this->getScriptName(), PATHINFO_BASENAME));
@@ -52,7 +63,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return bool
      */
-    public function isPost()
+    public function isPost(): bool
     {
         return $this->isMethod("POST");
     }
@@ -62,7 +73,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return bool
      */
-    public function isGet()
+    public function isGet(): bool
     {
         return $this->isMethod("GET");
     }
@@ -75,7 +86,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return string
      */
-    public function method()
+    public function method(): string
     {
         $method = $this->request->get("_method") ?? $this->getMethod();
 
@@ -89,7 +100,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @param string|null $key
      * @param mixed $default
-     * @return string|array
+     * @return string|array|null
      */
     public function post($key = null, $default = null)
     {
@@ -108,7 +119,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return bool
      */
-    public function isJson()
+    public function isJson(): bool
     {
         return $this->acceptsJson();
     }
@@ -131,9 +142,9 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return bool
      */
-    public function acceptsJson()
+    public function acceptsJson(): bool
     {
-        if ($this->acceptsJson === null) {
+        if (!isset($this->acceptsJson)) {
             $this->acceptsJson = false;
 
             # check if the requested URL ends in '.json' or '|json'

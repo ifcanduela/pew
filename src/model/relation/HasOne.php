@@ -13,7 +13,7 @@ class HasOne extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return Record
+     * @return Record|array|null
      */
     public function fetch()
     {
@@ -28,7 +28,7 @@ class HasOne extends Relationship
      * @param array $relatedKeys
      * @return Collection
      */
-    public function find(array $relatedKeys)
+    public function find(array $relatedKeys): Collection
     {
         $related = $this->finder->where([$this->localKeyName => ['IN', $relatedKeys]])->all();
 
@@ -38,7 +38,7 @@ class HasOne extends Relationship
     /**
      * {@inheritDoc}
      */
-    public function getGroupingField()
+    public function getGroupingField(): string
     {
         return $this->localKeyName;
     }

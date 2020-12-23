@@ -111,17 +111,20 @@ class TableManager
      * Create a table factory for a specific database table.
      *
      * @param string $recordClass
-     * @param string|null $connectionName
-     * @return Table
-     * @throws ReflectionException
+     * @param ?string $connectionName
+     * @return ?Table
      */
-    public function create(string $recordClass, $connectionName = null)
+    public function create(string $recordClass, ?string $connectionName = null): ?Table
     {
         # Check if the information is cached
         if (!isset($this->cachedRecordClasses[$recordClass])) {
             # Fetch default properties (tableName and connectionName)
-            $reflectionClass = new ReflectionClass($recordClass);
-            $defaultProperties = $reflectionClass->getDefaultProperties();
+            try {
+                $reflectionClass = new ReflectionClass($recordClass);
+                $defaultProperties = $reflectionClass->getDefaultProperties();
+            } catch (\ReflectionException $e) {
+                throw new \LogicException("Missing record class `$recordClass`");
+            }
 
             # Cache the properties
             $this->cachedRecordClasses[$recordClass] = [

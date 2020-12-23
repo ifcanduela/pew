@@ -22,7 +22,7 @@ class RoutesCommand extends Command
      * Run the command.
      *
      * @param CommandArguments $arguments
-     * @param Route[] $routes
+     * @param Router $router
      * @return void
      * @throws Exception
      */
@@ -77,11 +77,10 @@ class RoutesCommand extends Command
     /**
      * Extract information from a route object or array.
      *
-     * @param Route|array $route
-     * @param Group|null $group
+     * @param Route $route
      * @return array
      */
-    public function processRoute(Route $route)
+    public function processRoute(Route $route): array
     {
         $name = $route->getName();
         $handler = $route->getHandler();

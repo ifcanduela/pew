@@ -14,16 +14,16 @@ use pew\View;
 class Controller
 {
     /** @var Request */
-    public $request;
+    public Request $request;
 
     /** @var View */
-    public $view;
+    public View $view;
 
     /**
      * @param Request $request
-     * @param View|null $view
+     * @param ?View $view
      */
-    public function __construct(Request $request, View $view = null)
+    public function __construct(Request $request, ?View $view = null)
     {
         $this->request = $request;
         $this->view = $view;
@@ -35,7 +35,7 @@ class Controller
      * @param string $uri
      * @return RedirectResponse
      */
-    public function redirect(string $uri)
+    public function redirect(string $uri): RedirectResponse
     {
         return new RedirectResponse($uri);
     }
@@ -46,7 +46,7 @@ class Controller
      * @param mixed $data
      * @return JsonResponse
      */
-    public function json($data)
+    public function json($data): JsonResponse
     {
         return new JsonResponse($data);
     }
@@ -58,13 +58,13 @@ class Controller
      * to `$view->template(string $template)` has been made beforehand.
      *
      * @param string $template
-     * @param array  $data
+     * @param ?array $data
      * @return HtmlResponse
      * @throws Exception
      */
-    public function render(string $template, array $data = [])
+    public function render(string $template, array $data = []): HtmlResponse
     {
-        if ($template !== null) {
+        if ($template) {
             $this->view->template($template);
         }
 
