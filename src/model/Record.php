@@ -331,8 +331,11 @@ class Record implements JsonSerializable, IteratorAggregate
     /**
      * Find one record by primary key.
      *
-     * @param mixed $id A primary key value
-     * @return null|self
+     * When an array is passed, it will be used for the query instead of the
+     * primary key.
+     *
+     * @param mixed $id A primary key value, or an array of attributes
+     * @return null|static
      */
     public static function findOne($id)
     {
@@ -342,7 +345,38 @@ class Record implements JsonSerializable, IteratorAggregate
             ->columns($table->tableName() . ".*")
             ->from($table->tableName());
 
-        return $table->where([$table->primaryKey() => $id])->one();
+        $attributes = is_array($id) ? $id : [
+            $table->primaryKey() => $id,
+        ];
+
+        return $table->where($attributes)->one();
+    }
+
+    /**
+     * Find a record, or create if it does not exist.
+     *
+     * Use `$findAttributes` to search for a record. If it's not found, the
+     * items in `$createAttributes` will be added to `$findAttributes`, and the
+     * primary key will be removed from it, to create a new record.
+     *
+     * @param array $findAttributes Query attributes
+     * @param array $createAttributes Additional attributes to save
+     * @return static
+     */
+    public static function findOrCreate(array $findAttributes, array $createAttributes): self
+    {
+        $table = static::find();
+        $record = $table->where($findAttributes)->one();
+
+        if (!$record) {
+            $attributes = array_merge($findAttributes, $createAttributes);
+            unset($attributes[$table->primaryKey()]);
+
+            $record = static::fromArray($attributes);
+            $record->save();
+        }
+
+        return $record;
     }
 
     /**
