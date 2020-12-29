@@ -190,7 +190,7 @@ $container->alias(Session::class, "session");
 $container[TableManager::class] = function (Container $c): TableManager {
     $dbConfig = $c["db_config"];
     $tableManager = new TableManager();
-    $tableManager->setDefaultConnection($c["use_db"]);
+    $tableManager->setDefaultConnectionName($c["use_db"]);
     $logger = null;
 
     if (isset($dbConfig["log_queries"]) && $dbConfig["log_queries"]) {

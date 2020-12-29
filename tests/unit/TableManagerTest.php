@@ -58,10 +58,10 @@ class TableManagerTest extends PHPUnit\Framework\TestCase
     {
         $tm = new TableManager();
 
-        $this->assertEquals("default", $tm->getDefaultConnection());
+        $this->assertEquals("default", $tm->getDefaultConnectionName());
 
-        $tm->setDefaultConnection("dev");
-        $this->assertEquals("dev", $tm->getDefaultConnection());
+        $tm->setDefaultConnectionName("dev");
+        $this->assertEquals("dev", $tm->getDefaultConnectionName());
     }
 
     public function testInstance()

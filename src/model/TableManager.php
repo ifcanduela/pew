@@ -2,6 +2,7 @@
 
 namespace pew\model;
 
+use LogicException;
 use ifcanduela\db\Database;
 use InvalidArgumentException;
 use ReflectionClass;
@@ -23,7 +24,7 @@ class TableManager
     protected $cachedRecordClasses = [];
 
     /** @var string */
-    protected $defaultConnection = "default";
+    protected $defaultConnectionName = "default";
 
     /** @var static  */
     protected static $instance;
@@ -49,11 +50,16 @@ class TableManager
      * Set the default database connection to use.
      *
      * @param string $connectionName
+     * @param null|Database|callable $databaseConnection
      * @return void
      */
-    public function setDefaultConnection(string $connectionName)
+    public function setDefaultConnectionName(string $connectionName, $databaseConnection = null)
     {
-        $this->defaultConnection = $connectionName;
+        $this->defaultConnectionName = $connectionName;
+
+        if ($databaseConnection) {
+            $this->setConnection($connectionName, $databaseConnection);
+        }
     }
 
     /**
@@ -61,9 +67,9 @@ class TableManager
      *
      * @return string
      */
-    public function getDefaultConnection()
+    public function getDefaultConnectionName()
     {
-        return $this->defaultConnection;
+        return $this->defaultConnectionName;
     }
 
     /**
@@ -123,13 +129,13 @@ class TableManager
                 $reflectionClass = new ReflectionClass($recordClass);
                 $defaultProperties = $reflectionClass->getDefaultProperties();
             } catch (\ReflectionException $e) {
-                throw new \LogicException("Missing record class `$recordClass`");
+                throw new LogicException("Missing record class `$recordClass`");
             }
 
             # Cache the properties
             $this->cachedRecordClasses[$recordClass] = [
                 $defaultProperties["tableName"] ?? static::guessTableName($recordClass),
-                $defaultProperties["connectionName"] ?? $connectionName ?? $this->defaultConnection,
+                $defaultProperties["connectionName"] ?? $connectionName ?? $this->defaultConnectionName,
             ];
         }
 
