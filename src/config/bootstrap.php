@@ -106,9 +106,9 @@ $container["db_config"] = function (Container $c): array {
 };
 
 $container["db_log"] = function (Container $c): LoggerInterface {
-    $logger = new Monolog\Logger("DB log");
+    $logger = new Logger("DB log");
     $logfile = $c["app_path"] . "/logs/db.log";
-    $logger->pushHandler(new StreamHandler($logfile, Monolog\Logger::DEBUG));
+    $logger->pushHandler(new StreamHandler($logfile, Logger::DEBUG));
 
     return $logger;
 };

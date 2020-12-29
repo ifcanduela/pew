@@ -45,21 +45,21 @@ class Table
      *
      * @var Database
      */
-    public $db = null;
+    public $db;
 
     /**
      * Database table for the subject of the model.
      *
      * @var string
      */
-    protected $tableName = null;
+    protected $tableName;
 
     /**
      * Name of the primary key fields of the table the Model manages.
      *
      * @var string
      */
-    protected $primaryKey = null;
+    protected $primaryKey;
 
     /**
      * Miscellaneous table metadata.

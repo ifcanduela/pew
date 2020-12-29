@@ -100,7 +100,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @param string|null $key
      * @param mixed $default
-     * @return string|array|null
+     * @return mixed|null
      */
     public function post($key = null, $default = null)
     {
