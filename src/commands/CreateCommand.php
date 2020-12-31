@@ -204,7 +204,7 @@ PHP;
      * @param string $filename
      * @return void
      */
-    public function createFile(string $content, string $filename)
+    protected function createFile(string $content, string $filename)
     {
         if (!file_exists($filename)) {
             file_put_contents($filename, $content);

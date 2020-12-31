@@ -4,11 +4,13 @@ namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
 use ReflectionClass;
+use ReflectionMethod;
 use ReflectionException;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use phpDocumentor\Reflection\DocBlockFactory;
 
 class App extends \pew\App
 {
@@ -111,16 +113,21 @@ class App extends \pew\App
      * @param string $commandFilename
      * @param string $namespace
      * @return void
-     * @throws ReflectionException
-     * @throws ReflectionException
      */
     protected function addCommand(string $commandFilename, string $namespace)
     {
+        # Full class name with namespace
         $className = pathinfo($commandFilename, PATHINFO_FILENAME);
         $fullClassName = "{$namespace}{$className}";
 
-        $r = new ReflectionClass($fullClassName);
-        $defaultProperties = $r->getDefaultProperties();
+        try {
+            $reflectionClass = new ReflectionClass($fullClassName);
+        } catch (\ReflectionException $e) {
+            $this->output->writeln("Error reading command class file: {$commandFilename} ({$namespace})");
+        }
+
+        # Figure out the base command name
+        $defaultProperties = $reflectionClass->getDefaultProperties();
         $name = (string) $defaultProperties["name"] ?? Str::create($className)
             ->removeRight("Command")
             ->underscored()
@@ -128,8 +135,67 @@ class App extends \pew\App
 
         $description = $defaultProperties["description"] ?? "";
 
+        # Add the command to the list
         $definition = new CommandDefinition($name, $fullClassName, $description);
         $this->availableCommands[$definition->name] = $definition;
+
+        # Search for sub-commands
+
+        # Get public methods
+        $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
+        # Get a whitelist of valid command names
+        $methodNames = $this->getCommandMethodNames($fullClassName);
+
+        foreach ($methods as $method) {
+            $methodName = $method->getName();
+
+            # Check that the method is in the whitelist
+            if (in_array($methodName, $methodNames, true)) {
+                $commandName = $name . ":" . $methodName;
+                $comment = $method->getDocComment();
+                $description = "";
+
+                if ($comment) {
+                    $doc = DocBlockFactory::createInstance()->create($comment);
+                    $description = $doc->getSummary();
+                }
+
+                # Add the command to the list
+                $definition = new CommandDefinition($commandName, $fullClassName, $description);
+                $this->availableCommands[$definition->name] = $definition;
+            }
+        }
+    }
+
+    /**
+     * Build a list of available command method names for a class.
+     *
+     * @param string $className
+     * @return string[]
+     */
+    protected function getCommandMethodNames(string $className): array
+    {
+        $parentMethods = get_class_methods(Command::class);
+        $methods = get_class_methods($className);
+        $result = [];
+
+        foreach ($methods as $methodName) {
+            if (substr($methodName, 0, 2) == "__") {
+                continue;
+            }
+
+            if (in_array($methodName, ["run", "help"])) {
+                continue;
+            }
+
+            if (in_array($methodName, $parentMethods)) {
+                continue;
+            }
+
+            $result[] = $methodName;
+        }
+
+        return $result;
     }
 
     /**
@@ -159,9 +225,11 @@ class App extends \pew\App
     /**
      * Retrieve all arguments of a command call.
      *
+     * Returns an array with `command` and `argumgents` keys
+     *
      * @return array
      */
-    public function getArguments()
+    public function getArguments(): array
     {
         $argv = $_SERVER["argv"];
         $scriptName = array_shift($argv);

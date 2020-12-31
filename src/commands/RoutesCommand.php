@@ -80,7 +80,7 @@ class RoutesCommand extends Command
      * @param Route $route
      * @return array
      */
-    public function processRoute(Route $route): array
+    protected function processRoute(Route $route): array
     {
         $name = $route->getName();
         $handler = $route->getHandler();

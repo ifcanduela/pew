@@ -78,7 +78,7 @@ abstract class Command
      * @param string $format
      * @return void
      */
-    protected function message($text, bool $newLine = true, string $format = "")
+    public function message($text, bool $newLine = true, string $format = "")
     {
         if (!is_array($text)) {
             $text = [$text];
@@ -100,7 +100,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    protected function info($text, bool $newLine = true)
+    public function info($text, bool $newLine = true)
     {
         $this->message($text, $newLine, "<info>");
     }
@@ -112,7 +112,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    protected function success($text, bool $newLine = true)
+    public function success($text, bool $newLine = true)
     {
         $this->message($text, $newLine, "<success>");
     }
@@ -124,7 +124,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    protected function warning($text, bool $newLine = true)
+    public function warning($text, bool $newLine = true)
     {
         $this->message($text, $newLine, "<warn>");
     }
@@ -136,7 +136,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    protected function error($text, bool $newLine = true)
+    public function error($text, bool $newLine = true)
     {
         $this->message($text, $newLine, "<error>");
     }
@@ -148,7 +148,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    protected function log(string $message, bool $newLine = true)
+    public function log(string $message, bool $newLine = true)
     {
         $this->message($message, $newLine, "<comment>");
     }
@@ -160,7 +160,7 @@ abstract class Command
      * @param string $defaultAnswer
      * @return string
      */
-    protected function ask(string $question, string $defaultAnswer = "")
+    public function ask(string $question, string $defaultAnswer = "")
     {
         $q = new Question($question, $defaultAnswer);
 
@@ -174,7 +174,7 @@ abstract class Command
      * @param bool $defaultAnswer
      * @return bool
      */
-    protected function confirm(string $question, bool $defaultAnswer = true)
+    public function confirm(string $question, bool $defaultAnswer = true)
     {
         $q = new ConfirmationQuestion($question, $defaultAnswer);
 
@@ -189,7 +189,7 @@ abstract class Command
      * @param mixed $defaultAnswer
      * @return mixed
      */
-    protected function choose(string $question, array $options, $defaultAnswer = 0)
+    public function choose(string $question, array $options, $defaultAnswer = 0)
     {
         $q = new ChoiceQuestion($question, $options, $defaultAnswer);
 
