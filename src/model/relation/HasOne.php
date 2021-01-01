@@ -2,7 +2,7 @@
 
 namespace pew\model\relation;
 
-use pew\model\Collection;
+use pew\model\RecordCollection;
 use pew\model\Record;
 
 /**
@@ -26,9 +26,9 @@ class HasOne extends Relationship
      * Returns a list of records per foreign key.
      *
      * @param array $relatedKeys
-     * @return Collection
+     * @return RecordCollection
      */
-    public function find(array $relatedKeys): Collection
+    public function find(array $relatedKeys): RecordCollection
     {
         $related = $this->finder->where([$this->localKeyName => ['IN', $relatedKeys]])->all();
 

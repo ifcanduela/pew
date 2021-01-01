@@ -20,7 +20,16 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $commandNames = array_keys($this->app->availableCommands);
 
         $this->assertEquals("Console App Test", $this->app->get("app_title"));
-        $this->assertEquals(["create", "routes", "test"], $commandNames);
+        $this->assertEquals([
+            "create",
+            "create:command",
+            "create:controller",
+            "create:middleware",
+            "create:model",
+            "routes",
+            "test",
+            "test:alternate",
+        ], $commandNames);
     }
 
     public function testEmptyArgumentList()

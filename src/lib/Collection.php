@@ -1,6 +1,6 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace pew\model;
+namespace pew\lib;
 
 use ArrayAccess;
 use ArrayIterator;
@@ -11,10 +11,6 @@ use RecursiveArrayIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 
-/**
- * Collection wraps an array and provides an object-oriented interface to the most common
- * array functions, and some extra functionality.
- */
 class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
     /** @var array Collection items */
@@ -235,10 +231,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * Get the first item or items in the collection.
      *
      * @param integer $count
-     * @return static|mixed
+     * @return mixed
      */
     public function first(int $count = 1)
     {
+        $count = max(1, $count);
+
         if ($count === 1) {
             return $this->items[0];
         }
@@ -441,10 +439,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * Get the last item or items in the collection.
      *
      * @param int $count
-     * @return static|mixed
+     * @return mixed
      */
     public function last(int $count = 1)
     {
+        $count = max(1, $count);
+
         if ($count === 1) {
             return $this->items[count($this->items) - 1];
         }
@@ -521,8 +521,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Take one or more random items from the collection.
      *
+     * Returns null if the collection is empty. Return a Collection with the
+     * random items if `$count` is more than 1, otherwise will return a single
+     * random item.
+     *
      * @param int $count
-     * @return static|mixed
+     * @return mixed
      */
     public function random(int $count = 1)
     {
@@ -530,7 +534,9 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             return null;
         }
 
-        $single = $count === 1;
+        $count = max(1, $count);
+
+        $returnFirstItem = $count === 1;
         $items = [];
 
         while ($count--) {
@@ -538,7 +544,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             $items[] = $this->items[$i];
         }
 
-        if ($single && $items) {
+        if ($returnFirstItem && $items) {
             return $items[0];
         }
 
@@ -625,10 +631,9 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * Sort the items in the collection.
      *
      * @param string|callable|null $field
-     * @param bool $reverse
      * @return static
      */
-    public function sort($field = null, $reverse = false): Collection
+    public function sort($field = null): Collection
     {
         $items = $this->items;
 
@@ -646,10 +651,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             );
         } else {
             sort($items);
-        }
-
-        if ($reverse) {
-            $items = array_reverse($items);
         }
 
         return new static($items);
@@ -670,8 +671,12 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 
         $values = $callToArrayOnItems ? array_map(
             function ($item) {
-                if (method_exists($item, "toArray")) {
-                    return $item->toArray();
+                if (is_object($item)) {
+                    if (method_exists($item, "toArray")) {
+                        return $item->toArray();
+                    }
+
+                    return get_object_vars($item);
                 }
 
                 return $item;

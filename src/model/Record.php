@@ -138,15 +138,15 @@ class Record implements JsonSerializable, IteratorAggregate
      *
      * @param string $query
      * @param array $parameters
-     * @return Collection
+     * @return RecordCollection
      */
-    public static function fromQuery(string $query, array $parameters = []): Collection
+    public static function fromQuery(string $query, array $parameters = []): RecordCollection
     {
         $record = new static();
 
         $result = $record->tableManager->query($query, $parameters);
 
-        return new Collection(array_map(function ($r) {
+        return new RecordCollection(array_map(function ($r) {
             return static::fromArray($r);
         }, $result));
     }

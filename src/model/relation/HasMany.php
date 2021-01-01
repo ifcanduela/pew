@@ -2,7 +2,7 @@
 
 namespace pew\model\relation;
 
-use pew\model\Collection;
+use pew\model\RecordCollection;
 
 /**
  * A one-to-many relationship.
@@ -12,9 +12,9 @@ class HasMany extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return Collection
+     * @return RecordCollection
      */
-    public function fetch(): Collection
+    public function fetch(): RecordCollection
     {
         return $this->finder->where([$this->foreignKeyName => $this->keyValue])->all();
     }
@@ -25,7 +25,7 @@ class HasMany extends Relationship
      * Returns a list of records per foreign key.
      *
      * @param array $relatedKeys
-     * @return Collection
+     * @return RecordCollection
      */
     public function find(array $relatedKeys)
     {

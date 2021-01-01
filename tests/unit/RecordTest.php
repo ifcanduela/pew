@@ -125,7 +125,7 @@ class RecordTest extends PHPUnit\Framework\TestCase
         # retrieve a list of records based on an SQL query
         $projects = Project::fromQuery('SELECT * FROM projects WHERE id > 1');
 
-        $this->assertInstanceOf(\pew\model\Collection::class, $projects);
+        $this->assertInstanceOf(\pew\model\RecordCollection::class, $projects);
         $this->assertInstanceOf(Project::class, $projects[0]);
     }
 
@@ -283,10 +283,10 @@ class RecordTest extends PHPUnit\Framework\TestCase
         $p1tags = $p1->tags;
         $p2tags = $p2->tags;
 
-        $this->assertInstanceOf(\pew\model\Collection::class, $p1tags);
+        $this->assertInstanceOf(\pew\model\RecordCollection::class, $p1tags);
         $this->assertEquals(2, $p1tags->count());
 
-        $this->assertInstanceOf(\pew\model\Collection::class, $p2tags);
+        $this->assertInstanceOf(\pew\model\RecordCollection::class, $p2tags);
         $this->assertEquals(1, $p2tags->count());
     }
 

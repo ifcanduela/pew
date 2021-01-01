@@ -1,10 +1,10 @@
 <?php
 
-use pew\model\Collection;
+use pew\lib\Collection;
 
 class CollectionTest extends PHPUnit\Framework\TestCase
 {
-    private function getLetterCollection()
+    private function getLetterCollection(): Collection
     {
         return new Collection([
             ["letter" => "Α", "type"=> "uppercase"],
@@ -20,15 +20,15 @@ class CollectionTest extends PHPUnit\Framework\TestCase
     {
         $c = new Collection([0, 1, 2, 3]);
         $this->assertInstanceOf(Collection::class, $c);
-        $this->assertEquals(4, count($c));
+        $this->assertCount(4, $c);
 
         $c = Collection::create([0, 1, 2, 3]);
         $this->assertInstanceOf(Collection::class, $c);
-        $this->assertEquals(4, count($c));
+        $this->assertCount(4, $c);
 
         $c = Collection::fromArray([0, 1, 2, 3]);
         $this->assertInstanceOf(Collection::class, $c);
-        $this->assertEquals(4, count($c));
+        $this->assertCount(4, $c);
     }
 
     public function testOffsetExists()
@@ -87,7 +87,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(4, $c->count());
         unset($c[2]);
 
-        $this->assertEquals(3, count($c));
+        $this->assertCount(3, $c);
     }
 
     public function testGetIterator()
@@ -113,7 +113,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
         $c = $c->append([1, 2, 3], [4], [5], [6]);
 
-        $this->assertEquals(10, count($c));
+        $this->assertCount(10, $c);
         $this->assertEquals([0, 1, 2, 3, 1, 2, 3, 4, 5, 6], $c->toArray());
     }
 
@@ -122,7 +122,7 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $c = Collection::fromArray([0, 1, 2, 3]);
         $chunks = $c->chunk(3);
 
-        $this->assertEquals(2, count($chunks));
+        $this->assertCount(2, $chunks);
         $this->assertEquals([[0, 1, 2], [3]], $chunks->toArray(true));
     }
 
@@ -417,12 +417,12 @@ class CollectionTest extends PHPUnit\Framework\TestCase
 
         $sortedLetters = $letters->sort(function ($a, $b) {
             return $a->position - $b->position;
-        }, true);
+        });
 
-        $result = array_reverse($letters->toArray());
+        $result = $letters->toArray();
         $this->assertEquals($result, $sortedLetters->toArray());
 
-        $moreSortedLetters = $letters->sort("position", true);
+        $moreSortedLetters = $letters->sort("position");
         $this->assertEquals($result, $moreSortedLetters->toArray());
     }
 

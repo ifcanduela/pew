@@ -325,9 +325,9 @@ class Table
      *
      * If a class for the retrieved records cannot be found, arrays will be returned.
      *
-     * @return Collection
+     * @return RecordCollection
      */
-    public function all(): Collection
+    public function all(): RecordCollection
     {
         $className = $this->recordClass;
         $models = [];
@@ -341,7 +341,7 @@ class Table
             $this->loadRelationships($models);
         }
 
-        return new Collection($models);
+        return new RecordCollection($models);
     }
 
     /**
@@ -622,7 +622,7 @@ class Table
                             $model->attachRelated($getterMethodName, $grouped[$keyValue]);
                         } else {
                             $isMultiple = $relationship instanceof HasMany || $relationship instanceof HasAndBelongsToMany;
-                            $model->attachRelated($getterMethodName, $isMultiple ? new Collection([]) : null);
+                            $model->attachRelated($getterMethodName, $isMultiple ? new RecordCollection([]) : null);
                         }
                     }
                 } else foreach ($models as $model) {
