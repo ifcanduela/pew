@@ -49,9 +49,6 @@ class Record implements JsonSerializable, IteratorAggregate
     /** @var array Current record data. */
     protected array $record = [];
 
-    /** @var Table Table data manager. */
-    protected Table $tableManager;
-
     /** @var string Name of the column holding the record creation timestamp. */
     public static $createdFieldName = "created";
 
@@ -66,19 +63,16 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function __construct()
     {
-        # Initialize the table manager
-        $this->tableManager = $this->getTableManager();
         # Initialize the record fields
         $this->record = $this->columns();
 
         # Update the table name if it's empty
         if (!$this->tableName) {
-            $this->tableName = $this->tableManager->tableName();
+            $this->tableName = $this->getTableManager()->tableName();
         }
 
-        $className = get_class($this);
-        static::$getterMethods[$className] ??= [];
-        static::$setterMethods[$className] ??= [];
+        static::$getterMethods[static::class] ??= [];
+        static::$setterMethods[static::class] ??= [];
     }
 
     /**
@@ -98,13 +92,7 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function columns(): array
     {
-        static $columns;
-
-        if (!$columns) {
-            $columns = $this->tableManager->columnNames();
-        }
-
-        return $columns;
+        return $this->getTableManager()->columnNames();
     }
 
     /**
@@ -144,7 +132,7 @@ class Record implements JsonSerializable, IteratorAggregate
     {
         $record = new static();
 
-        $result = $record->tableManager->query($query, $parameters);
+        $result = $record->getTableManager()->query($query, $parameters);
 
         return new RecordCollection(array_map(function ($r) {
             return static::fromArray($r);
@@ -212,7 +200,7 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function save(): bool
     {
-        $result = $this->tableManager->save($this);
+        $result = $this->getTableManager()->save($this);
 
         if ($result) {
             $this->attributes($result);
@@ -232,7 +220,7 @@ class Record implements JsonSerializable, IteratorAggregate
     public function delete()
     {
         /** @var Table */
-        $table = $this->tableManager->createDelete();
+        $table = $this->getTableManager()->createDelete();
 
         $table->where([
             $table->primaryKey() => $this->primaryKeyValue(),
@@ -273,7 +261,7 @@ class Record implements JsonSerializable, IteratorAggregate
     public static function deleteAll(array $condition = null)
     {
         $record = (new static);
-        $table = $record->tableManager->createDelete();
+        $table = $record->getTableManager()->createDelete();
 
         if ($condition) {
             $table->where($condition);
@@ -400,7 +388,7 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function __set(string $key, $value)
     {
-        $className = get_class($this);
+        $className = static::class;
 
         if (!array_key_exists($key, static::$setterMethods[$className])) {
             $methodName = "set" . S::create($key)->upperCamelize();
@@ -414,7 +402,7 @@ class Record implements JsonSerializable, IteratorAggregate
         } elseif (array_key_exists($key, $this->record)) {
             $this->record[$key] = $value;
         } else {
-            throw new RuntimeException("Record attribute `{$key}` does not exist");
+            throw new RuntimeException("Record attribute `{$key}` does not exist in `{$className}`");
         }
 
         return $this;
@@ -453,7 +441,9 @@ class Record implements JsonSerializable, IteratorAggregate
             return $this->record[$key];
         }
 
-        throw new Exception("Record attribute `{$key}` does not exist");
+        $className = static::class;
+
+        throw new Exception("Record attribute `{$key}` does not exist in `${className}`");
     }
 
     /**
@@ -503,28 +493,6 @@ class Record implements JsonSerializable, IteratorAggregate
         }
 
         throw new BadMethodCallException("Method `" . static::class . "::{$method}()` does not exist");
-    }
-
-    /**
-     * Disconnect the PDO instance before serialization.
-     *
-     * @return array
-     */
-    public function __sleep(): array
-    {
-        $this->tableManager = null;
-
-        return array_keys(get_object_vars($this));
-    }
-
-    /**
-     * Restore the database manager after deserialization.
-     *
-     * @return void
-     */
-    public function __wakeup()
-    {
-        $this->tableManager = $this->getTableManager();
     }
 
     /**
@@ -602,7 +570,7 @@ class Record implements JsonSerializable, IteratorAggregate
         }
 
         if (!$localKeyName) {
-            $localKeyName = $this->tableManager->primaryKey();
+            $localKeyName = $this->getTableManager()->primaryKey();
         }
 
         $matchValue = $this->primaryKeyValue();
@@ -643,7 +611,7 @@ class Record implements JsonSerializable, IteratorAggregate
         }
 
         if (!$localKeyName) {
-            $localKeyName = $this->tableManager->primaryKey();
+            $localKeyName = $this->getTableManager()->primaryKey();
         }
 
         $matchValue = $this->primaryKeyValue();
@@ -705,7 +673,7 @@ class Record implements JsonSerializable, IteratorAggregate
         }
 
         if (!$nearKeyName) {
-            $nearKeyName = $this->tableManager->primaryKey();
+            $nearKeyName = $this->getTableManager()->primaryKey();
         }
 
         if (!$nearForeignKeyName) {
@@ -721,7 +689,7 @@ class Record implements JsonSerializable, IteratorAggregate
         }
 
         if (!$farKeyName) {
-            $farKeyName = (new $className)->tableManager->primaryKey();
+            $farKeyName = (new $className)->getTableManager()->primaryKey();
         }
 
         $on = ["{$associationTableName}.{$farForeignKeyName}" => "{$farTableName}.{$farKeyName}"];
@@ -738,15 +706,13 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function hasRelationship(string $key)
     {
-        $className = get_class($this);
-
         # generate a getter method name if it does not yet exist
-        if (!array_key_exists($key, static::$getterMethods[$className])) {
+        if (!array_key_exists($key, static::$getterMethods[static::class])) {
             $methodName = "get" . S::create($key)->upperCamelize();
-            static::$getterMethods[$className][$key] = method_exists($this, $methodName) ? $methodName : false;
+            static::$getterMethods[static::class][$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
-        return static::$getterMethods[$className][$key];
+        return static::$getterMethods[static::class][$key];
     }
 
     /**

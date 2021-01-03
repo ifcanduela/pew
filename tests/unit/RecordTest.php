@@ -211,13 +211,13 @@ class RecordTest extends PHPUnit\Framework\TestCase
         try {
             $p->missingProperty = true;
         } catch (\Exception $e) {
-            $this->assertEquals("Record attribute `missingProperty` does not exist", $e->getMessage());
+            $this->assertEquals("Record attribute `missingProperty` does not exist in `app\\models\\Project`", $e->getMessage());
         }
 
         try {
             $value = $p->missingProperty;
         } catch (\Exception $e) {
-            $this->assertEquals("Record attribute `missingProperty` does not exist", $e->getMessage());
+            $this->assertEquals("Record attribute `missingProperty` does not exist in `app\\models\\Project`", $e->getMessage());
         }
 
         $this->assertTrue(isset($p->name));
