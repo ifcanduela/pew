@@ -80,8 +80,6 @@ class App extends \pew\App
      * Initialize the list of available commands.
      *
      * @return void
-     * @throws ReflectionException
-     * @throws ReflectionException
      */
     protected function initCommandList()
     {
@@ -123,15 +121,15 @@ class App extends \pew\App
         try {
             $reflectionClass = new ReflectionClass($fullClassName);
         } catch (\ReflectionException $e) {
-            $this->output->writeln("Error reading command class file: {$commandFilename} ({$namespace})");
+            $this->output->writeln("Error reading Command class file: {$commandFilename} ({$namespace})");
+            return;
         }
 
         # Figure out the base command name
         $defaultProperties = $reflectionClass->getDefaultProperties();
-        $name = (string) $defaultProperties["name"] ?? Str::create($className)
-            ->removeRight("Command")
-            ->underscored()
-            ->slugify();
+        $name = strlen($defaultProperties["name"])
+            ? $defaultProperties["name"]
+            : (string) Str::create($className)->removeRight("Command")->underscored()->slugify();
 
         $description = $defaultProperties["description"] ?? "";
 

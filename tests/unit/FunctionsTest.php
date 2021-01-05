@@ -100,4 +100,78 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
             "beta" => ["gamma" => "GAMMA"],
         ], session());
     }
+
+    public function testJsonFunctions()
+    {
+        $data = file_get_json(__DIR__ . '/../fixtures/json1.json');
+        $this->assertEquals([1, 2, 3, 4], $data);
+
+        $data = file_get_json(__DIR__ . '/../fixtures/json2.json');
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey("numbers", $data);
+        $this->assertArrayHasKey("letters", $data);
+
+        $data = file_get_json(__DIR__ . '/../fixtures/json2.json', false);
+        $this->assertIsObject($data);
+        $this->assertObjectHasAttribute("numbers", $data);
+        $this->assertObjectHasAttribute("letters", $data);
+        
+        $t = time();
+        file_put_json(__DIR__. "/../fixtures/json_{$t}.json", [1.1, 2.2, 3.3]);
+        $data = file_get_json(__DIR__ . "/../fixtures/json_{$t}.json");
+
+        $this->assertEquals([1.1, 2.2, 3.3], $data);
+
+        unlink(__DIR__ . "/../fixtures/json_{$t}.json");
+
+        try {
+            file_get_json(__DIR__ . "/../fixtures/json3.json");
+        } catch (\Exception $e) {
+            $this->assertEquals("JSON decoding error: Syntax error", $e->getMessage());
+        }
+
+        try {
+            $t = time();
+            file_put_json(__DIR__ . "/../fixtures/json_{$t}.json", fopen(__DIR__ . "/../fixtures/nofile", "w"));
+        } catch (\Exception $e) {
+            $this->assertEquals("JSON encoding error: Type is not supported", $e->getMessage());
+            unlink(__DIR__ . "/../fixtures/nofile");
+        }
+    }
+
+    public function testArrayFindValue()
+    {
+        $value = array_find_value([1, 2, 3, 4], function ($v, $i) {
+            return $i > 0 && $v % 2 == 1;
+        });
+
+        $this->assertEquals(3, $value);
+
+        $value = array_find_value([1, 2, 3, 4], function ($v, $i) {
+            return $v > 10;
+        });
+
+        $this->assertNull($value);
+    }
+
+    public function testArrayFindKey()
+    {
+        $key = array_find_key([1, 2, 3, 4], function ($v) {
+            return $v === 4;
+        });
+
+        $this->assertEquals(3, $key);
+
+        $key = array_find_key([1, 2, 3, 4], function ($v, $i) {
+            return $i > 0 && $v % 2 == 1;
+        });
+
+        $this->assertEquals(2, $key);
+
+        $key = array_find_key([1, 2, 3, 4], function ($v, $i) {
+            return $v > 10;
+        });
+
+        $this->assertNull($key);
+    }
 }

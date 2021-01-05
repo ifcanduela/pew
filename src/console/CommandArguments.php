@@ -25,10 +25,10 @@ use Stringy\Stringy as S;
 class CommandArguments
 {
     /** @var array */
-    private $named = [];
+    private array $named = [];
 
     /** @var array */
-    private $positional = [];
+    private array $positional = [];
 
     /**
      * Create a command-line argument parser.
@@ -52,68 +52,11 @@ class CommandArguments
      */
     public function parse(array $arguments = [])
     {
-        # reset the argument list
-        $this->positional = [];
-        $this->named = [];
+        $ap = new ArgumentParser();
+        $ap->parse($arguments);
 
-        $name = "";
-
-        foreach ($arguments as $param) {
-            if (is_string($param) && $param[0] === "-") {
-                if ($name) {
-                    # there's a named param without value
-                    $this->addNamed($name, true);
-                    $name = null;
-                }
-
-                # it's a name
-                if (isset($param[1])) {
-                    if ($param[1] === "-") {
-                        # it's a long name
-                        $name = substr($param, 2);
-
-                        if (strpos($name, "=")) {
-                            # the value is attached to the key
-                            [$name, $value] = explode("=", $name, 2);
-                            $this->addNamed($name, $value);
-                            $name = "";
-                        }
-                    } else {
-                        # it's a short param
-                        $value = true;
-                        $name = substr($param, 1);
-
-                        if (strpos($param, "=")) {
-                            # it's a short param with a value
-                            [$name, $value] = explode("=", $name, 2);
-                            $names = str_split($name, 1);
-                        } else {
-                            # it's a short param
-                            $names = str_split($name, 1);
-                        }
-
-                        foreach ($names as $name) {
-                            $this->addNamed($name, $value);
-                        }
-
-                        $name = "";
-                    }
-                }
-            } else {
-                if ($name) {
-                    $this->addNamed($name, $param);
-                    $name = "";
-                } else {
-                    $this->addPositional($param);
-                }
-            }
-        }
-
-        # handle any dangling token
-        if ($name) {
-            $this->addNamed($name, true);
-            $name = null;
-        }
+        $this->positional = $ap->getPositionalArguments();
+        $this->named = $ap->getNamedArguments();
     }
 
     /**
@@ -122,7 +65,7 @@ class CommandArguments
      * @param string|int $key
      * @return bool
      */
-    public function has($key)
+    public function has($key): bool
     {
         if (array_key_exists($key, $this->named)) {
             return true;
@@ -178,37 +121,6 @@ class CommandArguments
     }
 
     /**
-     * Add a positional argument.\
-     *
-     * @param mixed $value
-     * @return void
-     */
-    protected function addPositional($value): void
-    {
-        $this->positional[] = $value;
-    }
-
-    /**
-     * Add a named argument.
-     *
-     * Boolean arguments with a `no-` prefix will have their name stripped of
-     * the prefix and their value set to `false`.
-     *
-     * @param string $name
-     * @param mixed $value
-     * @return void
-     */
-    protected function addNamed(string $name, $value): void
-    {
-        if ($value === true && substr($name, 0, 3) === "no-") {
-            $name = substr($name, 3);
-            $value = false;
-        }
-
-        $this->named[$name] = $value;
-    }
-
-    /**
      * Get the value of a named argument.
      *
      * Camel cased property accessors will be converted to dashed-lowercase.
@@ -216,7 +128,7 @@ class CommandArguments
      * @param string $property
      * @return mixed
      */
-    public function __get($property)
+    public function __get(string $property)
     {
         $key = S::create($property)->dasherize();
 

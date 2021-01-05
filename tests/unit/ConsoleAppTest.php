@@ -26,6 +26,7 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
             "create:controller",
             "create:middleware",
             "create:model",
+            "other",
             "routes",
             "test",
             "test:alternate",
@@ -37,13 +38,6 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $_SERVER["argv"] = ["run"];
 
         $this->app->run();
-
-        $expected =
-            "create" . PHP_EOL .
-            "    Generates app files." . PHP_EOL .
-            "test" . PHP_EOL .
-            "    Test command" . PHP_EOL;
-
         $output = $this->app->output->fetch();
 
         $this->assertStringContainsString("create", $output);
@@ -75,6 +69,18 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $result = $this->app->run();
 
         $this->assertEquals("alternate command result", $result);
+    }
+
+    public function testActionNotFound()
+    {
+        $_SERVER["argv"] = ["run", "missing"];
+
+        $args = $this->app->getArguments();
+        $this->assertEquals("missing", $args["command"]);
+
+        $result = $this->app->run();
+
+        $this->assertNull($result);
     }
 
     public function testShowCommandSuggestions()
