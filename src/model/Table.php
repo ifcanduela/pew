@@ -85,7 +85,7 @@ class Table
      *
      * @var string
      */
-    protected $recordClass;
+    protected $recordClass = "";
 
     /**
      * Current selection query.
@@ -294,9 +294,9 @@ class Table
      * Set or get the class of the records managed by the table.
      *
      * @param string|null $recordClass
-     * @return string|null
+     * @return string
      */
-    public function recordClass(string $recordClass = null)
+    public function recordClass(string $recordClass = null): string
     {
         if ($recordClass) {
             $this->recordClass = $recordClass;
@@ -370,9 +370,9 @@ class Table
      * INSERTs the data.
      *
      * @param Record $model
-     * @return Record|array The saved item on success, false otherwise
+     * @return array The record attributes on success, false otherwise
      */
-    public function save(Record $model)
+    public function save(Record $model): array
     {
         if (method_exists($model, "beforeSave")) {
             $model->beforeSave();
@@ -498,7 +498,7 @@ class Table
      *
      * @return bool True on success, false on failure
      */
-    public function begin()
+    public function begin(): bool
     {
         return $this->db->beginTransaction();
     }
@@ -508,7 +508,7 @@ class Table
      *
      * @return bool True on success, false on failure
      */
-    public function commit()
+    public function commit(): bool
     {
         return $this->db->commit();
     }
@@ -518,7 +518,7 @@ class Table
      *
      * @return bool True on success, false on failure
      */
-    public function rollback()
+    public function rollback(): bool
     {
         return $this->db->rollback();
     }
@@ -529,7 +529,7 @@ class Table
      * @param string $columnName
      * @return boolean
      */
-    public function hasColumn(string $columnName)
+    public function hasColumn(string $columnName): bool
     {
         return array_key_exists($columnName, $this->tableData["column_names"]);
     }
@@ -548,34 +548,12 @@ class Table
     }
 
     /**
-     * Redirect method calls to the child Query object.
-     *
-     * @param string $method
-     * @param array $arguments
-     * @return self
-     */
-    public function __call($method, $arguments)
-    {
-        if (!$this->query) {
-            throw new RuntimeException("Method `{$method}` called before initializing a query");
-        }
-
-        if (method_exists($this->query, $method)) {
-            $this->query->$method(...$arguments);
-
-            return $this;
-        }
-
-        throw new BadMethodCallException("Invalid method `{$method}`");
-    }
-
-    /**
      * Specify relationships to eager-load.
      *
      * @param string|string[] ...$relationships
      * @return self
      */
-    public function with(...$relationships)
+    public function with(...$relationships): Table
     {
         $this->relationships = $relationships;
 
@@ -599,38 +577,75 @@ class Table
             $ref = new $className;
 
             foreach ($this->relationships as $relationshipFieldName) {
-                $getterMethodName = "get" . S::create($relationshipFieldName)->uppercamelize();
-
-                try {
-                    /** @var Relationship $relationship */
-                    $relationship = $ref->$getterMethodName();
-                } catch (Exception $e) {}
-
-                if ($relationship instanceof Relationship) {
-                    $groupingField = $relationship->getGroupingField();
-                    $relatedKeys = array_map(function ($r) use ($groupingField) {
-                        return $r->$groupingField;
-                    }, $models);
-
-                    $grouped = $relationship->find($relatedKeys);
-
-                    foreach ($models as $model) {
-                        $model->serialize[] = $relationshipFieldName;
-                        $keyValue = $model->{$groupingField};
-
-                        if (isset($grouped[$keyValue])) {
-                            $model->attachRelated($getterMethodName, $grouped[$keyValue]);
-                        } else {
-                            $isMultiple = $relationship instanceof HasMany || $relationship instanceof HasAndBelongsToMany;
-                            $model->attachRelated($getterMethodName, $isMultiple ? new RecordCollection([]) : null);
-                        }
-                    }
-                } else foreach ($models as $model) {
-                    $model->serialize[] = $relationshipFieldName;
-                }
+                $this->attachField($relationshipFieldName, $ref, $models);
             }
         }
 
         $depth--;
+    }
+
+    /**
+     * Resolve a related field.
+     *
+     * @param $relationshipFieldName
+     * @param $ref
+     * @param array $models
+     */
+    protected function attachField($relationshipFieldName, $ref, array $models): void
+    {
+        $getterMethodName = "get" . S::create($relationshipFieldName)->uppercamelize();
+
+        try {
+            /** @var Relationship $relationship */
+            $relationship = $ref->$getterMethodName();
+        } catch (Exception $e) {
+        }
+
+        if ($relationship instanceof Relationship) {
+            $groupingField = $relationship->getGroupingField();
+            $relatedKeys = array_map(function ($r) use ($groupingField) {
+                return $r->$groupingField;
+            }, $models);
+
+            $grouped = $relationship->find($relatedKeys);
+
+            foreach ($models as $model) {
+                $model->serialize[] = $relationshipFieldName;
+                $keyValue = $model->{$groupingField};
+
+                if (isset($grouped[$keyValue])) {
+                    $model->attachRelated($getterMethodName, $grouped[$keyValue]);
+                } else {
+                    $isMultiple = $relationship instanceof HasMany || $relationship instanceof HasAndBelongsToMany;
+                    $model->attachRelated($getterMethodName, $isMultiple ? new RecordCollection([]) : null);
+                }
+            }
+        } else {
+            foreach ($models as $model) {
+                $model->serialize[] = $relationshipFieldName;
+            }
+        }
+    }
+
+    /**
+     * Redirect method calls to the child Query object.
+     *
+     * @param string $method
+     * @param array $arguments
+     * @return self
+     */
+    public function __call(string $method, array $arguments)
+    {
+        if (!$this->query) {
+            throw new RuntimeException("Method `{$method}` called before initializing a query");
+        }
+
+        if (method_exists($this->query, $method)) {
+            $this->query->$method(...$arguments);
+
+            return $this;
+        }
+
+        throw new BadMethodCallException("Invalid method `{$method}`");
     }
 }
