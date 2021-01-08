@@ -84,6 +84,15 @@ $this->assertEquals("PARAMETER", $v->get("parameter"));
 <div>PROPERTY</div>
 <div>PROPERTY</div>
 '), rn($result));
+
+        $v = new View(__DIR__ . '/../fixtures/views');
+
+        $result = $v->noLayout()->render('view1', ['parameter' => 'PARAMETER', 'property' => 'PROPERTY']);
+
+        $this->assertEquals(rn('<div>PARAMETER</div>
+<div>PROPERTY</div>
+<div>PROPERTY</div>
+'), rn($result));
     }
 
     public function testRenderExceptions()
