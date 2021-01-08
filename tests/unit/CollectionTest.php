@@ -177,8 +177,11 @@ class CollectionTest extends PHPUnit\Framework\TestCase
     public function testGroup()
     {
         $c = $this->getLetterCollection();
+        $callback = function ($item) {
+            return $item["type"][0];
+        };
 
-        $this->assertEquals([
+        $expected = [
             "uppercase" => [
                 ["letter" => "Α", "type"=> "uppercase"],
                 ["letter" => "Β", "type"=> "uppercase"],
@@ -189,9 +192,10 @@ class CollectionTest extends PHPUnit\Framework\TestCase
                 ["letter" => "β", "type"=> "lowercase"],
                 ["letter" => "γ", "type"=> "lowercase"],
             ],
-        ], $c->group("type")->toArray(true));
+        ];
+        $this->assertEquals($expected, $c->group("type")->toArray(true));
 
-        $this->assertEquals([
+        $expected = [
             "u" => [
                 ["letter" => "Α", "type"=> "uppercase"],
                 ["letter" => "Β", "type"=> "uppercase"],
@@ -202,9 +206,27 @@ class CollectionTest extends PHPUnit\Framework\TestCase
                 ["letter" => "β", "type"=> "lowercase"],
                 ["letter" => "γ", "type"=> "lowercase"],
             ],
-        ], $c->group(function ($item) {
-            return $item["type"][0];
-        })->toArray(true));
+        ];
+        $this->assertEquals($expected, $c->group($callback)->toArray(true));
+
+        $data = new Collection([
+            "alpha" => [100, "Alpha"],
+            "beta" => [200, "Beta"],
+            "gamma" => [100, "Gamma"],
+            "delta" => [200, "Delta"],
+        ]);
+        $expected = [
+            100 => [
+                "alpha" => [100, "Alpha"],
+                "gamma" => [100, "Gamma"],
+            ],
+            200 => [
+                "beta" => [200, "Beta"],
+                "delta" => [200, "Delta"],
+            ],
+        ];
+        $callback = function ($item, $index) { return $item[0]; };
+        $this->assertEquals($expected, $data->group($callback)->toArray(true));
     }
 
     public function testHasKey()
@@ -345,6 +367,12 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $this->assertTrue($two_random_numbers->hasKey(1));
         $this->assertTrue(is_int($two_random_numbers[1]));
 
+
+        $c = Collection::fromArray([]);
+
+        $this->assertNull($c->random());
+        $this->assertNull($c->random(10));
+
     }
 
     public function testReduce()
@@ -454,6 +482,13 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $json = $numbers->toJson();
 
         $this->assertEquals('[0,1,2,3]', $json);
+
+        try {
+            Collection::fromArray([fopen("nofile", "r")])->toJson();
+        } catch (\RuntimeException $e) {
+            $this->assertEquals("JSON encoding error: Type is not supported", $e->getMessage());
+            unlink("nofile");
+        }
     }
 
     public function testUnshift()
@@ -525,13 +560,24 @@ class CollectionTest extends PHPUnit\Framework\TestCase
             return $item % 2 === 0;
         });
 
-        $this->assertEquals($key, 1);
+        $this->assertEquals(1, $key);
 
+        $value = $c->findKey(function ($item) {
+            return $item > 20;
+        });
+
+        $this->assertNull($value);
 
         $value = $c->findValue(function ($item) {
             return $item % 2 === 0;
         });
 
-        $this->assertEquals($value, 2);
+        $this->assertEquals(2, $value);
+
+        $value = $c->findValue(function ($item) {
+            return $item > 20;
+        });
+
+        $this->assertNull($value);
     }
 }

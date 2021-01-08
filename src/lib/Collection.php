@@ -699,7 +699,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
         $encode = json_encode($this->items, $options, $depth);
 
         if (false === $encode) {
-            throw new RuntimeException(json_last_error_msg());
+            throw new RuntimeException("JSON encoding error: " . json_last_error_msg());
         }
 
         return $encode;
