@@ -74,7 +74,7 @@ class HasAndBelongsToMany extends Relationship
      * @param string $field
      * @return array
      */
-    private function groupRecords($records, $field): array
+    private function groupRecords(array $records, string $field): array
     {
         $recordClass = $this->finder->recordClass();
         $result = [];

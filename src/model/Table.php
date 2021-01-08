@@ -45,21 +45,21 @@ class Table
      *
      * @var Database
      */
-    public $db;
+    public Database $db;
 
     /**
      * Database table for the subject of the model.
      *
      * @var string
      */
-    protected $tableName;
+    protected string $tableName = "";
 
     /**
      * Name of the primary key fields of the table the Model manages.
      *
      * @var string
      */
-    protected $primaryKey;
+    protected string $primaryKey = "";
 
     /**
      * Miscellaneous table metadata.
@@ -69,7 +69,7 @@ class Table
      *
      * @var array
      */
-    protected $tableData = [];
+    protected array $tableData = [];
 
     /**
      * Current resultset.
@@ -78,34 +78,34 @@ class Table
      *
      * @var array
      */
-    protected $record = [];
+    protected array $record = [];
 
     /**
      * Class name for records in the table.
      *
      * @var string
      */
-    protected $recordClass = "";
+    protected string $recordClass = "";
 
     /**
      * Current selection query.
      *
      * @var Query
      */
-    public $query;
+    public Query $query;
 
     /**
      * List of relationships to fetch eagerly.
      *
      * @var array
      */
-    protected $relationships = [];
+    protected array $relationships = [];
 
     /** @var array */
-    protected static $primaryKeyCache = [];
+    protected static array $primaryKeyCache = [];
 
     /** @var array */
-    protected static $columnCache = [];
+    protected static array $columnCache = [];
 
     /**
      * Create a table gateway object.
@@ -114,7 +114,7 @@ class Table
      * @param Database $db Database instance to use
      * @param string|null $recordClass
      */
-    public function __construct(string $tableName, Database $db, string $recordClass = null)
+    public function __construct(string $tableName, Database $db, string $recordClass = "")
     {
         $this->tableName = $tableName;
         $this->db = $db;

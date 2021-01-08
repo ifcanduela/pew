@@ -1,6 +1,7 @@
 <?php
 
 use ifcanduela\db\Database;
+use pew\model\exception\TableNotFoundException;
 use pew\model\TableManager;
 use pew\model\Table;
 use app\models\Project;
@@ -8,9 +9,9 @@ use app\models\User;
 
 class TableTest extends \PHPUnit\Framework\TestCase
 {
-    public $db;
+    public Database $db;
 
-    public function makeDatabase()
+    public function makeDatabase(): Database
     {
         $db = Database::sqlite(':memory:');
 
@@ -54,20 +55,19 @@ class TableTest extends \PHPUnit\Framework\TestCase
     {
         $t = new Table("users", $this->db);
 
-        $t->createSelect()->andWhere(["id" => [">", 1]])
-            ->andWhere(["id" => ["<", 5]]);
+        $t->createSelect()->andWhere(["id" => [">", 1]])->andWhere(["id" => ["<", 5]]);
         $this->assertInstanceOf(Table::class, $t);
         $result = $t->all();
 
-        $this->assertEquals(3, count($result));
+        $this->assertCount(3, $result);
     }
 
     public function testFailInit()
     {
         try {
             $t = new Table("dogs", $this->db);
-        } catch (\pew\model\exception\TableNotFoundException $e) {
-            $this->assertInstanceOf('\pew\model\exception\TableNotFoundException', $e);
+        } catch (TableNotFoundException $e) {
+            $this->assertInstanceOf(TableNotFoundException::class, $e);
             $this->assertEquals('Table `dogs` not found', $e->getMessage());
         }
     }
@@ -124,22 +124,20 @@ class TableTest extends \PHPUnit\Framework\TestCase
     public function testRecordClass()
     {
         $users = new Table("users", $this->db);
-        $this->assertNull($users->recordClass());
+        $this->assertEmpty($users->recordClass());
 
         $users->recordClass(User::class);
         $this->assertEquals(User::class, $users->recordClass());
 
-        $projects = new Table("projects", $this->db, \app\models\Project::class);
-        $this->assertEquals(\app\models\Project::class, $projects->recordClass());
+        $projects = new Table("projects", $this->db, Project::class);
+        $this->assertEquals(Project::class, $projects->recordClass());
     }
 
     public function testSelectOperations()
     {
         $users = new Table("users", $this->db);
 
-        $user_1 = $users->createSelect()
-            ->where(["id" => 1])
-            ->one();
+        $user_1 = $users->createSelect()->where(["id" => 1])->one();
 
         $this->assertEquals("User 1", $user_1["username"]);
     }
@@ -184,59 +182,16 @@ class TableTest extends \PHPUnit\Framework\TestCase
         $t = new Table("users", $this->db);
 
         $result = $t->query("SELECT * FROM users WHERE id >= :id", ["id" => 3]);
-        $this->assertEquals(3, count($result));
+        $this->assertCount(3, $result);
 
         $result = $t->query("UPDATE users SET project_id = RANDOM()");
         $this->assertEquals(5, $result);
 
         try {
             $result = $t->query("SELECT _nothing_ FROM users", []);
-            $this->assertEquals(3, count($result));
+            $this->assertCount(3, $result);
         } catch (\Exception $e) {
             $this->assertInstanceOf(\PdoException::class, $e);
         }
     }
-/*
-    public function testCreateDelete()
-    {
-
-    }
-
-    public function testSave()
-    {
-
-    }
-
-    public function testDelete()
-    {
-
-    }
-
-    public function testLastInsertId()
-    {
-
-    }
-
-    public function testTransactions()
-    {
-        // Table::begin();
-        // Table::commit();
-        // Table::rollback();
-    }
-
-    public function testRun()
-    {
-
-    }
-
-    public function test__call()
-    {
-
-    }
-
-    public function testWith()
-    {
-
-    }
-*/
 }

@@ -2,6 +2,13 @@
 
 namespace app\models;
 
+/**
+ * Class User
+ *
+ * @property string $name
+ *
+ * @package app\models
+ */
 class Project extends \pew\Model
 {
     public $connectionName = 'test';
