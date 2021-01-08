@@ -48,11 +48,7 @@ class App extends \pew\App
             $this->output->writeln("The following commands are available:" . PHP_EOL);
 
             foreach ($this->availableCommands as $name => $commandInfo) {
-                $this->output->writeln("<info>{$name}</info>");
-
-                if ($commandInfo->description) {
-                    $this->output->writeln("    " . $commandInfo->description);
-                }
+                $this->printCommands($name, $commandInfo);
             }
 
             return null;
@@ -62,10 +58,10 @@ class App extends \pew\App
             [$commandName, $action] = explode(":", $arguments["command"]);
             $action = (string) Str::create($action)->camelize();
         } else {
-            [$commandName, $action] = [$arguments["command"], "run"];
+            [$commandName, $action] = [$arguments["command"], ""];
         }
 
-        $commandInfo = $this->findCommand($commandName);
+        $commandInfo = $this->findCommand($commandName, $action);
 
         if (!($commandInfo instanceof CommandDefinition)) {
             $this->commandMissing($commandName, $commandInfo ?? []);
@@ -73,7 +69,49 @@ class App extends \pew\App
             return null;
         }
 
-        return $this->handleCommand($commandInfo, $arguments["arguments"], $action);
+        return $this->handleCommand($commandInfo, $arguments["arguments"]);
+    }
+
+    /**
+     * Print information about a command.
+     *
+     * @param string $commandName
+     * @param array $commandInfo
+     */
+    protected function printCommands(string $commandName, array $commandInfo): void
+    {
+        $defaultCommandName = $commandInfo["default"];
+
+        # print the default command first, if present
+        if ($defaultCommandName) {
+            $defaultCommand = $commandInfo["commands"][$defaultCommandName];
+            $name = "<info>{$commandName}</info>";
+
+            if ($defaultCommand->description) {
+                $description = $defaultCommand->description;
+                $name .= " -> {$description}";
+            }
+        } else {
+            $name = "<comment>{$commandName}</comment>";
+        }
+
+        # base command name
+        $this->output->writeln($name);
+
+        # print any subcommands
+        foreach ($commandInfo["commands"] as $subcommand => $commandDefinition) {
+            # skip the default command
+            if ($subcommand !== $defaultCommandName) {
+                $name = "  <info>{$commandName}:{$subcommand}</info>";
+
+                if ($commandDefinition->description) {
+                    $description = $commandDefinition->description;
+                    $name .= " -> {$description}";
+                }
+
+                $this->output->writeln($name);
+            }
+        }
     }
 
     /**
@@ -101,8 +139,6 @@ class App extends \pew\App
         foreach ($commandFiles as $commandFile) {
             $this->addCommand($commandFile, $appCommandsNamespace);
         }
-
-        ksort($this->availableCommands);
     }
 
     /**
@@ -114,7 +150,7 @@ class App extends \pew\App
      */
     protected function addCommand(string $commandFilename, string $namespace)
     {
-        # Full class name with namespace
+        # full class name with namespace
         $className = pathinfo($commandFilename, PATHINFO_FILENAME);
         $fullClassName = "{$namespace}{$className}";
 
@@ -125,31 +161,50 @@ class App extends \pew\App
             return;
         }
 
-        # Figure out the base command name
+        # figure out the base command name
         $defaultProperties = $reflectionClass->getDefaultProperties();
         $name = strlen($defaultProperties["name"])
             ? $defaultProperties["name"]
             : (string) Str::create($className)->removeRight("Command")->underscored()->slugify();
+        $defaultCommand = $defaultProperties["defaultCommand"];
 
-        $description = $defaultProperties["description"] ?? "";
-
-        # Add the command to the list
-        $definition = new CommandDefinition($name, $fullClassName, $description);
-        $this->availableCommands[$definition->name] = $definition;
-
-        # Search for sub-commands
-
-        # Get public methods
+        # get public methods
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
-        # Get a whitelist of valid command names
+
+        $commandData = $this->getSubcommands($methods, $defaultCommand, $name, $fullClassName);
+
+        # add all the commands to the list
+        ksort($commandData["commands"]);
+        $this->availableCommands[$name] = $commandData;
+    }
+
+    /**
+     * Get command methods from a class.
+     *
+     * @param array $methods
+     * @param string $defaultCommand
+     * @param string $name
+     * @param string $fullClassName
+     * @return array
+     */
+    protected function getSubcommands(array $methods, string $defaultCommand, string $name, string $fullClassName): array
+    {
+        # get a whitelist of valid command names
         $methodNames = $this->getCommandMethodNames($fullClassName);
+
+        $commandData = [
+            "default" => false,
+            "commands" => [],
+        ];
 
         foreach ($methods as $method) {
             $methodName = $method->getName();
+            $methodSlug = (string) Str::create($methodName)->underscored()->slugify();
+            $isDefault = $defaultCommand === $methodName || $defaultCommand === $methodSlug;
 
-            # Check that the method is in the whitelist
+            # check that the method is in the whitelist
             if (in_array($methodName, $methodNames, true)) {
-                $commandName = $name . ":" . $methodName;
+                $commandName = $isDefault ? $name : "{$name}:{$methodSlug}";
                 $comment = $method->getDocComment();
                 $description = "";
 
@@ -158,11 +213,20 @@ class App extends \pew\App
                     $description = $doc->getSummary();
                 }
 
-                # Add the command to the list
-                $definition = new CommandDefinition($commandName, $fullClassName, $description);
-                $this->availableCommands[$definition->name] = $definition;
+                # create a command definition
+                $definition = new CommandDefinition($commandName, $methodName, $fullClassName, $description);
+
+                # flag the default command
+                if ($isDefault) {
+                    $commandData["default"] = $methodSlug;
+                }
+
+                # add the command
+                $commandData["commands"][$methodSlug] = $definition;
             }
         }
+
+        return $commandData;
     }
 
     /**
@@ -173,19 +237,24 @@ class App extends \pew\App
      */
     protected function getCommandMethodNames(string $className): array
     {
+        # blacklist of methods defined in the parent class
         $parentMethods = get_class_methods(Command::class);
+        # whitelist of methods defined in the command class
         $methods = get_class_methods($className);
         $result = [];
 
         foreach ($methods as $methodName) {
+            # exclude magic methods
             if (substr($methodName, 0, 2) == "__") {
                 continue;
             }
 
-            if (in_array($methodName, ["run", "help"])) {
+            # exclude methods by name
+            if (in_array($methodName, [])) {
                 continue;
             }
 
+            # exclude methods defined in the parent class
             if (in_array($methodName, $parentMethods)) {
                 continue;
             }
@@ -243,20 +312,37 @@ class App extends \pew\App
      * If a command is not found, a list of suggestions is returned.
      *
      * @param string $commandName
+     * @param string $subcommandName
      * @return CommandDefinition|array
      */
-    protected function findCommand(string $commandName)
+    protected function findCommand(string $commandName, string $subcommandName)
     {
-        $names = array_keys($this->availableCommands);
-        $abbrev = new Abbrev($names);
-
+        # Find main command by name
+        $commandNames = array_keys($this->availableCommands);
+        $abbrev = new Abbrev($commandNames);
         $match = $abbrev->match($commandName);
 
         if (!$match) {
             return  $abbrev->suggest($commandName);
         }
 
-        return $this->availableCommands[$match];
+        $command = $this->availableCommands[$match];
+
+        $subcommandNames = array_keys($command["commands"]);
+        $abbrev = new Abbrev($subcommandNames);
+        $match = $abbrev->match($subcommandName);
+
+        if ($subcommandName) {
+            $match = $abbrev->match($subcommandName);
+
+            if ($match) {
+                return $command["commands"][$match];
+            }
+        } elseif ($command["default"]) {
+            return $command["commands"][$command["default"]];
+        }
+
+        return $abbrev->suggest($subcommandName);
     }
 
     /**
@@ -267,7 +353,7 @@ class App extends \pew\App
      * @param string $action
      * @return mixed
      */
-    protected function handleCommand(CommandDefinition $commandDefinition, CommandArguments $arguments, string $action = "run")
+    protected function handleCommand(CommandDefinition $commandDefinition, CommandArguments $arguments)
     {
         $commandClassName = $commandDefinition->className;
 
@@ -277,7 +363,7 @@ class App extends \pew\App
             $this->output
         );
 
-        if (!is_callable([$command, $action])) {
+        if (!is_callable([$command, $commandDefinition->method])) {
             $this->output->writeln("Command <error>{$commandDefinition->name}:{$action}</error> not found");
             return false;
         }
@@ -289,7 +375,7 @@ class App extends \pew\App
             $injector->callMethod($command, "init");
         }
 
-        $result = $injector->callMethod($command, $action);
+        $result = $injector->callMethod($command, $commandDefinition->method);
 
         if (method_exists($command, "finish")) {
             $injector->callMethod($command, "finish");
