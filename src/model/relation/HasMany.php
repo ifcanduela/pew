@@ -16,7 +16,7 @@ class HasMany extends Relationship
      */
     public function fetch(): RecordCollection
     {
-        return $this->finder->where([$this->foreignKeyName => $this->keyValue])->all();
+        return $this->finder->andWhere([$this->foreignKeyName => $this->keyValue])->all();
     }
 
     /**
@@ -29,7 +29,7 @@ class HasMany extends Relationship
      */
     public function find(array $relatedKeys)
     {
-        $related = $this->finder->where([$this->foreignKeyName => ["IN", $relatedKeys]])->all();
+        $related = $this->finder->andWhere([$this->foreignKeyName => ["IN", $relatedKeys]])->all();
 
         return $related->group($this->foreignKeyName);
     }

@@ -15,7 +15,7 @@ class CreateCommand extends Command
     public $description = "Generates app files.";
 
     /**
-     * Run the command.
+     * Create files for application components.
      *
      * @param CommandArguments $arguments
      * @return void

@@ -12,14 +12,8 @@ use pew\console\CommandArguments;
 
 class RoutesCommand extends Command
 {
-    /** @var string */
-    public $name = "routes";
-
-    /** @var string */
-    public $description = "List application routes.";
-
     /**
-     * Run the command.
+     * List the application routes.
      *
      * @param CommandArguments $arguments
      * @param Router $router

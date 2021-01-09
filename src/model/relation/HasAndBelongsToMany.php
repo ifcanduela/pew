@@ -40,7 +40,7 @@ class HasAndBelongsToMany extends Relationship
     {
         $fk = $this->through . "." . $this->foreignKeyName;
 
-        return $this->finder->join($this->through, $this->on)->where([$fk => $this->keyValue])->all();
+        return $this->finder->join($this->through, $this->on)->andWhere([$fk => $this->keyValue])->all();
     }
 
     /**
@@ -59,7 +59,7 @@ class HasAndBelongsToMany extends Relationship
         $this->finder
             ->columns($this->foreignKeyName, $this->finder->tableName() . ".*")
             ->join($this->through, $this->on)
-            ->where([$fk => ["IN", $relatedKeys]]);
+            ->andWhere([$fk => ["IN", $relatedKeys]]);
         $related = $this->finder->db->run($this->finder->query);
 
         return $this->groupRecords($related, $this->foreignKeyName);

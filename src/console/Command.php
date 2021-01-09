@@ -46,6 +46,9 @@ abstract class Command
     /** @var FormatterHelper */
     private $formatterHelper;
 
+    /** @var string */
+    public $defaultCommand = "run";
+
     /**
      * Command constructor.
      *

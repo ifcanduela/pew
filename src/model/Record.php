@@ -707,7 +707,7 @@ class Record implements JsonSerializable, IteratorAggregate
     public function hasRelationship(string $key)
     {
         # generate a getter method name if it does not yet exist
-        if (!array_key_exists($key, static::$getterMethods[static::class])) {
+        if (!isset(static::$getterMethods[static::class][$key])) {
             $methodName = "get" . S::create($key)->upperCamelize();
             static::$getterMethods[static::class][$key] = method_exists($this, $methodName) ? $methodName : false;
         }

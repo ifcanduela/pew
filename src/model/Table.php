@@ -601,7 +601,7 @@ class Table
         } catch (Exception $e) {
         }
 
-        if ($relationship instanceof Relationship) {
+        if (isset($relationship) && $relationship instanceof Relationship) {
             $groupingField = $relationship->getGroupingField();
             $relatedKeys = array_map(function ($r) use ($groupingField) {
                 return $r->$groupingField;

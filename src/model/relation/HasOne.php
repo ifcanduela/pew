@@ -17,7 +17,7 @@ class HasOne extends Relationship
      */
     public function fetch()
     {
-        return $this->finder->where([$this->foreignKeyName => $this->keyValue])->one();
+        return $this->finder->andWhere([$this->foreignKeyName => $this->keyValue])->one();
     }
 
     /**
@@ -30,7 +30,7 @@ class HasOne extends Relationship
      */
     public function find(array $relatedKeys): RecordCollection
     {
-        $related = $this->finder->where([$this->localKeyName => ['IN', $relatedKeys]])->all();
+        $related = $this->finder->andWhere([$this->localKeyName => ['IN', $relatedKeys]])->all();
 
         return $related->index($this->localKeyName);
     }
