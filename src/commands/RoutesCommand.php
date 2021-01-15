@@ -4,7 +4,6 @@ namespace pew\commands;
 
 
 use Exception;
-use ifcanduela\router\Group;
 use ifcanduela\router\Route;
 use ifcanduela\router\Router;
 use pew\console\Command;
@@ -22,17 +21,15 @@ class RoutesCommand extends Command
      */
     public function run(CommandArguments $arguments, Router $router)
     {
-        $list = [
-            ["Methods", "Path", "Handler", "Name"],
-        ];
-
-        foreach ($router->getRoutes() as $route) {
-            $list[] = $this->processRoute($route);
-        }
+        $headers = ["Methods", "Path", "Handler", "Name"];
+        $list = [$headers];
 
         $longest = [0, 0, 0, 0];
 
-        foreach ($list as $r) {
+        foreach ($router->getRoutes() as $route) {
+            $r = $this->processRoute($route);
+            $list[] = $r;
+
             foreach ($r as $i => $v) {
                 $len = mb_strlen($v);
 
@@ -41,8 +38,6 @@ class RoutesCommand extends Command
                 }
             }
         }
-
-        $headers = array_shift($list);
 
         $sep = str_repeat("-", $longest[0]) . "  "
             . str_repeat("-", $longest[1]) . "  "
@@ -57,15 +52,26 @@ class RoutesCommand extends Command
         $this->message($head);
         $this->message($sep);
 
-        foreach ($list as $r) {
-            $name    = "<info>"      . str_pad($r[0], $longest[0], " ", STR_PAD_RIGHT) . "</>";
-            $method  = "<comment>"   . str_pad($r[1], $longest[1], " ", STR_PAD_RIGHT) . "</>";
-            $handler = "<success>"   . str_pad($r[2], $longest[2], " ", STR_PAD_RIGHT) . "</>";
+        $this->printRoutes($list, $longest);
+
+        $this->message($sep);
+    }
+
+    /**
+     * Format and print a list of routes.
+     *
+     * @param $routes
+     * @param $lengths
+     */
+    protected function printRoutes($routes, $lengths)
+    {
+        foreach ($routes as $r) {
+            $name    = "<info>"      . str_pad($r[0], $lengths[0], " ", STR_PAD_RIGHT) . "</>";
+            $method  = "<comment>"   . str_pad($r[1], $lengths[1], " ", STR_PAD_RIGHT) . "</>";
+            $handler = "<success>"   . str_pad($r[2], $lengths[2], " ", STR_PAD_RIGHT) . "</>";
             $path    = "<info><options=bold>"      . $r[3] . "</></>";
             $this->message($name . "  " . $method . "  " . $handler . "  " . $path);
         }
-
-        $this->message($sep);
     }
 
     /**

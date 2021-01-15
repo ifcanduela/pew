@@ -46,6 +46,10 @@ $container["ignore_url_suffixes"] = ["json", "html", "php"];
 $container["log_level"] = Logger::WARNING;
 $container["views_folder"] = "views";
 
+$container["views_path"] = function (Container $c) {
+    return $c["app_path"] . DIRECTORY_SEPARATOR . $c["views_folder"];
+};
+
 if (php_sapi_name() === "cli") {
     $container["root_path"] =  getcwd();
     $container["www_path"] = getcwd() . DIRECTORY_SEPARATOR . "www";
