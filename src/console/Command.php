@@ -22,9 +22,6 @@ use Symfony\Component\Console\Question\Question;
  * The init() and finish() methods are called by the console app before and
  * after calling the `run` (or other action) method. Values from the container
  * can be injected.
- *
- * @method init()
- * @method finish()
  */
 abstract class Command
 {
@@ -35,16 +32,16 @@ abstract class Command
     public $description = "";
 
     /** @var InputInterface */
-    public $input;
+    public InputInterface $input;
 
     /** @var OutputInterface */
-    public $output;
+    public OutputInterface $output;
 
     /** @var QuestionHelper */
-    private $questionHelper;
+    private QuestionHelper $questionHelper;
 
     /** @var FormatterHelper */
-    private $formatterHelper;
+    private FormatterHelper $formatterHelper;
 
     /** @var string */
     public $defaultCommand = "run";
@@ -54,7 +51,6 @@ abstract class Command
      *
      * @param InputInterface  $input
      * @param OutputInterface $output
-     * @throws ReflectionException
      */
     public function __construct(InputInterface $input, OutputInterface $output)
     {
@@ -163,7 +159,7 @@ abstract class Command
      * @param string $defaultAnswer
      * @return string
      */
-    public function ask(string $question, string $defaultAnswer = "")
+    public function ask(string $question, string $defaultAnswer = ""): string
     {
         $q = new Question($question, $defaultAnswer);
 
@@ -177,7 +173,7 @@ abstract class Command
      * @param bool $defaultAnswer
      * @return bool
      */
-    public function confirm(string $question, bool $defaultAnswer = true)
+    public function confirm(string $question, bool $defaultAnswer = true): bool
     {
         $q = new ConfirmationQuestion($question, $defaultAnswer);
 

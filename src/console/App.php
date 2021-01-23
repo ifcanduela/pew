@@ -3,25 +3,24 @@
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
+use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionException;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use phpDocumentor\Reflection\DocBlockFactory;
 
 class App extends \pew\App
 {
     /** @var CommandDefinition[] */
-    public $availableCommands = [];
+    public array $availableCommands = [];
 
     /** @var ArgvInput */
-    public $input;
+    public ArgvInput $input;
 
     /** @var ConsoleOutput */
-    public $output;
+    public ConsoleOutput $output;
 
     public function __construct(string $appFolder, string $configFileName = "config")
     {
@@ -44,19 +43,12 @@ class App extends \pew\App
         $arguments = $this->getArguments();
 
         if (empty($arguments["command"])) {
-            $this->output->writeln("<fg=cyan>Pew command runner</>");
-            $this->output->writeln("The following commands are available:" . PHP_EOL);
-
-            foreach ($this->availableCommands as $name => $commandInfo) {
-                $this->printCommands($name, $commandInfo);
-            }
-
-            return null;
+            return $this->printHelp();
         }
 
         if (strpos($arguments["command"], ":") !== false) {
-            [$commandName, $action] = explode(":", $arguments["command"]);
-            $action = (string) Str::create($action)->camelize();
+            [$commandName, $actionSlug] = explode(":", $arguments["command"]);
+            $action = (string) Str::create($actionSlug)->camelize();
         } else {
             [$commandName, $action] = [$arguments["command"], ""];
         }
@@ -64,12 +56,23 @@ class App extends \pew\App
         $commandInfo = $this->findCommand($commandName, $action);
 
         if (!($commandInfo instanceof CommandDefinition)) {
-            $this->commandMissing($commandName, $commandInfo ?? []);
-
-            return null;
+            return $this->commandMissing($commandName, $actionSlug ?? null, $commandInfo ?? []);
         }
 
         return $this->handleCommand($commandInfo, $arguments["arguments"]);
+    }
+
+    /**
+     * Print general command information.
+     */
+    protected function printHelp(): void
+    {
+        $this->output->writeln("<fg=cyan>Pew command runner</>");
+        $this->output->writeln("The following commands are available:" . PHP_EOL);
+
+        foreach ($this->availableCommands as $name => $commandInfo) {
+            $this->printCommands($name, $commandInfo);
+        }
     }
 
     /**
@@ -272,8 +275,12 @@ class App extends \pew\App
      * @param array $suggestions
      * @return void
      */
-    protected function commandMissing(string $commandName, array $suggestions = [])
+    protected function commandMissing(string $commandName, ?string $actionSlug, array $suggestions = [])
     {
+        if ($actionSlug) {
+            $commandName .= ":{$actionSlug}";
+        }
+
         if (!$suggestions) {
             $this->output->writeln("Command <error>{$commandName}</error> not found");
             $this->output->writeln("Did you mean:");
@@ -323,16 +330,14 @@ class App extends \pew\App
         $match = $abbrev->match($commandName);
 
         if (!$match) {
-            return  $abbrev->suggest($commandName);
+            return $abbrev->suggest($commandName);
         }
 
         $command = $this->availableCommands[$match];
-
         $subcommandNames = array_keys($command["commands"]);
-        $abbrev = new Abbrev($subcommandNames);
-        $match = $abbrev->match($subcommandName);
 
         if ($subcommandName) {
+            $abbrev = new Abbrev($subcommandNames);
             $match = $abbrev->match($subcommandName);
 
             if ($match) {
@@ -350,7 +355,6 @@ class App extends \pew\App
      *
      * @param CommandDefinition $commandDefinition
      * @param CommandArguments $arguments
-     * @param string $action
      * @return mixed
      */
     protected function handleCommand(CommandDefinition $commandDefinition, CommandArguments $arguments)
@@ -363,24 +367,16 @@ class App extends \pew\App
             $this->output
         );
 
-        if (!is_callable([$command, $commandDefinition->method])) {
-            $this->output->writeln("Command <error>{$commandDefinition->name}:{$action}</error> not found");
-            return false;
+        if (is_callable([$command, $commandDefinition->method])) {
+            $injector = $this->get("injector");
+            $this->set(CommandArguments::class, $arguments);
+
+            return $injector->callMethod($command, $commandDefinition->method);
         }
 
-        $injector = $this->get("injector");
-        $this->set(CommandArguments::class, $arguments);
+        $actionSlug = Str::create($commandDefinition->method)->underscored()->slugify();
+        $this->output->writeln("Command <error>{$commandDefinition->name}:{$actionSlug}</error> not found");
 
-        if (method_exists($command, "init")) {
-            $injector->callMethod($command, "init");
-        }
-
-        $result = $injector->callMethod($command, $commandDefinition->method);
-
-        if (method_exists($command, "finish")) {
-            $injector->callMethod($command, "finish");
-        }
-
-        return $result;
+        return false;
     }
 }
