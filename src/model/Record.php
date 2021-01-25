@@ -426,7 +426,7 @@ class Record implements JsonSerializable, IteratorAggregate
             if (!array_key_exists($methodName, $this->getterResults)) {
                 $fetch = $this->$methodName();
 
-                if (method_exists($fetch, "fetch")) {
+                if (is_callable([$fetch, "fetch"])) {
                     $fetch = $fetch->fetch();
                 }
 
