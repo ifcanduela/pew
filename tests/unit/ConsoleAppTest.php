@@ -22,14 +22,9 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("Console App Test", $this->app->get("app_title"));
         $this->assertEquals([
             "create",
-            "create:command",
-            "create:controller",
-            "create:middleware",
-            "create:model",
-            "other",
             "routes",
+            "other",
             "test",
-            "test:alternate",
         ], $commandNames);
     }
 

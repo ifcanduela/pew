@@ -184,7 +184,7 @@ if (!function_exists("url")) {
 
         $params = array_filter($path, "is_array");
         $segments = array_filter($path, function ($segment) {
-            return is_scalar($segment) || method_exists($segment, "__toString");
+            return is_scalar($segment) || is_callable([$segment, "__toString"]);
         });
         $path = preg_replace('~\/+~', "/", join("/", $segments));
 

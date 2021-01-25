@@ -3,7 +3,7 @@
 namespace app\models;
 
 /**
- * Class User
+ * Class Project
  *
  * @property string $name
  *

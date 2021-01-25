@@ -78,22 +78,25 @@ class Injector
             $paramType = $param->getType();
             $paramName = $param->getName();
 
-            # first try: typehint
+            # first try: class typehint
             if ($paramType) {
                 $typeName = $paramType->getName();
                 $classExists = class_exists($typeName);
+                $interfaceExists = interface_exists($typeName);
 
-                try {
-                    $injection = $this->findKey($typeName);
-                    $found = true;
-                } catch (KeyNotFoundException $e) {
-                }
-
-                if (!$found && $autoResolve && $classExists) {
+                if ($classExists || $interfaceExists) {
                     try {
-                        $injection = $this->createInstance($typeName, $autoResolve);
+                        $injection = $this->findKey($typeName);
                         $found = true;
                     } catch (KeyNotFoundException $e) {
+                    }
+
+                    if (!$found && $autoResolve && $classExists) {
+                        try {
+                            $injection = $this->createInstance($typeName, $autoResolve);
+                            $found = true;
+                        } catch (KeyNotFoundException $e) {
+                        }
                     }
                 }
             }
@@ -124,10 +127,10 @@ class Injector
 
             if (!$found) {
                 if ($paramType) {
-                    $paramName .=  " (" . $paramType->getName() . ")";
+                    $paramName =  "\${$paramName} ({$paramType->getName()})";
                 }
 
-                throw new KeyNotFoundException("Could not find a definition for `{$paramName}`");
+                throw new KeyNotFoundException("Could not find a definition for `{$paramName}` in `{$method->getName()}`");
             }
 
             $injections[] = $injection;

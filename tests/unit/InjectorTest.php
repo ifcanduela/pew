@@ -41,8 +41,8 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $t2 = new \types\Type2();
 
         $injector = new Injector([
-            \types\Type::class => $t2,
             \types\Type1::class => $t1,
+            \types\Type::class => $t2,
             'type1' => false,
         ]);
 
@@ -58,15 +58,26 @@ class InjectorTest extends PHPUnit\Framework\TestCase
 
     public function testCallStdFunction()
     {
-        $injector = new Injector([
+        $values = [
             'str' => "baz bar foo",
             'start' => 8,
             'length' => 3
-        ]);
+        ];
+
+        // the parameter names changed in PHP 8
+        if (substr(PHP_VERSION, 0, 1) === "8") {
+            $values = [
+                'string' => "baz bar foo",
+                'offset' => 8,
+                'length' => 3,
+            ];
+        }
+
+        $injector = new Injector($values);
 
         $foo = $injector->callFunction('substr');
 
-        $this->assertEquals($foo, "foo");
+        $this->assertEquals("foo", $foo);
     }
 
     public function testCreateInstance()
@@ -161,16 +172,15 @@ class InjectorTest extends PHPUnit\Framework\TestCase
     {
         $callback = function () {};
         $arrays = [1, 2, 3, 4];
-
         $injector = new Injector([
             'callback' => $callback,
-            'arrays' => $arrays,
+            'array' => $arrays,
         ]);
 
-        $functionReflector = new ReflectionFunction('array_map');
+        $functionReflector = new ReflectionFunction(function ($callback, $array) {});
         $injections = $injector->getInjections($functionReflector);
 
-        $this->assertEquals($injections, [$callback, $arrays]);
+        $this->assertEquals([$callback, $arrays], $injections);
     }
 
     public function testGetInjectionMissing()
@@ -229,7 +239,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertInstanceOf(\types\Type1::class, $type3->type1);
 
         $this->expectException(\pew\di\KeyNotFoundException::class);
-        $this->expectExceptionMessage("Could not find a definition for `type (types\Type)`");
+        $this->expectExceptionMessage("Could not find a definition for `\$type (types\Type)`");
         $injector->autoResolve(\types\Type4::class);
 
         $this->expectException(\RuntimeException::class);
@@ -238,4 +248,4 @@ class InjectorTest extends PHPUnit\Framework\TestCase
     }
 } // class InjectorTest
 
-} // namespace /
+} // namespace \

@@ -484,7 +484,8 @@ class CollectionTest extends PHPUnit\Framework\TestCase
         $this->assertEquals('[0,1,2,3]', $json);
 
         try {
-            Collection::fromArray([fopen("nofile", "r")])->toJson();
+            $f = fopen("nofile", "w");
+            Collection::fromArray([$f])->toJson();
         } catch (\RuntimeException $e) {
             $this->assertEquals("JSON encoding error: Type is not supported", $e->getMessage());
             unlink("nofile");

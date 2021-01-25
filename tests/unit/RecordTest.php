@@ -303,8 +303,9 @@ class RecordTest extends PHPUnit\Framework\TestCase
 
         $p2 = $projects[1];
         $this->assertEquals("Project Beta", $p2->name);
-        $this->assertEquals(2, $p2->users->count());
         $this->assertEquals(1, $p2->tags->count());
+        // must be 0 because User has a constraint in created_at
+        $this->assertEquals(0, $p2->users->count());
     }
 
     public function testDeleteRecord()

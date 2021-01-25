@@ -11,6 +11,7 @@ use pew\model\relation\BelongsTo;
 use pew\model\relation\HasAndBelongsToMany;
 use pew\model\relation\HasMany;
 use pew\model\relation\HasOne;
+use pew\model\relation\Relationship;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
@@ -426,7 +427,7 @@ class Record implements JsonSerializable, IteratorAggregate
             if (!array_key_exists($methodName, $this->getterResults)) {
                 $fetch = $this->$methodName();
 
-                if (is_callable([$fetch, "fetch"])) {
+                if ($fetch instanceof Relationship) {
                     $fetch = $fetch->fetch();
                 }
 

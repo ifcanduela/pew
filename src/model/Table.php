@@ -640,7 +640,7 @@ class Table
             throw new RuntimeException("Method `{$method}` called before initializing a query");
         }
 
-        if (method_exists($this->query, $method)) {
+        if (is_callable([$this->query, $method])) {
             $this->query->$method(...$arguments);
 
             return $this;

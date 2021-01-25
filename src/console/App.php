@@ -9,6 +9,7 @@ use ReflectionMethod;
 use Stringy\Stringy as Str;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 class App extends \pew\App
@@ -19,8 +20,8 @@ class App extends \pew\App
     /** @var ArgvInput */
     public ArgvInput $input;
 
-    /** @var ConsoleOutput */
-    public ConsoleOutput $output;
+    /** @var Output */
+    public Output $output;
 
     public function __construct(string $appFolder, string $configFileName = "config")
     {
