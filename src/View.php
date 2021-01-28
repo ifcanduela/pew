@@ -6,7 +6,6 @@ use Exception;
 use ifcanduela\events\CanEmitEvents;
 use RuntimeException;
 use SplStack;
-use Stringy\Stringy as S;
 
 /**
  * This class encapsulates the template rendering functionality.
@@ -214,7 +213,7 @@ class View
      */
     protected function resolve(string $templateFile)
     {
-        $templateFileName = S::create($templateFile)->ensureRight($this->extension());
+        $templateFileName = str($templateFile)->ensureEnd($this->extension());
 
         foreach ($this->folderStack as $folder) {
             if (file_exists($folder . DIRECTORY_SEPARATOR . $templateFileName)) {
@@ -270,7 +269,7 @@ class View
     public function extension(string $extension = "")
     {
         if ($extension) {
-            $this->extension = (string) S::create($extension)->ensureLeft(".");
+            $this->extension = (string) str($extension)->ensureStart(".");
 
             return $this;
         }
@@ -453,11 +452,11 @@ class View
      * The value is escaped using `htmlspecialchars` with ENT_QUOTES enabled
      * and UTF8 encoding.
      *
-     * @param string $value
+     * @param mixed $value
      * @return string
      */
     public function escape($value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES, "UTF-8");
+        return htmlspecialchars($value, ENT_QUOTES);
     }
 }

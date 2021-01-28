@@ -3,7 +3,7 @@
 namespace pew\lib;
 
 use pew\request\Request;
-use Stringy\Stringy as S;
+use function pew\str;
 
 /**
  * Class to manipulate URLs.
@@ -99,7 +99,7 @@ class Url
     public static function here(): Url
     {
         $url = new static();
-        
+
         $url->setPath($url->request->getPathInfo());
         $url->setQuery($url->request->query->all());
 
@@ -169,7 +169,7 @@ class Url
      */
     public function setScheme(string $scheme): Url
     {
-        $this->scheme = (string) S::create($scheme)->removeRight("://");
+        $this->scheme = (string) str($scheme)->beforeLast("://");
 
         return $this;
     }
@@ -187,7 +187,7 @@ class Url
             return "";
         }
 
-        return (string) S::create($this->scheme ?: "http")->ensureRight("://");
+        return (string) str($this->scheme ?: "http")->ensureEnd("://");
     }
 
     /**
@@ -457,7 +457,7 @@ class Url
      */
     public function setFragment(string $fragment): Url
     {
-        $this->fragment = (string) S::create($fragment)->substr(strpos($fragment, "#"))->removeLeft("#");
+        $this->fragment = (string) str($fragment)->after("#");
 
         return $this;
     }

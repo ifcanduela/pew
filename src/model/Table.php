@@ -13,7 +13,8 @@ use pew\model\relation\HasAndBelongsToMany;
 use pew\model\relation\HasMany;
 use pew\model\relation\Relationship;
 use RuntimeException;
-use Stringy\Stringy as S;
+
+use function pew\str;
 
 /**
  * Table gateway class.
@@ -593,7 +594,7 @@ class Table
      */
     protected function attachField($relationshipFieldName, $ref, array $models): void
     {
-        $getterMethodName = "get" . S::create($relationshipFieldName)->uppercamelize();
+        $getterMethodName = "get" . str($relationshipFieldName)->camel()->title();
 
         try {
             /** @var Relationship $relationship */

@@ -6,11 +6,13 @@ use ifcanduela\abbrev\Abbrev;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use ReflectionMethod;
-use Stringy\Stringy as Str;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\ConsoleOutput;
+
+use function pew\str;
+use function pew\slug;
 
 class App extends \pew\App
 {
@@ -49,7 +51,7 @@ class App extends \pew\App
 
         if (strpos($arguments["command"], ":") !== false) {
             [$commandName, $actionSlug] = explode(":", $arguments["command"]);
-            $action = (string) Str::create($actionSlug)->camelize();
+            $action = (string) str($actionSlug)->camel();
         } else {
             [$commandName, $action] = [$arguments["command"], ""];
         }
@@ -169,7 +171,7 @@ class App extends \pew\App
         $defaultProperties = $reflectionClass->getDefaultProperties();
         $name = strlen($defaultProperties["name"])
             ? $defaultProperties["name"]
-            : (string) Str::create($className)->removeRight("Command")->underscored()->slugify();
+            : (string) slug($className)->beforeLast("-command");
         $defaultCommand = $defaultProperties["defaultCommand"];
 
         # get public methods
@@ -203,7 +205,7 @@ class App extends \pew\App
 
         foreach ($methods as $method) {
             $methodName = $method->getName();
-            $methodSlug = (string) Str::create($methodName)->underscored()->slugify();
+            $methodSlug = (string) slug($methodName);
             $isDefault = $defaultCommand === $methodName || $defaultCommand === $methodSlug;
 
             # check that the method is in the whitelist
@@ -375,7 +377,7 @@ class App extends \pew\App
             return $injector->callMethod($command, $commandDefinition->method);
         }
 
-        $actionSlug = Str::create($commandDefinition->method)->underscored()->slugify();
+        $actionSlug = (string) slug($commandDefinition->method);
         $this->output->writeln("Command <error>{$commandDefinition->name}:{$actionSlug}</error> not found");
 
         return false;

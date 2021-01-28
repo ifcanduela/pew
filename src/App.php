@@ -12,13 +12,16 @@ use pew\di\Container;
 use pew\di\Injector;
 use pew\model\TableManager;
 use pew\request\ActionResolver;
+use pew\request\Request;
 use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
 use ReflectionException;
 use RuntimeException;
-use Stringy\Stringy as S;
+// use Stringy\Stringy as Str;
+
+use function pew\str;
 
 /**
  * The App class is a request/response processor.
@@ -53,6 +56,26 @@ class App
      */
     public function __construct(string $appFolder, string $configFileName = "config")
     {
+        $this->initApplicationContainer($appFolder);
+
+        static::$instance = $this;
+
+        $this->emit("pew.init");
+
+        # Import app-defined configuration
+        $this->loadAppConfig($configFileName);
+        $this->loadAppBootstrap();
+
+        # Initialize the database manager
+        TableManager::instance($this->container->get("tableManager"));
+
+        $this->emit("app.init");
+
+        App::log("App path set to {$this->container->get("app_path")}", Logger::INFO);
+    }
+
+    protected function initApplicationContainer(string $appFolder)
+    {
         $this->container = require __DIR__ . "/config/bootstrap.php";
 
         if (realpath($appFolder)) {
@@ -68,23 +91,7 @@ class App
         }
 
         $this->container->set("app_path", $appPath);
-        $this->container->set("config_file_name", $configFileName);
         $this->container->set("app", $this);
-
-        static::$instance = $this;
-
-        $this->emit("pew.init");
-
-        # Import app-defined configuration
-        $this->loadAppConfig($configFileName);
-        $this->loadAppBootstrap();
-
-        # Initialize the database manager
-        TableManager::instance($this->container->get("tableManager"));
-
-        $this->emit("app.init");
-
-        App::log("App path set to {$appPath}", Logger::INFO);
     }
 
     /**
@@ -142,6 +149,8 @@ class App
      */
     protected function loadAppConfig(string $configFileName): bool
     {
+        $this->container->set("config_file_name", $configFileName);
+
         $appPath = $this->container->get("app_path");
         $configFolder = $this->container->get("config_folder");
         $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
@@ -185,10 +194,11 @@ class App
         $errorHandler->register();
 
         $this->emit("timer.start", ["app.run", "Application run"]);
+        $request = $this->container->get("request");
 
         try {
             # Process the request
-            $response = $this->handle();
+            $response = $this->handle($request);
         } catch (Exception $e) {
             $response = $this->handleError($e);
         }
@@ -201,13 +211,14 @@ class App
     /**
      * Handle the current request.
      *
+     * @param Request $request
      * @return Response
      * @throws Exception
      */
-    protected function handle(): Response
+    protected function handle(Request $request): Response
     {
         $injector = $this->container->get("injector");
-        $request = $this->container->get("request");
+
         # Add get and post parameters to the injection container
         $injector->appendContainer($request->request->all());
         $injector->appendContainer($request->query->all());
@@ -358,8 +369,8 @@ class App
     {
         # Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->container->get("controller_namespace"));
-        $actionId = (string) S::create($actionName)->underscored();
-        $actionMethod = (string) S::create($actionName)->camelize();
+        $actionId = (string) str($actionName)->snake();
+        $actionMethod = (string) str($actionName)->camel();
         $template = $controllerPath . DIRECTORY_SEPARATOR . $actionId;
 
         $this->container->set("controller_slug", basename($controllerPath));
@@ -408,7 +419,7 @@ class App
             $errorCode = $e->getCode();
         }
 
-        $view = $this->container->get("view");
+        $view = new View($this->get("views_path"));
         $view->layout(false);
         $view->template("errors/view");
         $view->set("exception", $e);
@@ -434,7 +445,7 @@ class App
     {
         # Get the namespace of the controller relative to the base controller namespace
         # by removing \app\controllers (by default) from the beginning
-        $relativeNamespace = (string) S::create($controllerClass)->removeLeft($baseNamespace);
+        $relativeNamespace = (string) str($controllerClass)->after($baseNamespace);
         $parts = explode("\\", $relativeNamespace);
         # The last segment is the short class name
         $controllerClassName = array_pop($parts);
@@ -442,7 +453,7 @@ class App
         # `views` folder
         $controllerPath = implode(DIRECTORY_SEPARATOR, array_filter($parts));
         # Convert the short class name into a slug to use as folder name
-        $controllerSlug = S::create($controllerClassName)->removeRight("Controller")->underscored();
+        $controllerSlug = (string) str($controllerClassName)->before("Controller")->snake();
 
         # Make the controller slug available for use elsewhere
         $this->container->set("controller_slug", $controllerSlug);

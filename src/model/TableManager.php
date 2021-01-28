@@ -2,32 +2,27 @@
 
 namespace pew\model;
 
-use LogicException;
 use ifcanduela\db\Database;
 use InvalidArgumentException;
+use LogicException;
 use ReflectionClass;
-use ReflectionException;
-use Stringy\Stringy;
+use Symfony\Component\String\Inflector\EnglishInflector;
+
+use function pew\str;
 
 class TableManager
 {
-    /** @var array */
-    protected $connections = [];
+    protected array $connections = [];
 
-    /** @var array */
-    protected $connectionCallbacks = [];
+    protected array $connectionCallbacks = [];
 
-    /** @var array */
-    protected $cachedTableDefinitions = [];
+    protected array $cachedTableDefinitions = [];
 
-    /** @var array */
-    protected $cachedRecordClasses = [];
+    protected array $cachedRecordClasses = [];
 
-    /** @var string */
-    protected $defaultConnectionName = "default";
+    protected string $defaultConnectionName = "default";
 
-    /** @var static  */
-    protected static $instance;
+    protected static TableManager $instance;
 
     /**
      * Get a singleton instance of the TableManager.
@@ -35,7 +30,7 @@ class TableManager
      * @param TableManager|null $instance
      * @return static
      */
-    public static function instance(TableManager $instance = null)
+    public static function instance(TableManager $instance = null): TableManager
     {
         if (isset($instance)) {
             static::$instance = $instance;
@@ -67,7 +62,7 @@ class TableManager
      *
      * @return string
      */
-    public function getDefaultConnectionName()
+    public function getDefaultConnectionName(): string
     {
         return $this->defaultConnectionName;
     }
@@ -94,7 +89,7 @@ class TableManager
      * @param string $connectionName
      * @return Database
      */
-    public function getConnection(string $connectionName)
+    public function getConnection(string $connectionName): Database
     {
         # Check if the connection has been initialized
         if (isset($this->connections[$connectionName])) {
@@ -118,9 +113,9 @@ class TableManager
      *
      * @param string $recordClass
      * @param ?string $connectionName
-     * @return ?Table
+     * @return Table
      */
-    public function create(string $recordClass, ?string $connectionName = null): ?Table
+    public function create(string $recordClass, ?string $connectionName = null): Table
     {
         # Check if the information is cached
         if (!isset($this->cachedRecordClasses[$recordClass])) {
@@ -159,14 +154,24 @@ class TableManager
      * @param string $className
      * @return string
      */
-    public static function guessTableName(string $className)
+    public static function guessTableName(string $className): string
     {
         # Split $className into namespaces and class name.
         $segments = explode("\\", $className);
-        # Get the last item
-        $classShortName = array_pop($segments);
+        $shortName = array_pop($segments);
 
-        # Transform the class name into an underscored version and make it plural
-        return Stringy::create($classShortName)->underscored() . "s";
+        # Split the class name into words
+        $words = explode("_", (string) str($shortName)->snake());
+
+        # Get the last word
+        $lastWord = array_pop($words);
+
+        # Find the plural of the last word
+        $inflector = new EnglishInflector();
+        $plurals = $inflector->pluralize($lastWord);
+        $words[] = $plurals[0];
+
+        # Build the underscored table name
+        return strtolower(implode("_", $words));
     }
 }

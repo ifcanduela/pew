@@ -16,7 +16,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use RuntimeException;
-use Stringy\Stringy as S;
+use function pew\str;
 
 /**
  * Active Record-like class.
@@ -392,7 +392,7 @@ class Record implements JsonSerializable, IteratorAggregate
         $className = static::class;
 
         if (!array_key_exists($key, static::$setterMethods[$className])) {
-            $methodName = "set" . S::create($key)->upperCamelize();
+            $methodName = "set" . str($key)->camel()->title();
             static::$setterMethods[$className][$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
@@ -477,17 +477,17 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public static function __callStatic(string $method, array $arguments)
     {
-        $methodStr = S::create($method);
+        $methodStr = str($method);
 
         if ($methodStr->startsWith("findAllBy")) {
-            $field = (string) $methodStr->removeLeft("findAllBy")->underscored();
+            $field = (string) $methodStr->after("findAllBy")->snake();
             $value = array_shift($arguments);
 
             return static::find()->where([$field => $value])->all();
         }
 
         if ($methodStr->startsWith("findOneBy")) {
-            $field = (string) $methodStr->removeLeft("findOneBy")->underscored();
+            $field = (string) $methodStr->after("findOneBy")->snake();
             $value = array_shift($arguments);
 
             return static::find()->where([$field => $value])->one();
@@ -526,7 +526,7 @@ class Record implements JsonSerializable, IteratorAggregate
         if (!$localKeyName) {
             $reflectionClass = new ReflectionClass($className);
             $otherClass = $reflectionClass->getShortName();
-            $localKeyName = S::create($otherClass)->underscored() . "_id";
+            $localKeyName = str($otherClass)->snake() . "_id";
         }
 
         if (!$foreignKeyName) {
@@ -567,7 +567,7 @@ class Record implements JsonSerializable, IteratorAggregate
         if (!$foreignKeyName) {
             $reflectionClass = new ReflectionClass($this);
             $thisClass = $reflectionClass->getShortName();
-            $foreignKeyName = S::create($thisClass)->underscored() . "_id";
+            $foreignKeyName = str($thisClass)->snake() . "_id";
         }
 
         if (!$localKeyName) {
@@ -608,7 +608,7 @@ class Record implements JsonSerializable, IteratorAggregate
         if (!$foreignKeyName) {
             $reflectionClass = new ReflectionClass($this);
             $thisClass = $reflectionClass->getShortName();
-            $foreignKeyName = S::create($thisClass)->underscored() . "_id";
+            $foreignKeyName = str($thisClass)->snake() . "_id";
         }
 
         if (!$localKeyName) {
@@ -680,13 +680,13 @@ class Record implements JsonSerializable, IteratorAggregate
         if (!$nearForeignKeyName) {
             $reflectionClass = new ReflectionClass($this);
             $thisClass = $reflectionClass->getShortName();
-            $nearForeignKeyName = S::create($thisClass)->underscored() . "_id";
+            $nearForeignKeyName = str($thisClass)->snake() . "_id";
         }
 
         if (!$farForeignKeyName) {
             $reflectionClass = new ReflectionClass($className);
             $farClass = $reflectionClass->getShortName();
-            $farForeignKeyName = S::create($farClass)->underscored() . "_id";
+            $farForeignKeyName = str($farClass)->snake() . "_id";
         }
 
         if (!$farKeyName) {
@@ -709,7 +709,7 @@ class Record implements JsonSerializable, IteratorAggregate
     {
         # generate a getter method name if it does not yet exist
         if (!isset(static::$getterMethods[static::class][$key])) {
-            $methodName = "get" . S::create($key)->upperCamelize();
+            $methodName = "get" . str($key)->camel()->title();
             static::$getterMethods[static::class][$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
@@ -724,7 +724,7 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     protected function hasGetterResults(string $key): bool
     {
-        $methodName = "get" . S::create($key)->upperCamelize();
+        $methodName = "get" . str($key)->camel()->title();
 
         return array_key_exists($methodName, $this->getterResults);
     }

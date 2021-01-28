@@ -3,8 +3,6 @@
 namespace pew\console;
 
 use ReflectionClass;
-use ReflectionException;
-use Stringy\Stringy as Str;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,6 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
+
+use function pew\slug;
 
 /**
  * Base class for command-line scripts.
@@ -62,10 +62,7 @@ abstract class Command
         if (!$this->name) {
             $className = (new ReflectionClass($this))->getShortName();
 
-            $this->name = (string) Str::create($className)
-                ->removeLeft("Command")
-                ->underscored()
-                ->slugify();
+            $this->name = (string) slug($className)->beforeLast("-command");
         }
     }
 

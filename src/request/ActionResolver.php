@@ -4,7 +4,8 @@ namespace pew\request;
 
 use ifcanduela\router\Route;
 use RuntimeException;
-use Stringy\Stringy as S;
+
+use function pew\str;
 
 class ActionResolver
 {
@@ -30,9 +31,9 @@ class ActionResolver
     {
         # The handler can be a string like "controller@action" or a callback function
         $handler = $this->route->getHandler();
-        $controllerNamespace = (string) S::create($controllerNamespace)
-            ->ensureLeft("\\")
-            ->ensureRight("\\");
+        $controllerNamespace = (string) str($controllerNamespace)
+            ->ensureStart("\\")
+            ->ensureEnd("\\");
 
         if (is_string($handler)) {
             # Separate controller and action
@@ -42,7 +43,7 @@ class ActionResolver
             # Get controller slug
             $controllerSlug = array_pop($controllerParts);
             # Turn the controller slug into a class name
-            $controllerParts[] = S::create($controllerSlug)->upperCamelize();
+            $controllerParts[] = (string) str($controllerSlug)->camel()->title();
             # Assemble the controller identifier
             $controllerId = join("\\", $controllerParts);
             # The namespace is the default controller namespace with an optional,
@@ -51,7 +52,7 @@ class ActionResolver
                     trim($controllerNamespace, "\\"),
                     trim($this->route->getNamespace(), "\\")
                 ]);
-            $namespace = S::create($ns)->ensureLeft("\\")->ensureRight("\\");
+            $namespace = str($ns)->ensureStart("\\")->ensureEnd("\\");
 
             # Check if the controller class exists -- it may have an optional "Controller" suffix
             foreach ([$controllerId, $controllerId . "Controller"] as $c) {
@@ -92,6 +93,6 @@ class ActionResolver
 
         $actionSlug = $this->route->getParam("action", $defaultAction);
 
-        return (string) S::create($actionSlug)->camelize();
+        return (string) str($actionSlug)->camel();
     }
 }

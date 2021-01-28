@@ -2,7 +2,7 @@
 
 namespace pew\console;
 
-use Stringy\Stringy as S;
+use function pew\slug;
 
 /**
  * Parse a list of command-line arguments into arrays.
@@ -130,8 +130,8 @@ class CommandArguments
      */
     public function __get(string $property)
     {
-        $key = S::create($property)->dasherize();
+        $key = (string) slug($property);
 
-        return $this->get((string) $key);
+        return $this->get($key);
     }
 }

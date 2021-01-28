@@ -8,6 +8,16 @@ $session->start();
 use pew\App;
 use pew\request\Request;
 
+use function pew\root;
+use function pew\session;
+use function pew\url;
+use function pew\here;
+use function pew\array_path;
+use function pew\array_find_key;
+use function pew\array_find_value;
+use function pew\file_get_json;
+use function pew\file_put_json;
+
 class FunctionsTest extends \PHPUnit\Framework\TestCase
 {
     public $app;

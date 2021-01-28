@@ -4,7 +4,7 @@ namespace pew\commands;
 
 use pew\console\Command;
 use pew\console\CommandArguments;
-use Stringy\Stringy as S;
+use pew\model\TableManager;
 
 class CreateCommand extends Command
 {
@@ -56,10 +56,10 @@ class CreateCommand extends Command
             die;
         }
 
-        $className = S::create($arg);
+        $className = str($arg);
 
-        $commandName = $className->removeRight("Command")->dasherize();
-        $className = $className->ensureRight("Command");
+        $className = $className->ensureEnd("Command");
+        $commandName = slug($className->beforeLast("Command"));
 
         $fileContents = <<<PHP
 <?php
@@ -103,7 +103,7 @@ PHP;
             die;
         }
 
-        $slug = S::create($className)->removeRight("Controller")->underscored()->slugify();
+        $slug = slug($className)->beforeLast("-controller");
 
         $fileContents = <<<PHP
 <?php
@@ -175,7 +175,7 @@ PHP;
         if ($arguments->has(1)) {
             $tableName = $arguments->at(1);
         } else {
-            $tableName = rtrim(preg_replace('~([^s])(_)~', '\1s_', (string) S::create($className)->underscored()), "s") . "s";
+            $tableName = TableManager::guessTableName($className);
         }
 
         $fileContents = <<<PHP
