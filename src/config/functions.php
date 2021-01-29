@@ -71,9 +71,9 @@ function array_path($array, string $path, string $separator = ".")
     if (array_key_exists($step, $array)) {
         if (count($steps)) {
             return array_path($array[$step], join($separator, $steps), $separator);
-        } else {
-            return $array[$step];
         }
+
+        return $array[$step];
     }
 
     return null;
