@@ -19,7 +19,6 @@ use pew\response\JsonResponse;
 use pew\response\Response;
 use ReflectionException;
 use RuntimeException;
-// use Stringy\Stringy as Str;
 
 use function pew\str;
 
@@ -311,7 +310,7 @@ class App
      * @throws ReflectionException
      * @throws di\KeyNotFoundException
      */
-    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector): ?Response
+    protected function runAfterMiddleware(Route $route, Response $response, Injector $injector): Response
     {
         # Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
@@ -326,10 +325,10 @@ class App
                 $mw = $injector->createInstance($middlewareClass);
             }
 
-            $newResponse = $injector->callMethod($mw, "after");
+            $result = $injector->callMethod($mw, "after");
 
-            if ($newResponse instanceof Response) {
-                $response = $newResponse;
+            if ($result instanceof Response) {
+                return $result;
             }
         }
 
