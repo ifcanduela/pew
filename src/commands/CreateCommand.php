@@ -6,6 +6,9 @@ use pew\console\Command;
 use pew\console\CommandArguments;
 use pew\model\TableManager;
 
+use function pew\str;
+use function pew\slug;
+
 class CreateCommand extends Command
 {
     /** @var string */
