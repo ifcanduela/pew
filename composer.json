@@ -30,11 +30,13 @@
         "symfony/console": "^5.2",
         "symfony/http-foundation": "^5.2",
         "symfony/string": "^5.2",
-        "symfony/translation-contracts": "^2.3"
+        "symfony/translation-contracts": "^2.3",
+        "doctrine/inflector": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "*",
-        "psalm/phar": "^4.3"
+        "psalm/phar": "^4.3",
+        "symfony/var-dumper": "^5.2"
     },
     "autoload": {
         "files": ["src/config/functions.php"],
