@@ -220,7 +220,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param int $flag
      * @return static
      */
-    public function filter(callable $callback, int $flag = ARRAY_FILTER_USE_BOTH): Collection
+    public function filter(callable $callback = null, int $flag = ARRAY_FILTER_USE_BOTH): Collection
     {
         $items = array_filter($this->items, $callback, $flag);
 
