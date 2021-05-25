@@ -355,7 +355,7 @@ class View
         }
 
         # Render the element.
-        return $this->renderFile($templateFile, array_replace($this->variables, $data));
+        return $this->renderFile($templateFile, $data);
     }
 
     /**
