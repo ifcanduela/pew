@@ -375,6 +375,8 @@ class App
         $this->container->set("controller_slug", basename($controllerPath));
         $this->container->set("action_slug", $actionId);
 
+        $this->emit("request.actionResolved", $this->get("controller_slug") . "/" . $this->get("action_slug"));
+
         App::log("Request handler is {$controllerPath}/{$actionMethod}");
 
         # Set up the template
