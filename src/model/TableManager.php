@@ -6,7 +6,7 @@ use ifcanduela\db\Database;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
-use Symfony\Component\String\Inflector\EnglishInflector;
+use Doctrine\Inflector\InflectorFactory;
 
 use function pew\str;
 
@@ -167,9 +167,9 @@ class TableManager
         $lastWord = array_pop($words);
 
         # Find the plural of the last word
-        $inflector = new EnglishInflector();
-        $plurals = $inflector->pluralize($lastWord);
-        $words[] = $plurals[0];
+        $inflector = InflectorFactory::create()->build();
+        $plural = $inflector->pluralize($lastWord);
+        $words[] = $plural;
 
         # Build the underscored table name
         return strtolower(implode("_", $words));
