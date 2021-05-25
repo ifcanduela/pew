@@ -16,6 +16,7 @@
         "php": ">=7.4.0",
         "ext-json": "*",
         "ext-pdo": "*",
+        "doctrine/inflector": "^2.0",
         "filp/whoops": "^2.9",
         "ifcanduela/abbrev": "^1.0",
         "ifcanduela/db": "^1.4",
@@ -30,8 +31,7 @@
         "symfony/console": "^5.2",
         "symfony/http-foundation": "^5.2",
         "symfony/string": "^5.2",
-        "symfony/translation-contracts": "^2.3",
-        "doctrine/inflector": "^2.0"
+        "symfony/translation-contracts": "^2.3"
     },
     "require-dev": {
         "phpunit/phpunit": "*",
