@@ -295,10 +295,13 @@ function session($path = null, $default = null)
  */
 function slug($string, string $separator = "-"): AbstractString
 {
-    $slugger = new AsciiSlugger();
-    $str = str($string)->snake()->toString();
+    $string = s((string) $string)
+        ->ascii()
+        ->snake()
+        ->replaceMatches("~(\d+)~", "_$1")
+        ->replace("_", "-");
 
-    return $slugger->slug($str, $separator)->lower();
+    return $string;
 }
 
 /**
