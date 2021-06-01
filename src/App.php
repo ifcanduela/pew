@@ -219,12 +219,12 @@ class App
         $injector = $this->container->get("injector");
 
         # Add get and post parameters to the injection container
-        $injector->appendContainer($request->request->all());
-        $injector->appendContainer($request->query->all());
+        $injector->prependContainer($request->request->all());
+        $injector->prependContainer($request->query->all());
 
         $route = $this->container->get("route");
         # Add route parameters to the injection container
-        $injector->appendContainer($route->getParams());
+        $injector->prependContainer($route->getParams());
 
         App::log("Matched route " . $route->getPath());
 
@@ -315,6 +315,13 @@ class App
         # Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
 
+        $injector->prependContainer([
+            "request" => $this->get("request"),
+            Request::class => $this->get("request"),
+            "response" => $response,
+            Response::class => $response,
+        ]);
+
         foreach ($middlewareClasses as $middlewareClass) {
             # Check if the middleware was activated before calling the action
             if (array_key_exists($middlewareClass, $this->middleware)) {
@@ -375,7 +382,7 @@ class App
         $this->container->set("controller_slug", basename($controllerPath));
         $this->container->set("action_slug", $actionId);
 
-        $this->emit("request.actionResolved", $this->get("controller_slug") . "/" . $this->get("action_slug"));
+        $this->emit("request.actionResolved", "$controllerClass::$actionMethod");
 
         App::log("Request handler is {$controllerPath}/{$actionMethod}");
 
