@@ -3,8 +3,11 @@
 namespace types {
 
 interface Type {}
+
 class Type1 implements Type {}
+
 class Type2 implements Type {}
+
 class Type3 implements Type {
     public $type1;
 
@@ -18,6 +21,7 @@ class Type3 implements Type {
         return $t;
     }
 }
+
 class Type4 implements Type {
     public $type;
 
