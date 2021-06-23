@@ -144,14 +144,14 @@ class View
             $template = $this->template;
         }
 
-        # find the template file
+        # Find the template file
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
             throw new RuntimeException("Template `{$template}` not found");
         }
 
-        # make previous and received variables available using the index operator
+        # Make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
         $this->output = $output = $this->renderFile($templateFile, $this->variables);
 

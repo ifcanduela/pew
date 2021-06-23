@@ -19,11 +19,11 @@ class Url
     /** @var string */
     private string $scheme = "http";
 
-    /** @var string|null */
-    private ?string $user;
+    /** @var string */
+    private string $user = "";
 
-    /** @var string|null */
-    private ?string $password;
+    /** @var string */
+    private string $password = "";
 
     /** @var string */
     private string $host = "";
@@ -131,7 +131,7 @@ class Url
     {
         $url = new static;
 
-        $path = rtrim("/" . join("/", array_filter($path)), "/");
+        $path = rtrim("/" . implode("/", array_filter($path)), "/");
         $path = preg_replace('~\/+~', "/", $path);
 
         $url->setPath($path);
@@ -169,7 +169,7 @@ class Url
      */
     public function setScheme(string $scheme): Url
     {
-        $this->scheme = (string) str($scheme)->beforeLast("://");
+        $this->scheme = (string) str($scheme)->before("://");
 
         return $this;
     }
@@ -181,19 +181,22 @@ class Url
      *
      * @return string
      */
-    public function getScheme(): string
+    public function getScheme(bool $withSeparator = true): string
     {
         if (!$this->host) {
             return "";
         }
 
-        return (string) str($this->scheme ?: "http")->ensureEnd("://");
+        $scheme = str($this->scheme ?: "http");
+
+        return (string) ($withSeparator? $scheme->ensureEnd("://") : $scheme);
     }
 
     /**
      * Set the user and password in the URL.
      *
-     * To remove the auth info, pass `null` as $user.
+     * Pass empty strings to remove the auth info. Pass `null` to skip setting
+     * the user or password.
      *
      * @param string|null $user
      * @param string|null $password
@@ -201,15 +204,12 @@ class Url
      */
     public function setAuth(string $user = null, string $password = null): Url
     {
-        $this->user = null;
-        $this->password = null;
-
-        if ($user) {
+        if ($user !== null) {
             $this->user = $user;
+        }
 
-            if ($password) {
-                $this->password = $password;
-            }
+        if ($password !== null) {
+            $this->password = $password;
         }
 
         return $this;
@@ -298,7 +298,7 @@ class Url
     }
 
     /**
-     * Set the pah segments.
+     * Set the path segments.
      *
      * Multiple string arguments are allowed, with or without slash separators.
      *
@@ -358,7 +358,7 @@ class Url
      */
     public function getPath(): string
     {
-        return "/" . join("/", $this->path);
+        return "/" . implode("/", $this->path);
     }
 
     /**

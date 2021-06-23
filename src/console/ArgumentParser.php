@@ -17,25 +17,25 @@ class ArgumentParser
                 $this->addAndReset();
 
                 if ($this->isLongParam($param)) {
-                    # it's a long name
+                    # It's a long name
                     $this->currentName = substr($param, 2);
 
                     if (strpos($this->currentName, "=")) {
-                        # the value is attached to the key
+                        # The value is attached to the key
                         [$this->currentName, $value] = explode("=", $this->currentName, 2);
                         $this->addAndReset($value);
                     }
                 } elseif ($this->isShortParam($param)) {
-                    # it's a short param
+                    # It's a short param
                     $value = true;
                     $this->currentName = substr($param, 1);
 
                     if (strpos($param, "=")) {
-                        # it's a short param with a value
+                        # It's a short param with a value
                         [$this->currentName, $value] = explode("=", $this->currentName, 2);
                         $names = str_split($this->currentName, 1);
                     } else {
-                        # it's a short param
+                        # It's a short param
                         $names = str_split($this->currentName, 1);
                     }
 
@@ -54,7 +54,7 @@ class ArgumentParser
             }
         }
 
-        # handle any dangling token
+        # Handle any dangling token
         $this->addAndReset();
     }
 
@@ -102,7 +102,7 @@ class ArgumentParser
     protected function addAndReset($value = true)
     {
         if ($this->currentName) {
-            # there's a named param without value
+            # There's a named param without value
             $this->addNamed($this->currentName, $value);
             $this->currentName = "";
         }
@@ -112,7 +112,7 @@ class ArgumentParser
     {
         return $str[0] === "-";
     }
-    
+
     protected function isLongParam(string $str): bool
     {
         return substr($str, 0, 2) === "--";

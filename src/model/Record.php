@@ -421,9 +421,9 @@ class Record implements JsonSerializable, IteratorAggregate
     {
         $methodName = $this->hasRelationship($key);
 
-        # check if the getter method exists
+        # Check if the getter method exists
         if ($methodName) {
-            # check if the getter method has been called before
+            # Check if the getter method has been called before
             if (!array_key_exists($methodName, $this->getterResults)) {
                 $fetch = $this->$methodName();
 
@@ -437,7 +437,7 @@ class Record implements JsonSerializable, IteratorAggregate
             return $this->getterResults[$methodName];
         }
 
-        # the offset is a table field
+        # The offset is a table field
         if (array_key_exists($key, $this->record)) {
             return $this->record[$key];
         }
@@ -707,7 +707,7 @@ class Record implements JsonSerializable, IteratorAggregate
      */
     public function hasRelationship(string $key)
     {
-        # generate a getter method name if it does not yet exist
+        # Generate a getter method name if it does not yet exist
         if (!isset(static::$getterMethods[static::class][$key])) {
             $methodName = "get" . str($key)->camel()->title();
             static::$getterMethods[static::class][$key] = method_exists($this, $methodName) ? $methodName : false;

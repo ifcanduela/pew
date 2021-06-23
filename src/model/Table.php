@@ -136,7 +136,7 @@ class Table
             throw new TableNotFoundException("Table `{$this->tableName}` not found");
         }
 
-        # some metadata about the table
+        # Some metadata about the table
         $this->tableData["name"] = $this->tableName;
 
         if (!isset($this->tableData["primary_key"])) {
@@ -272,19 +272,19 @@ class Table
      */
     public function query($query, array $data = [])
     {
-        # trim whitespace around the SQL
+        # Trim whitespace around the SQL
         $query = trim($query);
-        # extract the SQL clause being used (SELECT, INSERT, etc...)
+        # Extract the SQL clause being used (SELECT, INSERT, etc...)
         $clause = strtoupper(strtok($query, " "));
 
-        # prepare the SQL query
+        # Prepare the SQL query
         $stm = $this->db->prepare($query);
 
-        # run the prepared statement with the received keys and values
+        # Run the prepared statement with the received keys and values
         $stm->execute($data);
 
         if ($clause == "SELECT") {
-            # return an array of Models
+            # Return an array of Models
             return $stm->fetchAll();
         }
 
@@ -352,13 +352,13 @@ class Table
      */
     public function count(): int
     {
-        # clone the current query
+        # Clone the current query
         $query = clone $this->query;
-        # replace the column list with COUNT(*)
+        # Replace the column list with COUNT(*)
         $query->columns("COUNT(*) as row_count");
-        # remove limit and offset
+        # Remove limit and offset
         $query->limit(0, 0);
-        # query the database
+        # Query the database
         $result = $this->db->run($query);
 
         return (int) $result[0]["row_count"];
@@ -418,7 +418,7 @@ class Table
      */
     protected function insertRecord(array $record, string $timestampField = null)
     {
-        # set creation timestamp
+        # Set creation timestamp
         if ($timestampField && $this->hasColumn($timestampField)) {
             $record[$timestampField] = time();
         }
@@ -440,12 +440,12 @@ class Table
     {
         $primaryKeyName = $this->primaryKey();
 
-        # set modification timestamp
+        # Set modification timestamp
         if ($timestampField && $this->hasColumn($timestampField)) {
             $record[$timestampField] = time();
         }
 
-        # if $id is set, perform an UPDATE
+        # If $id is set, perform an UPDATE
         $where = [$primaryKeyName => $record[$primaryKeyName]];
         $query = Query::update($this->tableName)->set($record)->where($where);
         $this->db->run($query);
@@ -471,11 +471,11 @@ class Table
         $query = Query::delete($this->tableName);
 
         if (is_array($id)) {
-            # use the $id as an array of conditions
+            # Use the $id as an array of conditions
             $query->where([$this->primaryKey() => $id]);
             return $this->db->run($query);
         } elseif ($id === true) {
-            # this deletes everything in $this->table
+            # This deletes everything in $this->table
             return $this->db->run($query);
         } elseif ($id !== null) {
             return $this->db->run($this->query->where([$this->primaryKey() => $id]));

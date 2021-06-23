@@ -29,11 +29,11 @@ class Request extends \Symfony\Component\HttpFoundation\Request
         parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
 
         if ($this->isPost()) {
-            # check for a JSON request body
+            # Check for a JSON request body
             $bodyIsJson = strpos($this->headers->get("Content-Type", ""), "application/json") === 0;
 
             if ($bodyIsJson) {
-                # decode the JSON body and replace the POST parameter bag
+                # Decode the JSON body and replace the POST parameter bag
                 $data = json_decode($this->getContent(), true);
                 $this->request->replace(is_array($data) ? $data : []);
             }
@@ -49,9 +49,9 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     {
         if (!isset($this->appUrl)) {
             $appUrl = $this->getSchemeAndHttpHost() . $this->getBaseUrl();
-            # find out the script filename
+            # Find out the script filename
             $scriptFileName = preg_quote(pathinfo($this->getScriptName(), PATHINFO_BASENAME));
-            # ensure the URL does not contain the script filename
+            # Ensure the URL does not contain the script filename
             $this->appUrl = preg_replace("/{$scriptFileName}$/", "", $appUrl);
         }
 
@@ -147,11 +147,11 @@ class Request extends \Symfony\Component\HttpFoundation\Request
         if (!isset($this->acceptsJson)) {
             $this->acceptsJson = false;
 
-            # check if the requested URL ends in '.json' or '|json'
+            # Check if the requested URL ends in '.json' or '|json'
             if (preg_match('/[\.|]json$/', $this->getPathInfo())) {
                 $this->acceptsJson = true;
             } else {
-                # search for an 'Accept' header containing 'application/json'
+                # Search for an 'Accept' header containing 'application/json'
                 foreach ($this->getAcceptableContentTypes() as $contentType) {
                     if ($contentType === "application/json") {
                         $this->acceptsJson = true;

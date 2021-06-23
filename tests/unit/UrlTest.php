@@ -65,6 +65,17 @@ class UrlTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("/first/third/fourth", $url->getPath());
     }
 
+    public function testScheme()
+    {
+        $url = new Url("http://localhost/path/to/route?return=https://localhost/return/");
+
+        $this->assertEquals("http://", $url->getScheme());
+        $this->assertEquals("http", $url->getScheme(false));
+
+        $url = $url->setScheme("https://example.com?scheme=scp://");
+        $this->assertEquals("https", $url->getScheme(false));
+    }
+
     public function testUrlFragment()
     {
         $url = new Url("https://example.com/index.php#alpha");

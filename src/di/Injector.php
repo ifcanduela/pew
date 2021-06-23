@@ -78,7 +78,7 @@ class Injector
             $paramType = $param->getType();
             $paramName = $param->getName();
 
-            # first try: class typehint
+            # First try: class typehint
             if ($paramType) {
                 $typeName = $paramType->getName();
                 $classExists = class_exists($typeName);
@@ -101,7 +101,7 @@ class Injector
                 }
             }
 
-            # second try: argument name
+            # Second try: argument name
             if (!$found) {
                 try {
                     $injection = $this->findKey($paramName);
@@ -110,13 +110,13 @@ class Injector
                 }
             }
 
-            # third try: argument default value
+            # Third try: argument default value
             if (!$found && $param->isDefaultValueAvailable()) {
                 $injection = $param->getDefaultValue();
                 $found = true;
             }
 
-            # fourth try: auto-resolve class name
+            # Fourth try: auto-resolve class name
             if (!$found && $classExists && $typeName) {
                 try {
                     $injection = $this->createInstance($typeName);
