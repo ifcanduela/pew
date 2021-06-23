@@ -17,6 +17,7 @@ use function pew\array_find_key;
 use function pew\array_find_value;
 use function pew\file_get_json;
 use function pew\file_put_json;
+use function pew\slug;
 
 class FunctionsTest extends \PHPUnit\Framework\TestCase
 {
@@ -125,7 +126,7 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
         $this->assertIsObject($data);
         $this->assertObjectHasAttribute("numbers", $data);
         $this->assertObjectHasAttribute("letters", $data);
-        
+
         $t = time();
         file_put_json(__DIR__. "/../fixtures/json_{$t}.json", [1.1, 2.2, 3.3]);
         $data = file_get_json(__DIR__ . "/../fixtures/json_{$t}.json");
@@ -183,5 +184,18 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
         });
 
         $this->assertNull($key);
+    }
+
+    public function testSlug()
+    {
+        $strings = [
+            "2021-06-01 12:56:51" => "2021-06-01-12-56-51",
+            "Name MiddleName LastName" => "name-middle-name-last-name",
+            "MrWorld1999" => "mr-world-1999",
+        ];
+
+        foreach ($strings as $string => $expected) {
+            $this->assertEquals($expected, slug($string));
+        }
     }
 }

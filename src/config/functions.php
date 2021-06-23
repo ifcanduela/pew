@@ -8,7 +8,8 @@ namespace pew;
 
 use pew\lib\Url;
 use Symfony\Component\String\AbstractString;
-use Symfony\Component\String\Slugger\AsciiSlugger;
+use Doctrine\Inflector\InflectorFactory;
+
 use function Symfony\Component\String\s;
 
 /**
@@ -203,7 +204,7 @@ function pew(string $key)
     $app = App::instance();
 
     if (!$app) {
-        throw new RuntimeException("The application has not been initialized");
+        throw new \RuntimeException("The application has not been initialized");
     }
 
     return $app->get($key);
@@ -295,10 +296,25 @@ function session($path = null, $default = null)
  */
 function slug($string, string $separator = "-"): AbstractString
 {
-    $slugger = new AsciiSlugger();
-    $str = str($string)->snake()->toString();
+    static $inflector;
 
-    return $slugger->slug($str, $separator)->lower();
+    if (!$inflector) {
+        $inflector = InflectorFactory::create()->build();
+    }
+
+    $slug = s((string) $string)->ascii()
+        // enforce spaces between words
+        ->replaceMatches("~([^A-Z])([A-Z])~", "\$1 \$2")
+        // enforce spaces before numbers
+        ->replaceMatches("~(\\d+)~", " \$1");
+
+    $slug = $inflector->urlize((string) $slug);
+
+    if ($separator !== "-") {
+        $slug = str_replace("-", $separator, $slug);
+    }
+
+    return s($slug);
 }
 
 /**

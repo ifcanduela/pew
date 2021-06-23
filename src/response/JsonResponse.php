@@ -8,10 +8,11 @@ use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
 
 class JsonResponse extends Response
 {
-    /**
-     * @var mixed
-     */
+    /** @var mixed */
     protected $data;
+
+    /** @var bool */
+    protected bool $isJsonResponse = true;
 
     /**
      * Creates a View object based on a folder.
