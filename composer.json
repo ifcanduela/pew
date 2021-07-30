@@ -30,7 +30,8 @@
         "symfony/cache": "^5.2",
         "symfony/console": "^5.2",
         "symfony/http-foundation": "^5.2",
-        "symfony/string": "^5.2"
+        "symfony/string": "^5.2",
+        "symfony/translation-contracts": "^2.4"
     },
     "require-dev": {
         "phpunit/phpunit": "*",
