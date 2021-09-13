@@ -8,10 +8,8 @@ use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
 
 class JsonResponse extends Response
 {
-    /** @var mixed */
     protected $data;
 
-    /** @var bool */
     protected bool $isJsonResponse = true;
 
     /**

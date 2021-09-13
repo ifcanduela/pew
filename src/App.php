@@ -120,7 +120,7 @@ class App
      * Check if a value is present in the container.
      *
      * @param string $key
-     * @return boolean
+     * @return bool
      */
     public function has(string $key): bool
     {
@@ -355,7 +355,7 @@ class App
     {
         App::log("Request handler is anonymous callback");
         # Create a basic controller as a host for the callback
-        $controller = $injector->createinstance(Controller::class);
+        $controller = $injector->createInstance(Controller::class);
 
         # Call the handler using the basic controller as context
         return $injector->callFunction($handler, $controller);

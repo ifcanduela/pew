@@ -34,9 +34,7 @@
         "symfony/translation-contracts": "^2.4"
     },
     "require-dev": {
-        "phpunit/phpunit": "*",
-        "psalm/phar": "^4.3",
-        "symfony/var-dumper": "^5.2"
+        "phpunit/phpunit": "*"
     },
     "autoload": {
         "files": ["src/config/functions.php"],

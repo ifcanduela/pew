@@ -6,6 +6,7 @@ $session = new Session();
 $session->start();
 
 use pew\App;
+use pew\lib\Session as PewSession;
 use pew\request\Request;
 
 use function pew\root;
@@ -106,10 +107,11 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("ALPHA", session("alpha"));
         $this->assertEquals("GAMMA", session("beta.gamma"));
 
+        $this->assertInstanceOf(PewSession::class, session());
         $this->assertEquals([
             "alpha" => "ALPHA",
             "beta" => ["gamma" => "GAMMA"],
-        ], session());
+        ], session()->all());
     }
 
     public function testJsonFunctions()

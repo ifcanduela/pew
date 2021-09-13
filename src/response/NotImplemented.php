@@ -4,6 +4,7 @@ namespace pew\response;
 
 class NotImplemented extends HttpException
 {
-    protected $code = 501;
-    protected $message = "Not Implemented";
+    protected int $code = 501;
+
+    protected string $message = "Not Implemented";
 }

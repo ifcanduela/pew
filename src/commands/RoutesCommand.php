@@ -60,8 +60,8 @@ class RoutesCommand extends Command
     /**
      * Format and print a list of routes.
      *
-     * @param $routes
-     * @param $lengths
+     * @param array $routes
+     * @param int[] $lengths
      */
     protected function printRoutes($routes, $lengths)
     {

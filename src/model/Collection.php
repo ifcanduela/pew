@@ -2,13 +2,13 @@
 
 namespace pew\model;
 
-use pew\lib\Collection;
+use pew\lib\Collection as BaseCollection;
 
 /**
  * Collection wraps an array and provides an object-oriented interface to the most common
  * array functions, and some extra functionality.
  */
-class RecordCollection extends Collection
+class Collection extends BaseCollection
 {
 
 }

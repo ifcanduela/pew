@@ -4,6 +4,7 @@ namespace pew\response;
 
 class Forbidden extends HttpException
 {
-    protected $code = 403;
-    protected $message = "Forbidden";
+    protected int $code = 403;
+
+    protected string $message = "Forbidden";
 }

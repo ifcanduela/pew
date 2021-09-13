@@ -10,6 +10,46 @@ use Doctrine\Inflector\InflectorFactory;
 
 use function pew\str;
 
+/**
+ * Methods to handle named database connections and create Table gateway objects.
+ *
+ * To configure a TableManager, either instantiate it normally or use the
+ * singleton.
+ *
+ * ```php
+ * $tm = new TableManager();
+ * $tm = TableManager::instance();
+ * ```
+ *
+ * Setup database connections in your instance of the TableManager. Database
+ * connections can be \ifcanduela\db\Database objects or callbacks.
+ *
+ * ```php
+ * $tm->setConnection("default", Database::sqlite("dev.sqlite"));
+ * $tm->setConnection("user_db", Database::sqlite("users.sqlite"));
+ * $tm->setConnection("prod", function () {
+ *     return new Database::mysql("localhost", "pew_prod", "db_username", "db_password);
+ * });
+ * ```
+ *
+ * The table manager will default to one of the configured connections, by default
+ * called "default". The name of the default connection can be set:
+ *
+ * ```php
+ * $tm->setDefaultConnectionName("prod");
+ * ```
+ *
+ * Your models can specify connections using the Model::$connectionName string property.
+ * If no connection is set, the table manager's default connection will be used, if
+ * it exists.
+ *
+ * ```php
+ * class User extends \pew\Model
+ * {
+ *     public string $connectionName = "user_db";
+ * }
+ * ```
+ */
 class TableManager
 {
     protected array $connections = [];

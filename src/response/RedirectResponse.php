@@ -8,7 +8,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirectResponse
 
 class RedirectResponse extends Response
 {
-    /** @var string */
     protected string $uri;
 
     /**
@@ -18,7 +17,7 @@ class RedirectResponse extends Response
      * @param ?SymfonyResponse $response
      * @param ?Session $session
      */
-    public function __construct(string $uri, SymfonyResponse $response = null, Session $session = null)
+    public function __construct(string $uri, SymfonyRedirectResponse $response = null, Session $session = null)
     {
         if (!$response) {
             $response = new SymfonyRedirectResponse($uri);

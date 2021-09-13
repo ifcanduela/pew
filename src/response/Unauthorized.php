@@ -4,6 +4,7 @@ namespace pew\response;
 
 class Unauthorized extends HttpException
 {
-    protected $code = 401;
-    protected $message = "Unauthorized";
+    protected int $code = 401;
+
+    protected string $message = "Unauthorized";
 }

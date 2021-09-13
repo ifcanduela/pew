@@ -281,7 +281,7 @@ class Url
      * By default, port 80 is ignored and any other value will have a colon (:) prepended.
      * If $asNumber is true, the actual port number will be returned as an number.
      *
-     * @param boolean $asNumber Avoid prefixing the port number with a `:`
+     * @param bool $asNumber Avoid prefixing the port number with a `:`
      * @return string|int
      */
     public function getPort(bool $asNumber = false)

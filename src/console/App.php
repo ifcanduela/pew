@@ -39,7 +39,7 @@ class App extends \pew\App
     /**
      * Run a command.
      *
-     * @return mixed
+     * @return void
      */
     public function run()
     {
@@ -59,10 +59,10 @@ class App extends \pew\App
         $commandInfo = $this->findCommand($commandName, $action);
 
         if (!($commandInfo instanceof CommandDefinition)) {
-            return $this->commandMissing($commandName, $actionSlug ?? null, $commandInfo ?? []);
+            $this->commandMissing($commandName, $actionSlug ?? null, $commandInfo ?? []);
+        } else {
+            $this->handleCommand($commandInfo, $arguments["arguments"]);
         }
-
-        return $this->handleCommand($commandInfo, $arguments["arguments"]);
     }
 
     /**

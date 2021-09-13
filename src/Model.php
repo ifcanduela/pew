@@ -5,7 +5,7 @@ namespace pew;
 /**
  * Base Model class.
  */
-class Model extends model\Record
+class Model extends model\ActiveRecord
 {
 
 }

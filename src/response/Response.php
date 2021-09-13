@@ -11,16 +11,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class Response
 {
-    /** @var bool */
     protected bool $isJsonResponse = false;
 
-    /** @var SymfonyResponse */
     protected SymfonyResponse $response;
 
-    /** @var string */
     protected string $content = "";
 
-    /** @var Session */
     protected Session $session;
 
     /**

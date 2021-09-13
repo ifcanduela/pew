@@ -3,7 +3,7 @@
 namespace pew\model\relation;
 
 use Exception;
-use pew\model\RecordCollection;
+use pew\model\Collection;
 
 /**
  * A many-to-many relationship.
@@ -34,9 +34,9 @@ class HasAndBelongsToMany extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return RecordCollection
+     * @return Collection
      */
-    public function fetch(): RecordCollection
+    public function fetch(): Collection
     {
         $fk = $this->through . "." . $this->foreignKeyName;
 
@@ -84,7 +84,7 @@ class HasAndBelongsToMany extends Relationship
         }
 
         return array_map(function ($items) {
-            return new RecordCollection($items);
+            return new Collection($items);
         }, $result);
     }
 

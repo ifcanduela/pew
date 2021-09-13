@@ -12,8 +12,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class HtmlResponse extends Response
 {
-    /** @var View */
-    protected $view;
+    protected View $view;
 
     /**
      * Creates a View object based on a folder.

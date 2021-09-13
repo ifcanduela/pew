@@ -43,22 +43,16 @@ class Table
 {
     /**
      * Database abstraction instance.
-     *
-     * @var Database
      */
     public Database $db;
 
     /**
      * Database table for the subject of the model.
-     *
-     * @var string
      */
     protected string $tableName = "";
 
     /**
      * Name of the primary key fields of the table the Model manages.
-     *
-     * @var string
      */
     protected string $primaryKey = "";
 
@@ -67,46 +61,33 @@ class Table
      *
      * Holds table name, primary key name, column names, primary text column
      * name (either 'name' or 'title') and values.
-     *
-     * @var array
      */
     protected array $tableData = [];
 
     /**
-     * Current resultset.
-     *
-     * Holds an index for each record in the last resultset.
-     *
-     * @var array
-     */
-    protected array $record = [];
-
-    /**
      * Class name for records in the table.
-     *
-     * @var string
      */
     protected string $recordClass = "";
 
     /**
      * Current selection query.
-     *
-     * @var Query
      */
     public Query $query;
 
     /**
      * List of relationships to fetch eagerly.
-     *
-     * @var array
      */
     protected array $relationships = [];
 
-    /** @var array */
-    protected static array $primaryKeyCache = [];
-
-    /** @var array */
+    /**
+     * List of column names for tables.
+     */
     protected static array $columnCache = [];
+
+    /**
+     * List of primary key column names for tables.
+     */
+    protected static array $primaryKeyCache = [];
 
     /**
      * Create a table gateway object.
@@ -326,9 +307,9 @@ class Table
      *
      * If a class for the retrieved records cannot be found, arrays will be returned.
      *
-     * @return RecordCollection
+     * @return Collection
      */
-    public function all(): RecordCollection
+    public function all(): Collection
     {
         $className = $this->recordClass;
         $models = [];
@@ -342,7 +323,7 @@ class Table
             $this->loadRelationships($models);
         }
 
-        return new RecordCollection($models);
+        return new Collection($models);
     }
 
     /**
@@ -373,14 +354,14 @@ class Table
      * @param Record $model
      * @return array The record attributes on success, false otherwise
      */
-    public function save(Record $model): array
+    public function save(ActiveRecord $model): array
     {
         if (method_exists($model, "beforeSave")) {
             $model->beforeSave();
         }
 
         $attributes = $model->attributes();
-        $record = $result = [];
+        $record = [];
 
         foreach ($this->tableData["columns"] as $key) {
             if (array_key_exists($key, $attributes)) {
@@ -394,7 +375,7 @@ class Table
 
         $primaryKeyName = $this->primaryKey();
 
-        if ($model->isNew/*empty($record[$primaryKeyName])*/) {
+        if ($model->isNew) {
             $id = $this->insertRecord($record, $model::$createdFieldName);
         } else {
             $id = $this->updateRecord($record, $model::$updatedFieldName);
@@ -618,7 +599,7 @@ class Table
                     $model->attachRelated($getterMethodName, $grouped[$keyValue]);
                 } else {
                     $isMultiple = $relationship instanceof HasMany || $relationship instanceof HasAndBelongsToMany;
-                    $model->attachRelated($getterMethodName, $isMultiple ? new RecordCollection([]) : null);
+                    $model->attachRelated($getterMethodName, $isMultiple ? new Collection([]) : null);
                 }
             }
         } else {

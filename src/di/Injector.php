@@ -10,6 +10,7 @@ use ReflectionException;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
+use ReflectionNamedType;
 use RuntimeException;
 
 class Injector
@@ -79,7 +80,7 @@ class Injector
             $paramName = $param->getName();
 
             # First try: class typehint
-            if ($paramType) {
+            if ($paramType instanceof ReflectionNamedType) {
                 $typeName = $paramType->getName();
                 $classExists = class_exists($typeName);
                 $interfaceExists = interface_exists($typeName);
@@ -126,7 +127,7 @@ class Injector
             }
 
             if (!$found) {
-                if ($paramType) {
+                if ($paramType instanceof ReflectionNamedType) {
                     $paramName =  "\${$paramName} ({$paramType->getName()})";
                 }
 

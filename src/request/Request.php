@@ -34,7 +34,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
 
             if ($bodyIsJson) {
                 # Decode the JSON body and replace the POST parameter bag
-                $data = json_decode($this->getContent(), true);
+                $data = $this->toArray();
                 $this->request->replace(is_array($data) ? $data : []);
             }
         }

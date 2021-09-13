@@ -230,7 +230,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Get the first item or items in the collection.
      *
-     * @param integer $count
+     * @param int $count
      * @return mixed
      */
     public function first(int $count = 1)
@@ -399,7 +399,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Find the first value in the collection that satifies a condition.
+     * Find the first value in the collection that satisfies a condition.
      *
      * @param callable $callback
      * @return mixed

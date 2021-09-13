@@ -1,7 +1,7 @@
 <?php
 
 use ifcanduela\db\Database;
-use pew\model\RecordCollection;
+use pew\model\Collection;
 use pew\model\Table;
 use pew\model\TableManager;
 use pew\model\relation\BelongsTo;
@@ -78,7 +78,7 @@ class RelationshipTest extends \PHPUnit\Framework\TestCase
         $b = new HasMany($users->createSelect(), "project_id", "id", 1);
         $related = $b->fetch();
 
-        $this->assertInstanceOf(RecordCollection::class, $related);
+        $this->assertInstanceOf(Collection::class, $related);
         $this->assertEquals("User 1", $related[0]["username"]);
     }
 
@@ -90,7 +90,7 @@ class RelationshipTest extends \PHPUnit\Framework\TestCase
         $related = $b->find([1, 2, 3, 4]);
 
         $this->assertEquals(4, $related->count());
-        $this->assertInstanceOf(RecordCollection::class, $related);
+        $this->assertInstanceOf(Collection::class, $related);
         $this->assertEquals("User 1", $related[1][0]["username"]);
     }
 

@@ -134,7 +134,7 @@ function file_put_json(string $filename, $data, int $options = 0, int $depth = 5
  * @param mixed $default Value to return in case the keys don't exist
  * @return mixed Value of the key
  */
-function flash($key = null, $default = null)
+function flash(string $key = null, $default = null)
 {
     static $session;
 
@@ -270,9 +270,9 @@ function route(string $routeName, string ...$params ): Url
  *
  * @param string $path Keys to access
  * @param mixed $default Value to return in case the keys don't exist
- * @return mixed Value of the key
+ * @return mixed Value of the key, or the Session object if no path is specified
  */
-function session($path = null, $default = null)
+function session(string $path = null, $default = null)
 {
     static $session;
 
@@ -281,7 +281,7 @@ function session($path = null, $default = null)
     }
 
     if (is_null($path)) {
-        return $session->all();
+        return $session;
     }
 
     return array_path($session->all(), $path, ".") ?? $default;
@@ -297,12 +297,14 @@ function session($path = null, $default = null)
  */
 function slug($string, string $separator = "-", string $language = "en"): AbstractString
 {
-    $slug = (new AsciiSlugger($language))->slug($string, $separator)
-        // enforce spaces between words
+    $slug = (new AsciiSlugger($language))
+        # Create a basic slug
+        ->slug((string) $string, $separator)
+        # Enforce spaces between words
         ->replaceMatches("~([^A-Z])([A-Z])~", "\$1{$separator}\$2")
-        // enforce spaces before numbers
+        # Enforce spaces before numbers
         ->replaceMatches("~(\\d+)~", "{$separator}\$1")
-        // collapse multiple consecutive separators
+        # Collapse multiple consecutive separators
         ->replaceMatches("~[{$separator}]+~", "{$separator}")
         ->trim($separator)
         ->lower();

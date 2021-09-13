@@ -10,7 +10,7 @@ class ArgumentParser
 
     private array $namedArguments = [];
 
-    function parse(array $argumentList): void
+    public function parse(array $argumentList): void
     {
         foreach ($argumentList as $param) {
             if ($this->isNamedParameter($param)) {
