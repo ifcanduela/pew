@@ -3,10 +3,15 @@
 namespace pew;
 
 use Exception;
+use InvalidArgumentException;
+use ReflectionException;
+use RuntimeException;
+use Throwable;
+
 use ifcanduela\events\CanEmitEvents;
 use ifcanduela\events\CanListenToEvents;
+use ifcanduela\router\Router;
 use ifcanduela\router\Route;
-use InvalidArgumentException;
 use Monolog\Logger;
 use pew\di\Container;
 use pew\di\Injector;
@@ -17,8 +22,6 @@ use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
-use ReflectionException;
-use RuntimeException;
 
 use function pew\str;
 
@@ -32,13 +35,10 @@ class App
     use CanEmitEvents;
     use CanListenToEvents;
 
-    /** @var array */
     protected array $middleware = [];
 
-    /** @var Container */
     protected Container $container;
 
-    /** @var static */
     protected static App $instance;
 
     /**
@@ -55,28 +55,48 @@ class App
      */
     public function __construct(string $appFolder, string $configFileName = "config")
     {
-        $this->initApplicationContainer($appFolder);
-
+        $this->initFrameworkContainer();
         static::$instance = $this;
 
         $this->emit("pew.init");
 
-        # Import app-defined configuration
-        $this->loadAppConfig($configFileName);
-        $this->loadAppBootstrap();
+        if ($appFolder) {
+            $this->initApplication($appFolder, $configFileName);
+        }
 
         # Initialize the database manager
-        TableManager::instance($this->container->get("tableManager"));
+        if ($this->get("db_config")) {
+            TableManager::instance($this->container->get("tableManager"));
+        }
 
         $this->emit("app.init");
 
-        App::log("App path set to {$this->container->get("app_path")}", Logger::INFO);
+        static::log("App path set to {$this->container->get("app_path")}", Logger::INFO);
     }
 
-    protected function initApplicationContainer(string $appFolder)
+    /**
+     * Populate the framework container with default values.
+     *
+     * @return void
+     */
+    protected function initFrameworkContainer()
     {
-        $this->container = require __DIR__ . "/config/bootstrap.php";
+        $containerFilename = __DIR__ . "/config/bootstrap.php";
 
+        if (file_exists($containerFilename)) {
+            $this->container = require $containerFilename;
+        }
+    }
+
+    /**
+     * Initialize the application container and load app settings.
+     *
+     * @param string $appFolder
+     * @param string $configFileName
+     * @return void
+     */
+    public function initApplication(string $appFolder, string $configFileName = "config")
+    {
         if (realpath($appFolder)) {
             $guessedAppPath = $appFolder;
         } else {
@@ -91,6 +111,10 @@ class App
 
         $this->container->set("app_path", $appPath);
         $this->container->set("app", $this);
+
+        # Import app-defined configuration
+        $this->loadAppConfig($configFileName);
+        $this->loadAppBootstrap();
     }
 
     /**
@@ -143,7 +167,7 @@ class App
      * Import the application configuration.
      *
      * @param string $configFileName The file name, relative to the base path
-     * @return bool TRUE when the file exists, FALSE otherwise
+     * @return bool `true` when the file exists, `false` otherwise
      * @throws RuntimeException
      */
     protected function loadAppConfig(string $configFileName): bool
@@ -160,7 +184,7 @@ class App
     /**
      * Load the user bootstrap file.
      *
-     * @return bool TRUE when the file exists, FALSE otherwise
+     * @return bool `true` when the file exists, `false` otherwise
      */
     protected function loadAppBootstrap(): bool
     {
@@ -216,22 +240,25 @@ class App
      */
     protected function handle(Request $request): Response
     {
-        $injector = $this->container->get("injector");
+        $injector = $this->container->get(Injector::class);
 
         # Add get and post parameters to the injection container
         $injector->prependContainer($request->request->all());
         $injector->prependContainer($request->query->all());
 
-        $route = $this->container->get("route");
+        # Resolve the route
+        $router = $this->container->get(Router::class);
+        $route = $router->resolve($request->getPathInfo(), $request->getMethod());
+
         # Add route parameters to the injection container
         $injector->prependContainer($route->getParams());
 
-        App::log("Matched route " . $route->getPath());
+        static::log("Matched route " . $route->getPath());
 
         $result = $this->runBeforeMiddleware($route, $injector);
 
         if ($result instanceof Response) {
-            App::log("Middleware returned response");
+            static::log("Middleware returned response");
         } else {
             # Resolve the route to a callable or a controller class
             $resolver = new ActionResolver($route);
@@ -353,7 +380,7 @@ class App
      */
     protected function handleCallback(callable $handler, Injector $injector)
     {
-        App::log("Request handler is anonymous callback");
+        static::log("Request handler is anonymous callback");
         # Create a basic controller as a host for the callback
         $controller = $injector->createInstance(Controller::class);
 
@@ -384,7 +411,7 @@ class App
 
         $this->emit("request.actionResolved", "$controllerClass::$actionMethod");
 
-        App::log("Request handler is {$controllerPath}/{$actionMethod}");
+        static::log("Request handler is {$controllerPath}/{$actionMethod}");
 
         # Set up the template
         $view = $this->container->get("view");
@@ -414,7 +441,7 @@ class App
      * @return Response
      * @throws Exception
      */
-    protected function handleError(Exception $e): Response
+    protected function handleError(Throwable $e): Response
     {
         # If debug mode is on, let the error handler take care of it
         if ($this->container->get("debug")) {
@@ -427,16 +454,15 @@ class App
             $errorCode = $e->getCode();
         }
 
-        $view = new View($this->get("views_path"));
-        $view->layout(false);
-        $view->template("errors/view");
-        $view->set("exception", $e);
+        $view = $this->get(View::class);
+        $template = "errors/view";
 
         if ($view->exists("errors/{$errorCode}")) {
-            $view->template("errors/{$errorCode}");
+            $template = "errors/{$errorCode}";
         }
 
-        $response = new HtmlResponse($view);
+        $response = new Response();
+        $response->setContent($view->render($template, ["exception" => $e]));
         $response->code($errorCode);
 
         return $response;
@@ -478,11 +504,12 @@ class App
     protected function transformActionResult($actionResult): Response
     {
         $request = $this->container->get("request");
-        $response = $this->container->get("response")->getResponse();
+        $response = $this->container->get("response");
 
-        # If $actionResult is false, return an empty response
+        # If $actionResult is `false`, return the global response
         if ($actionResult === false) {
-            return new Response($response);
+            // die("actionResult is false /// " . __FILE__."::".__LINE__ . PHP_EOL);
+            return $response;
         }
 
         # If it's already a response, return it
@@ -491,21 +518,23 @@ class App
         }
 
         # Check if the request is JSON and return an appropriate response
-        if ($request->isJson()) {
-            return new JsonResponse($actionResult, $response);
+        if ($request->acceptsJson()) {
+            die("request acceptsJson /// " . __FILE__."::".__LINE__ . PHP_EOL);
+            return new JsonResponse($actionResult, $response->getSymfonyResponse());
         }
 
         # If the action result is a string, use as the content of the response
         if (is_string($actionResult)) {
             $response->setContent($actionResult);
-            return new Response($response);
+            return $response;
         }
 
         # Use the action result to render the view
-        $view = $this->container->get("view");
-        $view->setData($actionResult ?? []);
+        $view = $this->container->get(View::class);
+        $content = $view->render($actionResult);
+        $response->setContent($content);
 
-        return new HtmlResponse($view, $response);
+        return $response;
     }
 
     /**

@@ -96,6 +96,9 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         # the primary key is now populated
         $this->assertNotNull($model->id);
 
+        $loaded = Project::find()->where(["name" => "Project Zeta"])->one();
+        $this->assertInstanceOf(Project::class, $loaded);
+
         $fields = [];
 
         foreach ($model as $field => $value) {
@@ -105,10 +108,28 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         # check the iterated fields
         $this->assertEquals(['extraField', 'id', 'name'], $fields);
         # check the fields serialized into JSON
-        $this->assertEquals(["id" => "4", "name" => "Project Zeta", "extraField" => "extraValue"], json_decode(json_encode($model), true));
+        $serialized = json_decode(json_encode($model), true);
+        $this->assertEquals("Project Zeta", $serialized["name"]);
+        $this->assertEquals("extraValue", $serialized["extraField"]);
         # check the fields excluded from JSON serialization
-        $model->doNotSerialize = ['name'];
-        $this->assertEquals(["id" => "4", "extraField" => "extraValue"], json_decode(json_encode($model), true));
+        $model->doNotSerialize = ['name', 'id'];
+        $this->assertEquals(["extraField" => "extraValue"], json_decode(json_encode($model), true));
+
+        # delete the record we created
+        $model->delete();
+        $loaded = Project::find()->where(["name" => "Project Zeta"])->one();
+        $this->assertNull($loaded);
+    }
+
+    public function testCreateRecordWithAttributes()
+    {
+        $p = new Project([
+            "name" => "Project Eta",
+            "extraField" => "someValue",
+        ]);
+
+        $this->assertEquals("Project Eta", $p->name);
+        $this->assertEquals("someValue", $p->extraField);
     }
 
     public function testGuessRecordTableName()
@@ -293,7 +314,6 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
     public function testLoadRelationships()
     {
         $projects = Project::find()->with("users", "tags")->all();
-
         $this->assertEquals(4, $projects->count());
 
         $p1 = $projects->first();
@@ -310,9 +330,19 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
 
     public function testDeleteRecord()
     {
+        $model = new Project();
+        # assign a value to a database field
+        $model->name = 'Project Zeta';
+        # save the record
+        $model->save();
+
         # delete record #4, inserted in testNewRecord()
-        $model = Project::findOne(4)->delete();
-        $this->assertEquals(3, Project::find()->count());
+        $loaded = Project::findOne($model->id);
+        $this->assertInstanceOf(Project::class, $loaded);
+        $loaded->delete();
+
+        $loaded = Project::findOne($model->id);
+        $this->assertNull($loaded);
     }
 
     public function testRecordIsNew()

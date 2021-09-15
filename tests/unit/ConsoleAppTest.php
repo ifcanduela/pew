@@ -49,7 +49,9 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(1, $args["arguments"]->at(0));
         $this->assertEquals(2, $args["arguments"]->at(1));
 
-        $result = $this->app->run();
+        ob_start();
+        $this->app->run();
+        $result = ob_get_clean();
 
         $this->assertEquals("test command result", $result);
     }
@@ -61,7 +63,9 @@ class ConsoleAppTest extends \PHPUnit\Framework\TestCase
         $args = $this->app->getArguments();
         $this->assertEquals("test:alternate", $args["command"]);
 
-        $result = $this->app->run();
+        ob_start();
+        $this->app->run();
+        $result = ob_get_clean();
 
         $this->assertEquals("alternate command result", $result);
     }

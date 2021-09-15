@@ -70,7 +70,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
 
         $response = $c->render("partial", ["value" => 1]);
 
-        $this->assertInstanceOf(\pew\response\HtmlResponse::class, $response);
+        $this->assertInstanceOf(\pew\response\Response::class, $response);
 
         $responseBody = (string) $response;
         $this->assertStringContainsString("200 OK", $responseBody);
@@ -84,7 +84,7 @@ class ControllerTest extends PHPUnit\Framework\TestCase
         $response = $m->redirect("/accounts/edit/1");
         $this->assertInstanceOf(\pew\response\RedirectResponse::class, $response);
 
-        $symfonyResponse = $response->getResponse();
+        $symfonyResponse = $response->getSymfonyResponse();
         $this->assertInstanceOf(\Symfony\Component\HttpFoundation\RedirectResponse::class, $symfonyResponse);
         $this->assertEquals("/accounts/edit/1", $symfonyResponse->getTargetUrl());
     }

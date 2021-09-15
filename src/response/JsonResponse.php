@@ -8,10 +8,6 @@ use Symfony\Component\HttpFoundation\JsonResponse as SymfonyJsonResponse;
 
 class JsonResponse extends Response
 {
-    protected $data;
-
-    protected bool $isJsonResponse = true;
-
     /**
      * Creates a View object based on a folder.
      *
@@ -21,54 +17,11 @@ class JsonResponse extends Response
      * @param SymfonyResponse $response
      * @param Session $session
      */
-    public function __construct($data, SymfonyResponse $response = null, Session $session = null)
+    public function __construct($data = null, SymfonyJsonResponse $response = null, Session $session = null)
     {
-        if (!$response) {
-            $response = new SymfonyJsonResponse();
-        }
+        $response ??= new SymfonyJsonResponse();
+        $response->setData($data);
 
         parent::__construct($response, $session);
-
-        $this->data = $data;
-    }
-
-    /**
-     * Set the JSON data.
-     *
-     * @return array
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    /**
-     * Get the JSON data.
-     *
-     * @param mixed $data
-     * @return self
-     */
-    public function setData($data)
-    {
-        if ($this->response instanceof SymfonyJsonResponse) {
-            $this->response->setData($data);
-        } else {
-            $this->response->setContent(json_encode($data));
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get the response object.
-     *
-     * @return SymfonyResponse
-     */
-    public function getResponse(): SymfonyResponse
-    {
-        $this->setData($this->data);
-        $this->response->headers->set("Content-Type", "application/json");
-
-        return $this->response;
     }
 }

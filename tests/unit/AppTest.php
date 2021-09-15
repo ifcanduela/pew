@@ -1,6 +1,9 @@
 <?php
 
+use ifcanduela\router\Route;
+use ifcanduela\router\Router;
 use pew\App;
+use pew\request\Request;
 
 class AppTest extends PHPUnit\Framework\TestCase
 {
@@ -35,19 +38,20 @@ class AppTest extends PHPUnit\Framework\TestCase
     public function testTemplateResponse()
     {
         $app = new App($this->appFolder, "test");
-        $app->set('path', '/test/template-response');
+        $app->set(Request::class, Request::create('/test/template-response'));
 
         ob_start();
         $app->run();
         $response = ob_get_clean();
 
         $this->assertEquals("<h1>world</h1>", trim($response));
+        $this->assertEquals("<h1>world</h1>", trim($response));
     }
 
     public function testJsonResponse()
     {
         $app = new App($this->appFolder, "test");
-        $app->set('path', '/test/json-response');
+        $app->set(Request::class,  Request::create('/test/json-response'));
 
         ob_start();
         $app->run();
@@ -59,7 +63,7 @@ class AppTest extends PHPUnit\Framework\TestCase
     public function testStringResponse()
     {
         $app = new App($this->appFolder, "test");
-        $app->set('path', '/test/string-response');
+        $app->set(request::class, Request::create('/test/string-response'));
 
         ob_start();
         $app->run();
@@ -71,7 +75,7 @@ class AppTest extends PHPUnit\Framework\TestCase
     public function testFalseResponse()
     {
         $app = new App($this->appFolder, "test");
-        $app->set('path', '/test/false-response');
+        $app->set(Request::class, Request::create('/test/false-response'));
 
         ob_start();
         $app->run();
@@ -83,7 +87,7 @@ class AppTest extends PHPUnit\Framework\TestCase
     public function testCallback()
     {
         $app = new App($this->appFolder, "test");
-        $app->set('path', '/callback');
+        $app->set(Request::class, Request::create('/callback'));
 
         ob_start();
         $app->run();
@@ -154,13 +158,16 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testMiddleware()
     {
-        $r = new \ifcanduela\router\Route();
-        $r->setHandler("test@stringResponse");
+        $app = new App($this->appFolder, "test");
+
+        $r = Route::from("/test/string-response")->to("test@stringResponse");
         $r->before(\app\services\MiddlewareTest::class);
         $r->after(\app\services\MiddlewareTest::class);
 
-        $app = new App($this->appFolder, "test");
-        $app->set("route", $r);
+        $router = new Router();
+        $router->addRoute($r);
+        $app->set(Router::class, $router);
+        $app->set(Request::class, Request::create("/test/string-response"));
 
         ob_start();
         $app->run();
@@ -170,12 +177,16 @@ class AppTest extends PHPUnit\Framework\TestCase
 
     public function testAfterMiddleware()
     {
-        $r = new \ifcanduela\router\Route();
-        $r->setHandler("test@stringResponse");
+        $app = new App($this->appFolder, "test");
+
+        $r = Route::from("/test/string-response")->to("test@stringResponse");
         $r->after(\app\services\MiddlewareTest::class);
 
-        $app = new App($this->appFolder, "test");
-        $app->set("route", $r);
+        $router = new Router();
+        $router->addRoute($r);
+        $app->set(Router::class, $router);
+
+        $app->set("request", Request::create("/test/string-response"));
 
         ob_start();
         $app->run();

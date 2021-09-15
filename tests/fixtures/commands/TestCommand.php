@@ -10,11 +10,11 @@ class TestCommand extends \pew\console\Command
 
     public function run()
     {
-        return "test command result";
+        echo "test command result";
     }
 
     public function alternate()
     {
-        return "alternate command result";
+        echo "alternate command result";
     }
 }

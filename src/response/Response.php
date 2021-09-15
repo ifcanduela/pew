@@ -11,11 +11,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class Response
 {
-    protected bool $isJsonResponse = false;
-
     protected SymfonyResponse $response;
-
-    protected string $content = "";
 
     protected Session $session;
 
@@ -91,25 +87,12 @@ class Response
     }
 
     /**
-     * Return a JSON response instead of rendering a template.
-     *
-     * @param bool $isJsonResponse
-     * @return self
-     */
-    public function json($isJsonResponse = true): Response
-    {
-        $this->isJsonResponse = $isJsonResponse;
-
-        return $this;
-    }
-
-    /**
      * Set the text content of the response.
      *
      * @param string $content
      * @return self
      */
-    public function setContent(string $content): Response
+    public function content(string $content): Response
     {
         $this->response->setContent($content);
 
@@ -117,21 +100,11 @@ class Response
     }
 
     /**
-     * Get the text content of the response.
-     *
-     * @return string
-     */
-    public function getContent(): string
-    {
-        return $this->response->getContent();
-    }
-
-    /**
      * Preprocess the response.
      *
      * @return SymfonyResponse
      */
-    public function getResponse(): SymfonyResponse
+    public function getSymfonyResponse(): SymfonyResponse
     {
         return $this->response;
     }
@@ -143,20 +116,15 @@ class Response
      */
     public function __toString(): string
     {
-        $response = $this->getResponse();
-
-        return (string) $response;
+        return (string) $this->response;
     }
 
-    /**
-     * Send the response.
-     *
-     * @return SymfonyResponse
-     */
-    public function send(): SymfonyResponse
+    public function __call(string $method, array $arguments)
     {
-        $response = $this->getResponse();
+        if (method_exists($this->response, $method)) {
+            return $this->response->$method(...$arguments);
+        }
 
-        return $response->send();
+        throw new \BadMethodCallException("Method `$method` not found");
     }
 }

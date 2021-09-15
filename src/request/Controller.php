@@ -3,9 +3,9 @@
 namespace pew\request;
 
 use Exception;
-use pew\response\HtmlResponse;
 use pew\response\JsonResponse;
 use pew\response\RedirectResponse;
+use pew\response\Response;
 use pew\View;
 
 /**
@@ -62,14 +62,12 @@ class Controller
      * @return HtmlResponse
      * @throws Exception
      */
-    public function render(string $template, array $data = []): HtmlResponse
+    public function render(string $template, array $data = []): Response
     {
-        if ($template) {
-            $this->view->template($template);
-        }
+        $content = $this->view->render($template, $data);
+        $response = new Response();
+        $response->setContent($content);
 
-        $this->view->setData($data);
-
-        return new HtmlResponse($this->view);
+        return $response;
     }
 }

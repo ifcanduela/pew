@@ -2,7 +2,6 @@
 
 use ifcanduela\db\Database;
 use ifcanduela\router\Router;
-use ifcanduela\router\Route;
 
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -39,7 +38,7 @@ $container["commands_namespace"] = "commands";
 $container["config_folder"] = "config";
 $container["debug"] = false;
 $container["default_action"] = "index";
-$container["default_layout"] = "default.layout";
+$container["default_layout"] = "";
 $container["env"] = "dev";
 $container["ignore_url_separator"] = ["\\", ".", "|"];
 $container["ignore_url_suffixes"] = ["json", "html", "php"];
@@ -161,16 +160,6 @@ $container[Response::class] = function (Container $c): Response {
 };
 
 $container->alias(Response::class, "response");
-
-$container[Route::class] = function (Container $c): Route {
-    $request = $c["request"];
-    $router = $c["router"];
-    $pathInfo = $c["path"];
-
-    return $router->resolve($pathInfo, $request->getMethod());
-};
-
-$container->alias(Route::class, "route");
 
 $container[Router::class] = function (Container $c): Router {
     $appFolder = $c["app_path"];

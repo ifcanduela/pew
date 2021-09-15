@@ -11,7 +11,7 @@ class ResponseTest extends PHPUnit\Framework\TestCase
         $response = new Response();
 
         $this->assertInstanceOf(Response::class, $response);
-        $this->assertInstanceOf(SymfonyResponse::class, $response->getResponse());
+        $this->assertInstanceOf(SymfonyResponse::class, $response->getSymfonyResponse());
     }
 
     public function testSetResponseCode()
@@ -19,7 +19,7 @@ class ResponseTest extends PHPUnit\Framework\TestCase
         $response = new Response();
         $response->code(501);
 
-        $r = $response->getResponse();
+        $r = $response->getSymfonyResponse();
         $this->assertEquals(501, $r->getStatusCode());
     }
 
@@ -27,14 +27,14 @@ class ResponseTest extends PHPUnit\Framework\TestCase
     {
         $response = new Response();
         $response->cookie("my_cookie_1", 1);
-        $r = $response->getResponse();
+        $r = $response->getSymfonyResponse();
         $c = $r->headers->getCookies();
         $this->assertEquals("my_cookie_1", $c[0]->getName());
         $this->assertEquals("1", $c[0]->getValue());
 
         $response = new Response();
         $response->cookie(new Cookie("my_cookie_2", 2));
-        $r = $response->getResponse();
+        $r = $response->getSymfonyResponse();
         $c = $r->headers->getCookies();
         $this->assertEquals("my_cookie_2", $c[0]->getName());
         $this->assertEquals("2", $c[0]->getValue());
