@@ -3,9 +3,9 @@
 namespace pew;
 
 use Exception;
-use ifcanduela\events\CanEmitEvents;
 use RuntimeException;
 use SplStack;
+use ifcanduela\events\CanEmitEvents;
 
 /**
  * This class encapsulates the template rendering functionality.
@@ -151,11 +151,12 @@ class View
             throw new RuntimeException("Template `{$template}` not found");
         }
 
+        # Save the current layout, in case the template sets its own
+        $currentLayout = $this->layout;
+
         # Make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
         $this->output = $output = $this->renderFile($templateFile, $this->variables);
-
-        $templateLayout = $this->layout;
 
         while ($this->layout) {
             $layoutFile = $this->resolve($this->layout);
@@ -168,7 +169,8 @@ class View
             $this->output = $this->renderFile($layoutFile, ["output" => $output]);
         }
 
-        $this->layout = $templateLayout;
+        # Restore the previous layout
+        $this->layout = $currentLayout;
 
         return $this->output;
     }
@@ -355,7 +357,7 @@ class View
         }
 
         # Render the element.
-        return $this->renderFile($templateFile, $data);
+        return $this->render($template, $data);
     }
 
     /**
