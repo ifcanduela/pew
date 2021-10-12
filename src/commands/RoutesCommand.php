@@ -52,7 +52,7 @@ class RoutesCommand extends Command
         $this->message($head);
         $this->message($sep);
 
-        $this->printRoutes($list, $longest);
+        $this->printRoutes(array_slice($list, 1), $longest);
 
         $this->message($sep);
     }
