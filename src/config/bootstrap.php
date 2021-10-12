@@ -69,7 +69,7 @@ $container[LoggerInterface::class] = function (Container $c): LoggerInterface {
     return $logger;
 };
 
-$container->alias(LoggerInterface::class, "app_log");
+$container->alias("app_log", LoggerInterface::class);
 
 $container[CacheInterface::class] = function (Container $c): CacheInterface {
     return new FilesystemAdapter(
@@ -79,7 +79,7 @@ $container[CacheInterface::class] = function (Container $c): CacheInterface {
     );
 };
 
-$container->alias(CacheInterface::class, "cache");
+$container->alias("cache", CacheInterface::class);
 
 $container["cache_path"] = function (Container $c): string {
     return $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
@@ -102,7 +102,7 @@ $container[Database::class] = function (Container $c): Database {
     return $tableManager->getConnection($useDb);
 };
 
-$container->alias(Database::class, "db");
+$container->alias("db", Database::class);
 
 $container["db_config"] = function (Container $c): array {
     return require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
@@ -134,17 +134,16 @@ $container[Injector::class] = function (Container $c): Injector {
     return new Injector($c);
 };
 
-$container->alias(Injector::class, "injector");
-
+$container->alias("injector", Injector::class);
 
 $container["path"] = function (Container $c): string {
     $request = $c["request"];
     $pathInfo = $request->getPathInfo();
 
-    $ignore_url_suffixes = join("|", $c["ignore_url_suffixes"]);
-    $ignore_url_separator = join("", $c["ignore_url_separator"]);
+    $ignoreUrlSuffixes = join("|", $c["ignore_url_suffixes"]);
+    $ignoreUrlSeparator = join("", $c["ignore_url_separator"]);
 
-    $pathInfo = preg_replace("/[{$ignore_url_separator}]({$ignore_url_suffixes})$/", "", $pathInfo);
+    $pathInfo = preg_replace("/[{$ignoreUrlSeparator}]({$ignoreUrlSuffixes})$/", "", $pathInfo);
 
     return "/" . trim($pathInfo, "/");
 };
@@ -153,13 +152,13 @@ $container[Request::class] = function (Container $c): Request {
     return Request::createFromGlobals();
 };
 
-$container->alias(Request::class, "request");
+$container->alias("request", Request::class);
 
 $container[Response::class] = function (Container $c): Response {
     return new Response();
 };
 
-$container->alias(Response::class, "response");
+$container->alias("response", Response::class);
 
 $container[Router::class] = function (Container $c): Router {
     $appFolder = $c["app_path"];
@@ -172,13 +171,13 @@ $container[Router::class] = function (Container $c): Router {
     return $router;
 };
 
-$container->alias(Router::class, "router");
+$container->alias("router", Router::class);
 
 $container[Session::class] = function (Container $c): Session {
     return new Session();
 };
 
-$container->alias(Session::class, "session");
+$container->alias("session", Session::class);
 
 $container[TableManager::class] = function (Container $c): TableManager {
     $dbConfig = $c["db_config"];
@@ -207,7 +206,7 @@ $container[TableManager::class] = function (Container $c): TableManager {
     return $tableManager;
 };
 
-$container->alias(TableManager::class, "tableManager");
+$container->alias("tableManager", TableManager::class);
 
 $container["url"] = function (Container $c): Url {
     $request = $c["request"];
@@ -216,9 +215,9 @@ $container["url"] = function (Container $c): Url {
 };
 
 $container["use_db"] = function (Container $c): string {
-    $db_config = $c["db_config"];
+    $dbConfig = $c["db_config"];
 
-    return $db_config["use_db"] ?? $c["env"] ?? "default";
+    return $dbConfig["use_db"] ?? $c["env"] ?? "default";
 };
 
 $container[View::class] = function (Container $c): View {
@@ -228,13 +227,13 @@ $container[View::class] = function (Container $c): View {
     return $view;
 };
 
-$container->alias(View::class, "view");
+$container->alias("view", View::class);
 
 $container["views_path"] = function (Container $c): string {
-    $app_path = $c["app_path"];
-    $views_folder = $c["views_folder"];
+    $appPath = $c["app_path"];
+    $viewsFolder = $c["views_folder"];
 
-    return realpath("{$app_path}/{$views_folder}/");
+    return realpath("{$appPath}/{$viewsFolder}/");
 };
 
 return $container;

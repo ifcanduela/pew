@@ -156,6 +156,6 @@ class Record
      */
     public function __unset(string $prop)
     {
-        return $this->unset($prop);
+        $this->unset($prop);
     }
 }

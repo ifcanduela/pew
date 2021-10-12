@@ -70,7 +70,7 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
 
     public function testUrlFunction()
     {
-        $this->app->set("request", $this->makeRequest());
+        $this->app->set(Request::class, $this->makeRequest());
 
         $this->assertEquals("http://localhost/", url());
         $this->assertEquals("http://localhost/css/styles.css", url("css/styles.css"));
@@ -82,7 +82,7 @@ class FunctionsTest extends \PHPUnit\Framework\TestCase
     public function testHereFunction()
     {
         $r = $this->makeRequest(["a" => 1]);
-        $this->app->set("request", $r);
+        $this->app->set(Request::class, $r);
 
         $this->assertEquals("http://localhost/?a=1", here());
     }

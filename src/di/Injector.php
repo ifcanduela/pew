@@ -228,12 +228,16 @@ class Injector
      */
     public function callFunction(callable $callable, $boundObject = null)
     {
-        $function = new ReflectionFunction($callable);
-        $injections = $this->getInjections($function);
+        if (!$callable instanceof Closure) {
+            $callable = Closure::fromCallable($callable);
+        }
 
         if (is_object($boundObject)) {
-            $callable = Closure::bind($callable, $boundObject, $boundObject);
+            $callable->bindTo($boundObject);
         }
+
+        $function = new ReflectionFunction($callable);
+        $injections = $this->getInjections($function);
 
         return $callable(...$injections);
     }

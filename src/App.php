@@ -2,6 +2,7 @@
 
 namespace pew;
 
+use Closure;
 use Exception;
 use InvalidArgumentException;
 use ReflectionException;
@@ -18,7 +19,6 @@ use pew\di\Injector;
 use pew\model\TableManager;
 use pew\request\ActionResolver;
 use pew\request\Request;
-use pew\response\HtmlResponse;
 use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
@@ -32,8 +32,7 @@ use function pew\str;
  */
 class App
 {
-    use CanEmitEvents;
-    use CanListenToEvents;
+    use CanEmitEvents, CanListenToEvents;
 
     protected array $middleware = [];
 
@@ -56,13 +55,10 @@ class App
     public function __construct(string $appFolder, string $configFileName = "config")
     {
         $this->initFrameworkContainer();
-        static::$instance = $this;
 
         $this->emit("pew.init");
 
-        if ($appFolder) {
-            $this->initApplication($appFolder, $configFileName);
-        }
+        $this->initApplication($appFolder, $configFileName);
 
         # Initialize the database manager
         if ($this->get("db_config")) {
@@ -72,6 +68,18 @@ class App
         $this->emit("app.init");
 
         static::log("App path set to {$this->container->get("app_path")}", Logger::INFO);
+    }
+
+    /**
+     * Get the application instance.
+     *
+     * Will return null if the application has not been initialized.
+     *
+     * @return static|null
+     */
+    public static function instance(): ?App
+    {
+        return static::$instance;
     }
 
     /**
@@ -86,6 +94,8 @@ class App
         if (file_exists($containerFilename)) {
             $this->container = require $containerFilename;
         }
+
+        static::$instance = $this;
     }
 
     /**
@@ -95,7 +105,7 @@ class App
      * @param string $configFileName
      * @return void
      */
-    public function initApplication(string $appFolder, string $configFileName = "config")
+    protected function initApplication(string $appFolder, string $configFileName = "config")
     {
         if (realpath($appFolder)) {
             $guessedAppPath = $appFolder;
@@ -115,52 +125,6 @@ class App
         # Import app-defined configuration
         $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
-    }
-
-    /**
-     * Get a value from the container.
-     *
-     * @param string $key
-     * @return mixed
-     */
-    public function get(string $key)
-    {
-        return $this->container->get($key);
-    }
-
-    /**
-     * Set a value in the container.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    public function set(string $key, $value)
-    {
-        $this->container->set($key, $value);
-    }
-
-    /**
-     * Check if a value is present in the container.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public function has(string $key): bool
-    {
-        return $this->container->has($key);
-    }
-
-    /**
-     * Get the application instance.
-     *
-     * Will return null if the application has not been initialized.
-     *
-     * @return static|null
-     */
-    public static function instance(): ?App
-    {
-        return static::$instance;
     }
 
     /**
@@ -199,6 +163,40 @@ class App
         }
 
         return false;
+    }
+
+    /**
+     * Get a value from the container.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function get(string $key)
+    {
+        return $this->container->get($key);
+    }
+
+    /**
+     * Set a value in the container.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
+    public function set(string $key, $value)
+    {
+        $this->container->set($key, $value);
+    }
+
+    /**
+     * Check if a value is present in the container.
+     *
+     * @param string $key
+     * @return bool
+     */
+    public function has(string $key): bool
+    {
+        return $this->container->has($key);
     }
 
     /**
@@ -249,6 +247,8 @@ class App
         # Resolve the route
         $router = $this->container->get(Router::class);
         $route = $router->resolve($request->getPathInfo(), $request->getMethod());
+        $this->emit("route.resolved", $route);
+        $this->container->set(Route::class, $route);
 
         # Add route parameters to the injection container
         $injector->prependContainer($route->getParams());
@@ -273,7 +273,7 @@ class App
 
             $this->emit("timer.start", ["app.action", "Handle action"]);
 
-            if (is_callable($handler)) {
+            if ($handler instanceof Closure) {
                 $result = $this->handleCallback($handler, $injector);
             } else {
                 $result = $this->handleAction($handler, $actionName, $injector);

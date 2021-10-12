@@ -16,7 +16,7 @@ use function pew\slug;
 
 class App extends \pew\App
 {
-    /** @var CommandDefinition[] */
+    /** @var array */
     public array $availableCommands = [];
 
     /** @var ArgvInput */
@@ -46,7 +46,8 @@ class App extends \pew\App
         $arguments = $this->getArguments();
 
         if (empty($arguments["command"])) {
-            return $this->printHelp();
+            $this->printHelp();
+            return;
         }
 
         if (strpos($arguments["command"], ":") !== false) {

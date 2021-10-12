@@ -185,8 +185,7 @@ class AppTest extends PHPUnit\Framework\TestCase
         $router = new Router();
         $router->addRoute($r);
         $app->set(Router::class, $router);
-
-        $app->set("request", Request::create("/test/string-response"));
+        $app->set(Request::class, Request::create("/test/string-response"));
 
         ob_start();
         $app->run();

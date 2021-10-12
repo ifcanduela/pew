@@ -2,61 +2,11 @@
 
 namespace pew\di;
 
-use Pimple\Container as Pimple;
-use Pimple\Exception\UnknownIdentifierException;
-use Psr\Container\ContainerInterface;
+use ifcanduela\container\Container as BaseContainer;
 use RuntimeException;
 
-class Container extends Pimple implements ContainerInterface
+class Container extends BaseContainer
 {
-    /**
-     * Get a value from the container.
-     *
-     * @param string $key
-     * @return mixed
-     * @throws UnknownIdentifierException
-     */
-    public function get($key)
-    {
-        return $this[$key];
-    }
-
-    /**
-     * Set a value in the container.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    public function set(string $key, $value)
-    {
-        $this[$key] = $value;
-    }
-
-    /**
-     * Check if a key exists in the container.
-     *
-     * @param string $key
-     * @return bool
-     */
-    public function has($key)
-    {
-        return isset($this[$key]);
-    }
-
-    /**
-     * Import container definitions.
-     *
-     * @param array $definitions
-     * @return void
-     */
-    public function import(array $definitions)
-    {
-        foreach ($definitions as $key => $value) {
-            $this[$key] = $value;
-        }
-    }
-
     /**
      * Import container definitions from a file.
      *
@@ -73,27 +23,11 @@ class Container extends Pimple implements ContainerInterface
                 throw new RuntimeException("Definitions file `{$filename}` must return an array");
             }
 
-            $this->import($definitions);
+            $this->merge($definitions);
 
             return true;
         }
 
         return false;
-    }
-
-    /**
-     * Alias a key with another name.
-     *
-     * @param string $existingKey
-     * @param string $alias
-     * @return static
-     */
-    public function alias(string $existingKey, string $alias): self
-    {
-        $this[$alias] = function (Container $c) use ($existingKey)  {
-            return $c[$existingKey];
-        };
-
-        return $this;
     }
 }

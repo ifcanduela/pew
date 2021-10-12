@@ -33,7 +33,7 @@ namespace {
         {
             $c = new Container();
 
-            $c->import([
+            $c->merge([
                 "a-value" => 1234,
                 "a-callback" => function ($c) {
                     return "abcd" . $c->get("a-value");
@@ -69,12 +69,12 @@ namespace {
         {
             $c = new Container();
             $c["actual_value"] = M_PI;
-            $c->alias("actual_value", "pi");
+            $c->alias("pi", "actual_value");
 
             $c["actual_factory"] = function ($c) {
                 return $c["pi"];
             };
-            $c->alias("actual_factory", "fac");
+            $c->alias("fac", "actual_factory");
 
             $this->assertEquals(M_PI, $c["fac"]);
 
@@ -82,7 +82,7 @@ namespace {
                 return new \know\YouKnowMath();
             };
 
-            $c->alias(\know\YouKnowMath::class, \know\YouKnowWhat::class);
+            $c->alias(\know\YouKnowWhat::class, \know\YouKnowMath::class);
 
             $this->assertInstanceOf(\know\YouKnowMath::class, $c[\know\YouKnowWhat::class]);
         }
