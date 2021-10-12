@@ -4,7 +4,9 @@ namespace pew\response;
 
 class NotFound extends HttpException
 {
-    protected int $code = 404;
+    /** @var int */
+    protected $code = 404;
 
-    protected string $message = "Not Found";
+    /** @var string */
+    protected $message = "Not Found";
 }

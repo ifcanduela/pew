@@ -4,7 +4,9 @@ namespace pew\response;
 
 class BadRequest extends HttpException
 {
-    protected int $code = 400;
+    /** @var int */
+    protected $code = 400;
 
-    protected string $message = "Bad Request";
+    /** @var string */
+    protected $message = "Bad Request";
 }

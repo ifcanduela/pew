@@ -4,7 +4,9 @@ namespace pew\response;
 
 class InternalServerError extends HttpException
 {
-    protected int $code = 500;
+    /** @var int */
+    protected $code = 500;
 
-    protected string $message = "Internal Server Error";
+    /** @var string */
+    protected $message = "Internal Server Error";
 }
