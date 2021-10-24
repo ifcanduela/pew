@@ -14,7 +14,7 @@ class View
 {
     use CanEmitEvents;
 
-    /** @var SplStack Base templates directory */
+    /** @var SplStack<string> Base templates directory */
     protected SplStack $folderStack;
 
     /** @var string Template name */
@@ -29,13 +29,13 @@ class View
     /** @var string Templates file extension */
     protected string $extension = ".php";
 
-    /** @var string Result of rendering the view */
-    protected string $output = "";
+    /** @var SplStack<string> Result of rendering the view */
+    protected SplStack $outputStack;
 
     /** @var array Rendered partial blocks */
     protected array $blocks = [];
 
-    /** @var SplStack Stack of block names */
+    /** @var SplStack<string> Stack of block names */
     protected SplStack $blockStack;
 
     /** @var array */
@@ -52,6 +52,7 @@ class View
     {
         $this->blockStack = new SplStack();
         $this->folderStack = new SplStack();
+        $this->outputStack = new SplStack();
 
         $this->addFolder($templatesFolder ?: getcwd());
     }
@@ -156,7 +157,7 @@ class View
 
         # Make previous and received variables available using the index operator
         $this->variables = array_merge($this->variables, $data);
-        $this->output = $output = $this->renderFile($templateFile, $this->variables);
+        $output = $this->renderFile($templateFile, $this->variables);
 
         while ($this->layout) {
             $layoutFile = $this->resolve($this->layout);
@@ -166,13 +167,14 @@ class View
             }
 
             $this->layout = "";
-            $this->output = $this->renderFile($layoutFile, ["output" => $output]);
+            $this->outputStack->push($output);
+            $output = $this->renderFile($layoutFile, []);
         }
 
         # Restore the previous layout
         $this->layout = $currentLayout;
 
-        return $this->output;
+        return $output;
     }
 
     /**
@@ -334,7 +336,7 @@ class View
      */
     public function content(): string
     {
-        return $this->output;
+        return $this->outputStack->pop();
     }
 
     /**
@@ -356,8 +358,13 @@ class View
             throw new RuntimeException("Partial template `{$template}` not found");
         }
 
+        $preservedLayout = $this->layout;
+        $this->layout = "";
+        $output = $this->render($template, $data);
+        $this->layout = $preservedLayout;
+
         # Render the element.
-        return $this->render($template, $data);
+        return $output;
     }
 
     /**
