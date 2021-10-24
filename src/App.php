@@ -508,7 +508,6 @@ class App
 
         # If $actionResult is `false`, return the global response
         if ($actionResult === false) {
-            // die("actionResult is false /// " . __FILE__."::".__LINE__ . PHP_EOL);
             return $response;
         }
 
@@ -519,7 +518,6 @@ class App
 
         # Check if the request is JSON and return an appropriate response
         if ($request->acceptsJson()) {
-            die("request acceptsJson /// " . __FILE__."::".__LINE__ . PHP_EOL);
             return new JsonResponse($actionResult, $response->getSymfonyResponse());
         }
 
