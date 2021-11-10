@@ -518,7 +518,7 @@ class App
 
         # Check if the request is JSON and return an appropriate response
         if ($request->acceptsJson()) {
-            return new JsonResponse($actionResult, $response->getSymfonyResponse());
+            return new JsonResponse($actionResult);
         }
 
         # If the action result is a string, use as the content of the response
