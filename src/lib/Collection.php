@@ -54,6 +54,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $offset
      * @return bool
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->items);
@@ -65,6 +66,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $offset
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->items[$offset];
@@ -77,6 +79,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $value
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value = null)
     {
         if (is_null($offset)) {
@@ -92,6 +95,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $offset
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         unset($this->items[$offset]);
