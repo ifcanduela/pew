@@ -155,9 +155,9 @@ class View
         # Save the current layout, in case the template sets its own
         $currentLayout = $this->layout;
 
-        # Make previous and received variables available using the index operator
-        $this->variables = array_merge($this->variables, $data);
-        $output = $this->renderFile($templateFile, $this->variables);
+        # Make previous and received variables available
+        $variables = array_merge($this->variables, $data);
+        $output = $this->renderFile($templateFile, $variables);
 
         while ($this->layout) {
             $layoutFile = $this->resolve($this->layout);
