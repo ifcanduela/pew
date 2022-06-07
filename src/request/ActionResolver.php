@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\request;
 
@@ -9,7 +11,7 @@ use function pew\str;
 
 class ActionResolver
 {
-    const NAMESPACE_SEPARATOR = "\\";
+    public const NAMESPACE_SEPARATOR = "\\";
 
     protected Route $route;
 
@@ -35,26 +37,26 @@ class ActionResolver
             ->ensureStart(static::NAMESPACE_SEPARATOR)
             ->ensureEnd(static::NAMESPACE_SEPARATOR);
 
-        # The handler can be a string like "controller@action" or a callback function
+        // The handler can be a string like "controller@action" or a callback function
         $handler = $this->route->getHandler();
 
         if (is_string($handler)) {
             $controllerClassName = $this->getControllerClassName($handler);
 
-            # The namespace is the default controller namespace with an optional,
-            # additional namespace set in the route
+            // The namespace is the default controller namespace with an optional,
+            // additional namespace set in the route
             $ns = implode(static::NAMESPACE_SEPARATOR, [
-                    trim($controllerNamespace, static::NAMESPACE_SEPARATOR),
-                    trim($this->route->getNamespace(), static::NAMESPACE_SEPARATOR)
-                ]);
+                trim($controllerNamespace, static::NAMESPACE_SEPARATOR),
+                trim($this->route->getNamespace(), static::NAMESPACE_SEPARATOR),
+            ]);
             $namespace = str($ns)
                 ->ensureStart(static::NAMESPACE_SEPARATOR)
                 ->ensureEnd(static::NAMESPACE_SEPARATOR);
 
-            # Check if the controller class exists -- it may have an optional "Controller" suffix
+            // Check if the controller class exists -- it may have an optional "Controller" suffix
             foreach ([$controllerClassName, $controllerClassName . "Controller"] as $c) {
                 if (class_exists($namespace . $c)) {
-                    # Return the FQCN of the controller
+                    // Return the FQCN of the controller
                     return $namespace . $c;
                 }
             }
@@ -75,16 +77,16 @@ class ActionResolver
      */
     public function getControllerClassName(string $handler): string
     {
-        # Separate controller and action
+        // Separate controller and action
         $handlerParts = explode("@", $handler);
-        # Separate controller class and namespaces
+        // Separate controller class and namespaces
         $controllerParts = preg_split("~[\\\/]~", $handlerParts[0]);
-        # Get controller slug
+        // Get controller slug
         $controllerSlug = array_pop($controllerParts);
-        # Turn the controller slug into a class name
+        // Turn the controller slug into a class name
         $controllerParts[] = (string) str($controllerSlug)->camel()->title();
 
-        # Assemble the controller identifier
+        // Assemble the controller identifier
         return implode("\\", $controllerParts);
     }
 

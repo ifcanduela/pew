@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * Assorted functions, helpers and shortcuts.
@@ -116,7 +118,7 @@ function file_get_json(string $filename, bool $assoc = true, int $depth = 512, i
  * @param int $depth
  * @return void
  */
-function file_put_json(string $filename, $data, int $options = 0, int $depth = 512)
+function file_put_json(string $filename, $data, int $options = 0, int $depth = 512): void
 {
     $json = json_encode($data, $options, $depth);
 
@@ -250,7 +252,7 @@ function root(...$path): string
  * @param string ...$params Route parametes
  * @return Url A URL object
  */
-function route(string $routeName, string ...$params ): Url
+function route(string $routeName, string ...$params): Url
 {
     static $router;
 
@@ -298,13 +300,13 @@ function session(string $path = null, $default = null)
 function slug($string, string $separator = "-", string $language = "en"): AbstractString
 {
     $slug = (new AsciiSlugger($language))
-        # Create a basic slug
+        // Create a basic slug
         ->slug((string) $string, $separator)
-        # Enforce spaces between words
+        // Enforce spaces between words
         ->replaceMatches("~([^A-Z])([A-Z])~", "\$1{$separator}\$2")
-        # Enforce spaces before numbers
+        // Enforce spaces before numbers
         ->replaceMatches("~(\\d+)~", "{$separator}\$1")
-        # Collapse multiple consecutive separators
+        // Collapse multiple consecutive separators
         ->replaceMatches("~[{$separator}]+~", "{$separator}")
         ->trim($separator)
         ->lower();
@@ -346,9 +348,7 @@ function url(...$path): string
     }
 
     $params = array_filter($path, "is_array");
-    $segments = array_filter($path, function ($segment) {
-        return is_scalar($segment) || is_callable([$segment, "__toString"]);
-    });
+    $segments = array_filter($path, fn ($segment) => is_scalar($segment) || is_callable([$segment, "__toString"]));
     $path = preg_replace('~\/+~', "/", join("/", $segments));
 
     $url = $base_url . ltrim($path, "/");

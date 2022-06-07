@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\response;
 
@@ -122,9 +124,9 @@ class Response
     public function __call(string $method, array $arguments)
     {
         if (method_exists($this->response, $method)) {
-            return $this->response->$method(...$arguments);
+            return $this->response->{$method}(...$arguments);
         }
 
-        throw new \BadMethodCallException("Method `$method` not found");
+        throw new \BadMethodCallException("Method `${method}` not found");
     }
 }

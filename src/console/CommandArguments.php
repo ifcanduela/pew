@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\console;
 
@@ -50,7 +52,7 @@ class CommandArguments
      * @param array $arguments
      * @return void
      */
-    public function parse(array $arguments = [])
+    public function parse(array $arguments = []): void
     {
         $ap = new ArgumentParser();
         $ap->parse($arguments);

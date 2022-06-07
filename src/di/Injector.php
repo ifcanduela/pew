@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\di;
 
@@ -36,7 +38,7 @@ class Injector
      */
     public function appendContainer($container): self
     {
-        array_push($this->containers, $container);
+        $this->containers[] = $container;
 
         return $this;
     }
@@ -79,7 +81,7 @@ class Injector
             $paramType = $param->getType();
             $paramName = $param->getName();
 
-            # First try: class typehint
+            // First try: class typehint
             if ($paramType instanceof ReflectionNamedType) {
                 $typeName = $paramType->getName();
                 $classExists = class_exists($typeName);
@@ -102,7 +104,7 @@ class Injector
                 }
             }
 
-            # Second try: argument name
+            // Second try: argument name
             if (!$found) {
                 try {
                     $injection = $this->findKey($paramName);
@@ -111,13 +113,13 @@ class Injector
                 }
             }
 
-            # Third try: argument default value
+            // Third try: argument default value
             if (!$found && $param->isDefaultValueAvailable()) {
                 $injection = $param->getDefaultValue();
                 $found = true;
             }
 
-            # Fourth try: auto-resolve class name
+            // Fourth try: auto-resolve class name
             if (!$found && $classExists && $typeName) {
                 try {
                     $injection = $this->createInstance($typeName);
@@ -128,7 +130,7 @@ class Injector
 
             if (!$found) {
                 if ($paramType instanceof ReflectionNamedType) {
-                    $paramName =  "\${$paramName} ({$paramType->getName()})";
+                    $paramName = "\${$paramName} ({$paramType->getName()})";
                 }
 
                 throw new KeyNotFoundException("Could not find a definition for `{$paramName}` in `{$method->getName()}`");
@@ -208,6 +210,7 @@ class Injector
 
         if (!is_object($object)) {
             $method = __METHOD__;
+
             throw new InvalidArgumentException("Invalid argument supplied to `{$method}`: \$object must be an object.");
         }
 

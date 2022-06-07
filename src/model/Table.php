@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\model;
 
@@ -117,7 +119,7 @@ class Table
             throw new TableNotFoundException("Table `{$this->tableName}` not found");
         }
 
-        # Some metadata about the table
+        // Some metadata about the table
         $this->tableData["name"] = $this->tableName;
 
         if (!isset($this->tableData["primary_key"])) {
@@ -253,19 +255,19 @@ class Table
      */
     public function query($query, array $data = [])
     {
-        # Trim whitespace around the SQL
+        // Trim whitespace around the SQL
         $query = trim($query);
-        # Extract the SQL clause being used (SELECT, INSERT, etc...)
-        $clause = strtoupper(strtok($query, " "));
+        // Extract the SQL clause being used (SELECT, INSERT, etc...)
+        $clause = mb_strtoupper(strtok($query, " "));
 
-        # Prepare the SQL query
+        // Prepare the SQL query
         $stm = $this->db->prepare($query);
 
-        # Run the prepared statement with the received keys and values
+        // Run the prepared statement with the received keys and values
         $stm->execute($data);
 
         if ($clause == "SELECT") {
-            # Return an array of Models
+            // Return an array of Models
             return $stm->fetchAll();
         }
 
@@ -333,13 +335,13 @@ class Table
      */
     public function count(): int
     {
-        # Clone the current query
+        // Clone the current query
         $query = clone $this->query;
-        # Replace the column list with COUNT(*)
+        // Replace the column list with COUNT(*)
         $query->columns("COUNT(*) as row_count");
-        # Remove limit and offset
+        // Remove limit and offset
         $query->limit(0, 0);
-        # Query the database
+        // Query the database
         $result = $this->db->run($query);
 
         return (int) $result[0]["row_count"];
@@ -399,7 +401,7 @@ class Table
      */
     protected function insertRecord(array $record, string $timestampField = null)
     {
-        # Set creation timestamp
+        // Set creation timestamp
         if ($timestampField && $this->hasColumn($timestampField)) {
             $record[$timestampField] = time();
         }
@@ -421,12 +423,12 @@ class Table
     {
         $primaryKeyName = $this->primaryKey();
 
-        # Set modification timestamp
+        // Set modification timestamp
         if ($timestampField && $this->hasColumn($timestampField)) {
             $record[$timestampField] = time();
         }
 
-        # If $id is set, perform an UPDATE
+        // If $id is set, perform an UPDATE
         $where = [$primaryKeyName => $record[$primaryKeyName]];
         $query = Query::update($this->tableName)->set($record)->where($where);
         $this->db->run($query);
@@ -452,11 +454,12 @@ class Table
         $query = Query::delete($this->tableName);
 
         if (is_array($id)) {
-            # Use the $id as an array of conditions
+            // Use the $id as an array of conditions
             $query->where([$this->primaryKey() => $id]);
+
             return $this->db->run($query);
         } elseif ($id === true) {
-            # This deletes everything in $this->table
+            // This deletes everything in $this->table
             return $this->db->run($query);
         } elseif ($id !== null) {
             return $this->db->run($this->query->where([$this->primaryKey() => $id]));
@@ -548,7 +551,7 @@ class Table
      * @param array $models
      * @return void
      */
-    protected function loadRelationships(array $models)
+    protected function loadRelationships(array $models): void
     {
         static $depth = 0;
 
@@ -556,7 +559,7 @@ class Table
 
         if ($models && $depth < 5) {
             $className = get_class($models[0]);
-            $ref = new $className;
+            $ref = new $className();
 
             foreach ($this->relationships as $relationshipFieldName) {
                 $this->attachField($relationshipFieldName, $ref, $models);
@@ -579,15 +582,13 @@ class Table
 
         try {
             /** @var Relationship $relationship */
-            $relationship = $ref->$getterMethodName();
+            $relationship = $ref->{$getterMethodName}();
         } catch (Exception $e) {
         }
 
         if (isset($relationship) && $relationship instanceof Relationship) {
             $groupingField = $relationship->getGroupingField();
-            $relatedKeys = array_map(function ($r) use ($groupingField) {
-                return $r->$groupingField;
-            }, $models);
+            $relatedKeys = array_map(fn ($r) => $r->{$groupingField}, $models);
 
             $grouped = $relationship->find($relatedKeys);
 
@@ -623,7 +624,7 @@ class Table
         }
 
         if (is_callable([$this->query, $method])) {
-            $this->query->$method(...$arguments);
+            $this->query->{$method}(...$arguments);
 
             return $this;
         }

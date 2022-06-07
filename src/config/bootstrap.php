@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use ifcanduela\db\Database;
 use ifcanduela\router\Router;
@@ -28,9 +30,9 @@ use Whoops\Run;
 $container = new Container();
 $container[Container::class] = $container;
 
-#
-# CONFIG
-#
+//
+// CONFIG
+//
 
 $container["app_namespace"] = "\\app\\";
 $container["cache_duration"] = 15 * 60;
@@ -45,21 +47,19 @@ $container["ignore_url_suffixes"] = ["json", "html", "php"];
 $container["log_level"] = Logger::WARNING;
 $container["views_folder"] = "views";
 
-$container["views_path"] = function (Container $c) {
-    return $c["app_path"] . DIRECTORY_SEPARATOR . $c["views_folder"];
-};
+$container["views_path"] = fn (Container $c) => $c["app_path"] . DIRECTORY_SEPARATOR . $c["views_folder"];
 
 if (php_sapi_name() === "cli") {
-    $container["root_path"] =  getcwd();
+    $container["root_path"] = getcwd();
     $container["www_path"] = getcwd() . DIRECTORY_SEPARATOR . "www";
 } else {
-    $container["root_path"] =  dirname(getcwd());
+    $container["root_path"] = dirname(getcwd());
     $container["www_path"] = getcwd();
 }
 
-#
-# FACTORIES
-#
+//
+// FACTORIES
+//
 
 $container[LoggerInterface::class] = function (Container $c): LoggerInterface {
     $logger = new Logger("App log");
@@ -81,13 +81,9 @@ $container[CacheInterface::class] = function (Container $c): CacheInterface {
 
 $container->alias("cache", CacheInterface::class);
 
-$container["cache_path"] = function (Container $c): string {
-    return $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
-};
+$container["cache_path"] = fn (Container $c): string => $c["root_path"] . DIRECTORY_SEPARATOR . "cache";
 
-$container["controller_namespace"] = function (Container $c): string {
-    return $c["app_namespace"] . "controllers\\";
-};
+$container["controller_namespace"] = fn (Container $c): string => $c["app_namespace"] . "controllers\\";
 
 $container[Database::class] = function (Container $c): Database {
     $dbConfig = $c["db_config"];
@@ -104,9 +100,7 @@ $container[Database::class] = function (Container $c): Database {
 
 $container->alias("db", Database::class);
 
-$container["db_config"] = function (Container $c): array {
-    return require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
-};
+$container["db_config"] = fn (Container $c): array => require $c["app_path"] . "/" . $c["config_folder"] . "/database.php";
 
 $container["db_log"] = function (Container $c): LoggerInterface {
     $logger = new Logger("DB log");
@@ -130,9 +124,7 @@ $container["error_handler"] = function (Container $c): Run {
     return $whoops;
 };
 
-$container[Injector::class] = function (Container $c): Injector {
-    return new Injector($c);
-};
+$container[Injector::class] = fn (Container $c): Injector => new Injector($c);
 
 $container->alias("injector", Injector::class);
 
@@ -148,15 +140,11 @@ $container["path"] = function (Container $c): string {
     return "/" . trim($pathInfo, "/");
 };
 
-$container[Request::class] = function (Container $c): Request {
-    return Request::createFromGlobals();
-};
+$container[Request::class] = fn (Container $c): Request => Request::createFromGlobals();
 
 $container->alias("request", Request::class);
 
-$container[Response::class] = function (Container $c): Response {
-    return new Response();
-};
+$container[Response::class] = fn (Container $c): Response => new Response();
 
 $container->alias("response", Response::class);
 
@@ -173,9 +161,7 @@ $container[Router::class] = function (Container $c): Router {
 
 $container->alias("router", Router::class);
 
-$container[Session::class] = function (Container $c): Session {
-    return new Session();
-};
+$container[Session::class] = fn (Container $c): Session => new Session();
 
 $container->alias("session", Session::class);
 

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\console;
 
@@ -41,16 +43,17 @@ class App extends \pew\App
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $arguments = $this->getArguments();
 
         if (empty($arguments["command"])) {
             $this->printHelp();
+
             return;
         }
 
-        if (strpos($arguments["command"], ":") !== false) {
+        if (str_contains($arguments["command"], ":")) {
             [$commandName, $actionSlug] = explode(":", $arguments["command"]);
             $action = (string) str($actionSlug)->camel();
         } else {
@@ -89,7 +92,7 @@ class App extends \pew\App
     {
         $defaultCommandName = $commandInfo["default"];
 
-        # Print the default command first, if present
+        // Print the default command first, if present
         if ($defaultCommandName) {
             $defaultCommand = $commandInfo["commands"][$defaultCommandName];
             $name = "<info>{$commandName}</info>";
@@ -102,12 +105,12 @@ class App extends \pew\App
             $name = "<comment>{$commandName}</comment>";
         }
 
-        # Base command name
+        // Base command name
         $this->output->writeln($name);
 
-        # Print any subcommands
+        // Print any subcommands
         foreach ($commandInfo["commands"] as $subcommand => $commandDefinition) {
-            # Skip the default command
+            // Skip the default command
             if ($subcommand !== $defaultCommandName) {
                 $name = "  <info>{$commandName}:{$subcommand}</info>";
 
@@ -126,21 +129,21 @@ class App extends \pew\App
      *
      * @return void
      */
-    protected function initCommandList()
+    protected function initCommandList(): void
     {
         $appPath = $this->get("app_path");
         $appNamespace = $this->get("app_namespace");
         $commandsNamespace = $this->get("commands_namespace");
         $appCommandsNamespace = "{$appNamespace}{$commandsNamespace}\\";
 
-        # Framework-defined commands
+        // Framework-defined commands
         $commandFiles = glob(dirname(__DIR__) . "/commands/*Command.php");
 
         foreach ($commandFiles as $commandFile) {
             $this->addCommand($commandFile, "\\pew\\commands\\");
         }
 
-        # App-defined commands
+        // App-defined commands
         $commandFiles = glob("{$appPath}/{$commandsNamespace}/*Command.php");
 
         foreach ($commandFiles as $commandFile) {
@@ -155,9 +158,9 @@ class App extends \pew\App
      * @param string $namespace
      * @return void
      */
-    protected function addCommand(string $commandFilename, string $namespace)
+    protected function addCommand(string $commandFilename, string $namespace): void
     {
-        # Full class name with namespace
+        // Full class name with namespace
         $className = pathinfo($commandFilename, PATHINFO_FILENAME);
         $fullClassName = "{$namespace}{$className}";
 
@@ -165,22 +168,23 @@ class App extends \pew\App
             $reflectionClass = new ReflectionClass($fullClassName);
         } catch (\ReflectionException $e) {
             $this->output->writeln("Error reading Command class file: {$commandFilename} ({$namespace})");
+
             return;
         }
 
-        # Figure out the base command name
+        // Figure out the base command name
         $defaultProperties = $reflectionClass->getDefaultProperties();
-        $name = strlen($defaultProperties["name"])
+        $name = mb_strlen($defaultProperties["name"])
             ? $defaultProperties["name"]
             : (string) slug($className)->beforeLast("-command");
         $defaultCommand = $defaultProperties["defaultCommand"];
 
-        # Get public methods
+        // Get public methods
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC);
 
         $commandData = $this->getSubcommands($methods, $defaultCommand, $name, $fullClassName);
 
-        # Add all the commands to the list
+        // Add all the commands to the list
         ksort($commandData["commands"]);
         $this->availableCommands[$name] = $commandData;
     }
@@ -196,7 +200,7 @@ class App extends \pew\App
      */
     protected function getSubcommands(array $methods, string $defaultCommand, string $name, string $fullClassName): array
     {
-        # Get a whitelist of valid command names
+        // Get a whitelist of valid command names
         $methodNames = $this->getCommandMethodNames($fullClassName);
 
         $commandData = [
@@ -209,7 +213,7 @@ class App extends \pew\App
             $methodSlug = (string) slug($methodName);
             $isDefault = $defaultCommand === $methodName || $defaultCommand === $methodSlug;
 
-            # Check that the method is in the whitelist
+            // Check that the method is in the whitelist
             if (in_array($methodName, $methodNames, true)) {
                 $commandName = $isDefault ? $name : "{$name}:{$methodSlug}";
                 $comment = $method->getDocComment();
@@ -220,15 +224,15 @@ class App extends \pew\App
                     $description = $doc->getSummary();
                 }
 
-                # Create a command definition
+                // Create a command definition
                 $definition = new CommandDefinition($commandName, $methodName, $fullClassName, $description);
 
-                # Flag the default command
+                // Flag the default command
                 if ($isDefault) {
                     $commandData["default"] = $methodSlug;
                 }
 
-                # Add the command
+                // Add the command
                 $commandData["commands"][$methodSlug] = $definition;
             }
         }
@@ -244,25 +248,25 @@ class App extends \pew\App
      */
     protected function getCommandMethodNames(string $className): array
     {
-        # Blacklist of methods defined in the parent class
+        // Blacklist of methods defined in the parent class
         $parentMethods = get_class_methods(Command::class);
-        # Whitelist of methods defined in the command class
+        // Whitelist of methods defined in the command class
         $methods = get_class_methods($className);
         $result = [];
 
         foreach ($methods as $methodName) {
-            # Exclude magic methods
-            if (substr($methodName, 0, 2) == "__") {
+            // Exclude magic methods
+            if (mb_substr($methodName, 0, 2) == "__") {
                 continue;
             }
 
-            # Exclude methods by name
-            if (in_array($methodName, [])) {
+            // Exclude methods by name
+            if (in_array($methodName, [], true)) {
                 continue;
             }
 
-            # Exclude methods defined in the parent class
-            if (in_array($methodName, $parentMethods)) {
+            // Exclude methods defined in the parent class
+            if (in_array($methodName, $parentMethods, true)) {
                 continue;
             }
 
@@ -279,7 +283,7 @@ class App extends \pew\App
      * @param array $suggestions
      * @return void
      */
-    protected function commandMissing(string $commandName, ?string $actionSlug, array $suggestions = [])
+    protected function commandMissing(string $commandName, ?string $actionSlug, array $suggestions = []): void
     {
         if ($actionSlug) {
             $commandName .= ":{$actionSlug}";
@@ -328,7 +332,7 @@ class App extends \pew\App
      */
     protected function findCommand(string $commandName, string $subcommandName)
     {
-        # Find main command by name
+        // Find main command by name
         $commandNames = array_keys($this->availableCommands);
         $abbrev = new Abbrev($commandNames);
         $match = $abbrev->match($commandName);

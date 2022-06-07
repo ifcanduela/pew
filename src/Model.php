@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew;
 
@@ -7,5 +9,4 @@ namespace pew;
  */
 class Model extends model\ActiveRecord
 {
-
 }

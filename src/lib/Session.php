@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\lib;
 
@@ -17,7 +19,7 @@ class Session extends SymfonySession implements ArrayAccess
      * @param mixed  $value
      * @return void
      */
-    public function addFlash(string $key, $value)
+    public function addFlash(string $key, $value): void
     {
         $this->getFlashBag()->add($key, $value);
     }
@@ -87,7 +89,7 @@ class Session extends SymfonySession implements ArrayAccess
      * @return void
      */
     #[\ReturnTypeWillChange]
-    public function offsetSet($key, $value)
+    public function offsetSet($key, $value): void
     {
         $this->set($key, $value);
     }
@@ -111,7 +113,7 @@ class Session extends SymfonySession implements ArrayAccess
      * @return void
      */
     #[\ReturnTypeWillChange]
-    public function offsetUnset($key)
+    public function offsetUnset($key): void
     {
         $this->remove($key);
     }

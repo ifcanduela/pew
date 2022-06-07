@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\model\relation;
 
@@ -83,9 +85,7 @@ class HasAndBelongsToMany extends Relationship
             $result[$record[$field]][] = $recordClass ? $recordClass::fromArray($record) : $record;
         }
 
-        return array_map(function ($items) {
-            return new Collection($items);
-        }, $result);
+        return array_map(fn ($items) => new Collection($items), $result);
     }
 
     /**

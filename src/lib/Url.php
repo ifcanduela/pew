@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\lib;
 
@@ -58,7 +60,7 @@ class Url
      * @param string $path
      * @return void
      */
-    public function init(string $path = "")
+    public function init(string $path = ""): void
     {
         $parts = parse_url($path);
 
@@ -129,7 +131,7 @@ class Url
      */
     public static function to(string ...$path): Url
     {
-        $url = new static;
+        $url = new static();
 
         $path = rtrim("/" . implode("/", array_filter($path)), "/");
         $path = preg_replace('~\/+~', "/", $path);
@@ -189,7 +191,7 @@ class Url
 
         $scheme = str($this->scheme ?: "http");
 
-        return (string) ($withSeparator? $scheme->ensureEnd("://") : $scheme);
+        return (string) ($withSeparator ? $scheme->ensureEnd("://") : $scheme);
     }
 
     /**

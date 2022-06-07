@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\request;
 
@@ -29,11 +31,11 @@ class Request extends \Symfony\Component\HttpFoundation\Request
         parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
 
         if ($this->isPost()) {
-            # Check for a JSON request body
-            $bodyIsJson = strpos($this->headers->get("Content-Type", ""), "application/json") === 0;
+            // Check for a JSON request body
+            $bodyIsJson = str_starts_with($this->headers->get("Content-Type", ""), "application/json");
 
             if ($bodyIsJson) {
-                # Decode the JSON body and replace the POST parameter bag
+                // Decode the JSON body and replace the POST parameter bag
                 $data = $this->toArray();
                 $this->request->replace(is_array($data) ? $data : []);
             }
@@ -49,9 +51,9 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     {
         if (!isset($this->appUrl)) {
             $appUrl = $this->getSchemeAndHttpHost() . $this->getBaseUrl();
-            # Find out the script filename
+            // Find out the script filename
             $scriptFileName = preg_quote(pathinfo($this->getScriptName(), PATHINFO_BASENAME));
-            # Ensure the URL does not contain the script filename
+            // Ensure the URL does not contain the script filename
             $this->appUrl = preg_replace("/{$scriptFileName}$/", "", $appUrl);
         }
 
@@ -90,7 +92,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     {
         $method = $this->request->get("_method") ?? $this->getMethod();
 
-        return strtoupper($method);
+        return mb_strtoupper($method);
     }
 
     /**
@@ -129,7 +131,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      *
      * @return void
      */
-    public function forceJsonResponse()
+    public function forceJsonResponse(): void
     {
         $this->acceptsJson = true;
     }
@@ -147,14 +149,15 @@ class Request extends \Symfony\Component\HttpFoundation\Request
         if (!isset($this->acceptsJson)) {
             $this->acceptsJson = false;
 
-            # Check if the requested URL ends in '.json' or '|json'
+            // Check if the requested URL ends in '.json' or '|json'
             if (preg_match('/[\.|]json$/', $this->getPathInfo())) {
                 $this->acceptsJson = true;
             } else {
-                # Search for an 'Accept' header containing 'application/json'
+                // Search for an 'Accept' header containing 'application/json'
                 foreach ($this->getAcceptableContentTypes() as $contentType) {
                     if ($contentType === "application/json") {
                         $this->acceptsJson = true;
+
                         break;
                     }
                 }

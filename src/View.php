@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew;
 
@@ -145,17 +147,17 @@ class View
             $template = $this->template;
         }
 
-        # Find the template file
+        // Find the template file
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
             throw new RuntimeException("Template `{$template}` not found");
         }
 
-        # Save the current layout, in case the template sets its own
+        // Save the current layout, in case the template sets its own
         $currentLayout = $this->layout;
 
-        # Make previous and received variables available
+        // Make previous and received variables available
         $variables = array_merge($this->variables, $data);
         $output = $this->renderFile($templateFile, $variables);
 
@@ -171,7 +173,7 @@ class View
             $output = $this->renderFile($layoutFile, []);
         }
 
-        # Restore the previous layout
+        // Restore the previous layout
         $this->layout = $currentLayout;
 
         return $output;
@@ -204,7 +206,7 @@ class View
      * @param string $folder Folder location
      * @return void
      */
-    public function addFolder(string $folder)
+    public function addFolder(string $folder): void
     {
         $this->folder($folder);
     }
@@ -363,7 +365,7 @@ class View
         $output = $this->render($template, $data);
         $this->layout = $preservedLayout;
 
-        # Render the element.
+        // Render the element.
         return $output;
     }
 
@@ -387,9 +389,11 @@ class View
 
         try {
             require func_get_arg(0);
+
             return ob_get_clean();
         } catch (Exception $e) {
             ob_end_clean();
+
             throw $e;
         }
     }
@@ -427,7 +431,7 @@ class View
      * @param bool $replace
      * @return void
      */
-    public function beginBlock(string $blockName, bool $replace = false)
+    public function beginBlock(string $blockName, bool $replace = false): void
     {
         $this->blockStack->push([$blockName, $replace]);
         ob_start();
@@ -438,7 +442,7 @@ class View
      *
      * @return void
      */
-    public function endBlock()
+    public function endBlock(): void
     {
         $output = ob_get_clean();
 

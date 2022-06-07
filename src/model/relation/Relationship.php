@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\model\relation;
 
@@ -46,7 +48,7 @@ abstract class Relationship
      */
     public function __call(string $method, array $arguments): Relationship
     {
-        $this->finder->$method(...$arguments);
+        $this->finder->{$method}(...$arguments);
 
         return $this;
     }

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\model;
 
@@ -35,7 +37,7 @@ class Record
      * @param array $fields
      * @return void
      */
-    public function merge(array $fields)
+    public function merge(array $fields): void
     {
         foreach ($fields as $fieldName => $value) {
             if ($this->has($fieldName)) {
@@ -66,10 +68,11 @@ class Record
      * @param mixed $value
      * @return void
      */
-    public function set(string $fieldName, $value)
+    public function set(string $fieldName, $value): void
     {
         if ($this->has($fieldName)) {
             $this->fields[$fieldName] = $value;
+
             return;
         }
 
@@ -104,10 +107,11 @@ class Record
      * @param string $fieldName
      * @return void
      */
-    public function unset(string $fieldName)
+    public function unset(string $fieldName): void
     {
         if ($this->has($fieldName)) {
             $this->fields[$fieldName] = null;
+
             return;
         }
 
@@ -121,7 +125,7 @@ class Record
      * @param mixed $value
      * @return void
      */
-    public function __set(string $prop, $value)
+    public function __set(string $prop, $value): void
     {
         $this->set($prop, $value);
     }
@@ -154,7 +158,7 @@ class Record
      * @param string $prop
      * @return void
      */
-    public function __unset(string $prop)
+    public function __unset(string $prop): void
     {
         $this->unset($prop);
     }

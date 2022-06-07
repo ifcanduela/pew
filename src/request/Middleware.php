@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\request;
 
@@ -15,7 +17,7 @@ abstract class Middleware
      * @param string $uri
      * @return RedirectResponse
      */
-    public function redirect(string $uri)
+    final public function redirect(string $uri)
     {
         return new RedirectResponse($uri);
     }

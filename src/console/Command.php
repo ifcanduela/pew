@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\console;
 
@@ -74,16 +76,14 @@ abstract class Command
      * @param string $format
      * @return void
      */
-    public function message($text, bool $newLine = true, string $format = "")
+    final public function message($text, bool $newLine = true, string $format = ""): void
     {
         if (!is_array($text)) {
             $text = [$text];
         }
 
         if ($format) {
-            $text = array_map(function ($t) use ($format) {
-                return "{$format}{$t}</>";
-            }, $text);
+            $text = array_map(fn ($t) => "{$format}{$t}</>", $text);
         }
 
         $this->output->write($text, $newLine);
@@ -96,7 +96,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    public function info($text, bool $newLine = true)
+    final public function info($text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<info>");
     }
@@ -108,7 +108,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    public function success($text, bool $newLine = true)
+    final public function success($text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<success>");
     }
@@ -120,7 +120,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    public function warning($text, bool $newLine = true)
+    final public function warning($text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<warn>");
     }
@@ -132,7 +132,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    public function error($text, bool $newLine = true)
+    final public function error($text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<error>");
     }
@@ -144,7 +144,7 @@ abstract class Command
      * @param bool $newLine
      * @return void
      */
-    public function log(string $message, bool $newLine = true)
+    final public function log(string $message, bool $newLine = true): void
     {
         $this->message($message, $newLine, "<comment>");
     }
@@ -156,7 +156,7 @@ abstract class Command
      * @param string $defaultAnswer
      * @return string
      */
-    public function ask(string $question, string $defaultAnswer = ""): string
+    final public function ask(string $question, string $defaultAnswer = ""): string
     {
         $q = new Question($question, $defaultAnswer);
 
@@ -170,7 +170,7 @@ abstract class Command
      * @param bool $defaultAnswer
      * @return bool
      */
-    public function confirm(string $question, bool $defaultAnswer = true): bool
+    final public function confirm(string $question, bool $defaultAnswer = true): bool
     {
         $q = new ConfirmationQuestion($question, $defaultAnswer);
 
@@ -185,7 +185,7 @@ abstract class Command
      * @param mixed $defaultAnswer
      * @return mixed
      */
-    public function choose(string $question, array $options, $defaultAnswer = 0)
+    final public function choose(string $question, array $options, $defaultAnswer = 0)
     {
         $q = new ChoiceQuestion($question, $options, $defaultAnswer);
 

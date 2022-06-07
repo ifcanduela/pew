@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace pew\lib;
 
 use ArrayAccess;
@@ -80,7 +82,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @return void
      */
     #[\ReturnTypeWillChange]
-    public function offsetSet($offset, $value = null)
+    public function offsetSet($offset, $value = null): void
     {
         if (is_null($offset)) {
             $this->items[] = $value;
@@ -96,7 +98,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @return void
      */
     #[\ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->items[$offset]);
     }
@@ -161,9 +163,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 
         return new static(
             array_map(
-                function ($chunk) {
-                    return new static($chunk);
-                },
+                fn ($chunk) => new static($chunk),
                 $items
             )
         );
@@ -179,9 +179,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     public function field(string $field): Collection
     {
         $items = array_map(
-            function ($item) use ($field) {
-                return $item->$field ?? $item[$field] ?? null;
-            },
+            fn ($item) => $item->{$field} ?? $item[$field] ?? null,
             $this->items
         );
 
@@ -283,7 +281,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             if (is_callable($field)) {
                 $k = $field($value, $key);
             } else {
-                $k = $value->$field ?? $value[$field] ?? null;
+                $k = $value->{$field} ?? $value[$field] ?? null;
             }
 
             if (!isset($items[$k])) {
@@ -336,9 +334,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             $items = array_map($field, $this->items);
         } elseif (is_string($field)) {
             $items = array_map(
-                function ($item) use ($field) {
-                    return $item->$field ?? $item[$field] ?? null;
-                },
+                fn ($item) => $item->{$field} ?? $item[$field] ?? null,
                 $this->items
             );
         } else {
@@ -363,7 +359,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
                 $index = $field($value, $key);
                 $items[$index] = $value;
             } else {
-                $index = $value->$field ?? $value[$field] ?? null;
+                $index = $value->{$field} ?? $value[$field] ?? null;
 
                 if ($index) {
                     $items[$index] = $value;
@@ -517,7 +513,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      */
     public function push($item): Collection
     {
-        array_push($this->items, $item);
+        $this->items[] = $item;
 
         return $this;
     }
@@ -647,8 +643,8 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
             usort(
                 $items,
                 function ($a, $b) use ($field) {
-                    $_a = $a->$field ?? $a[$field] ?? null;
-                    $_b = $b->$field ?? $b[$field] ?? null;
+                    $_a = $a->{$field} ?? $a[$field] ?? null;
+                    $_b = $b->{$field} ?? $b[$field] ?? null;
 
                     return $_a <=> $_b;
                 }
@@ -797,9 +793,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     public function zip(...$arrays): Collection
     {
         $items = array_map(
-            function (...$values) {
-                return new static($values);
-            },
+            fn (...$values) => new static($values),
             $this->items,
             ...$arrays
         );

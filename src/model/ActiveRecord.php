@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\model;
 
@@ -64,15 +66,15 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      */
     public function __construct(array $attributes = [])
     {
-        # Update the table name if it's empty
+        // Update the table name if it's empty
         if (!$this->tableName) {
             $this->tableName = $this->getTableManager()->tableName();
         }
 
-        # Initialize the record fields
+        // Initialize the record fields
         $this->record = new Record($this->columns());
 
-        # Fill any passed attributes
+        // Fill any passed attributes
         $this->attributes($attributes);
 
         static::$getterMethods[static::class] ??= [];
@@ -118,13 +120,13 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      */
     public static function fromArray(array $data, bool $isNew = true): ActiveRecord
     {
-        $record = new static;
+        $record = new static();
 
         foreach ($data as $field => $value) {
             if ($record->record->has($field)) {
                 $record->record->set($field, $value);
             } elseif (property_exists($record, $field)) {
-                $record->$field = $value;
+                $record->{$field} = $value;
             }
         }
 
@@ -146,9 +148,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
 
         $result = $record->getTableManager()->query($query, $parameters);
 
-        return new Collection(array_map(function ($r) {
-            return static::fromArray($r, false);
-        }, $result));
+        return new Collection(array_map(fn ($r) => static::fromArray($r, false), $result));
     }
 
     /**
@@ -175,7 +175,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         if (!is_null($attributes)) {
             foreach ($attributes as $key => $value) {
                 if ($this->hasAttribute($key)) {
-                    $this->$key = $value;
+                    $this->{$key} = $value;
                 }
             }
 
@@ -185,9 +185,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         $include = array_merge(get_object_vars($this), $this->record->all());
 
         $reflectionClass = new ReflectionClass(__CLASS__);
-        $modelProperties = array_map(function (ReflectionProperty $reflectionProperty) {
-            return $reflectionProperty->name;
-        }, $reflectionClass->getProperties());
+        $modelProperties = array_map(fn (ReflectionProperty $reflectionProperty) => $reflectionProperty->name, $reflectionClass->getProperties());
 
         $exclude = array_flip($modelProperties);
 
@@ -212,21 +210,23 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         }
 
         if (property_exists($this, $key)) {
-            return $this->$key;
+            return $this->{$key};
         }
 
         throw new \Exception("Model attribute `{$key}` not found");
     }
 
-    public function setAttribute(string $key, $value)
+    public function setAttribute(string $key, $value): void
     {
         if ($this->record->has($key)) {
             $this->record->set($key, $value);
+
             return;
         }
 
         if (property_exists($this, $key)) {
-            $this->$key = $value;
+            $this->{$key} = $value;
+
             return;
         }
 
@@ -300,7 +300,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      */
     public static function deleteAll(array $condition = null)
     {
-        $record = (new static);
+        $record = (new static());
         $table = $record->getTableManager()->createDelete();
 
         if ($condition) {
@@ -334,7 +334,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         $fields = array_unique($this->serialize);
 
         foreach ($fields as $key) {
-            $record[$key] = $this->$key;
+            $record[$key] = $this->{$key};
         }
 
         return (object) $record;
@@ -440,8 +440,8 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         $methodName = static::$setterMethods[$className][$propertyName] ?? null;
 
         if ($methodName) {
-            $this->$methodName($value);
-        } else if ($this->record->has($columnName)) {
+            $this->{$methodName}($value);
+        } elseif ($this->record->has($columnName)) {
             $this->record->set($columnName, $value);
         } else {
             throw new RuntimeException("Record attribute `{$key}` does not exist in `{$className}`");
@@ -462,11 +462,11 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
     {
         $methodName = $this->hasGetterMethod($key);
 
-        # Check if the getter method exists
+        // Check if the getter method exists
         if ($methodName) {
-            # Check if the getter method has been called before
+            // Check if the getter method has been called before
             if (!array_key_exists($methodName, $this->getterResults)) {
-                $fetch = $this->$methodName();
+                $fetch = $this->{$methodName}();
 
                 if ($fetch instanceof Relationship) {
                     $fetch = $fetch->fetch();
@@ -478,7 +478,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             return $this->getterResults[$methodName];
         }
 
-        # The offset is a table field
+        // The offset is a table field
         if ($this->record->has($key)) {
             return $this->record->get($key);
         }
@@ -496,7 +496,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      */
     public function __isset(string $key): bool
     {
-        return $this->hasAttribute($key) && $this->$key !== null;
+        return $this->hasAttribute($key) && $this->{$key} !== null;
     }
 
     /**
@@ -504,7 +504,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      *
      * @param mixed $key Key to delete
      */
-    public function __unset($key)
+    public function __unset($key): void
     {
         if ($this->record->has($key)) {
             $this->record->unset($key);
@@ -576,7 +576,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             $foreignKeyName = TableManager::instance()->create($className)->primaryKey();
         }
 
-        $matchValue = $this->$localKeyName;
+        $matchValue = $this->{$localKeyName};
 
         return new BelongsTo($className::find(), $localKeyName, $foreignKeyName, $matchValue);
     }
@@ -704,7 +704,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         ?string $farKeyName = null
     ): HasAndBelongsToMany {
         $nearTableName = $this->tableName;
-        $farTableName = (new $className)->tableName;
+        $farTableName = (new $className())->tableName;
 
         if (!$associationTableName) {
             $tableNames = [
@@ -733,7 +733,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         }
 
         if (!$farKeyName) {
-            $farKeyName = (new $className)->getTableManager()->primaryKey();
+            $farKeyName = (new $className())->getTableManager()->primaryKey();
         }
 
         $on = ["{$associationTableName}.{$farForeignKeyName}" => "{$farTableName}.{$farKeyName}"];
@@ -750,7 +750,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      */
     private function hasGetterMethod(string $key)
     {
-        # Generate a getter method name if it does not yet exist
+        // Generate a getter method name if it does not yet exist
         if (!isset(static::$getterMethods[static::class][$key])) {
             $methodName = "get" . s($key)->camel()->title();
             static::$getterMethods[static::class][$key] = method_exists($this, $methodName) ? $methodName : false;
@@ -777,7 +777,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      * @param array|ActiveRecord $values Value of the related property
      * @return void
      */
-    public function attachRelated(string $getter, $values)
+    public function attachRelated(string $getter, $values): void
     {
         $this->getterResults[$getter] = $values;
     }

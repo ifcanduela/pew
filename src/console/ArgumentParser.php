@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace pew\console;
 
 class ArgumentParser
@@ -17,26 +19,26 @@ class ArgumentParser
                 $this->addAndReset();
 
                 if ($this->isLongParam($param)) {
-                    # It's a long name
-                    $this->currentName = substr($param, 2);
+                    // It's a long name
+                    $this->currentName = mb_substr($param, 2);
 
-                    if (strpos($this->currentName, "=")) {
-                        # The value is attached to the key
+                    if (mb_strpos($this->currentName, "=")) {
+                        // The value is attached to the key
                         [$this->currentName, $value] = explode("=", $this->currentName, 2);
                         $this->addAndReset($value);
                     }
                 } elseif ($this->isShortParam($param)) {
-                    # It's a short param
+                    // It's a short param
                     $value = true;
-                    $this->currentName = substr($param, 1);
+                    $this->currentName = mb_substr($param, 1);
 
-                    if (strpos($param, "=")) {
-                        # It's a short param with a value
+                    if (mb_strpos($param, "=")) {
+                        // It's a short param with a value
                         [$this->currentName, $value] = explode("=", $this->currentName, 2);
-                        $names = str_split($this->currentName, 1);
+                        $names = mb_str_split($this->currentName, 1);
                     } else {
-                        # It's a short param
-                        $names = str_split($this->currentName, 1);
+                        // It's a short param
+                        $names = mb_str_split($this->currentName, 1);
                     }
 
                     foreach ($names as $n) {
@@ -54,7 +56,7 @@ class ArgumentParser
             }
         }
 
-        # Handle any dangling token
+        // Handle any dangling token
         $this->addAndReset();
     }
 
@@ -91,18 +93,18 @@ class ArgumentParser
      */
     protected function addNamed(string $name, $value): void
     {
-        if ($value === true && substr($name, 0, 3) === "no-") {
-            $name = substr($name, 3);
+        if ($value === true && mb_substr($name, 0, 3) === "no-") {
+            $name = mb_substr($name, 3);
             $value = false;
         }
 
         $this->namedArguments[$name] = $value;
     }
 
-    protected function addAndReset($value = true)
+    protected function addAndReset($value = true): void
     {
         if ($this->currentName) {
-            # There's a named param without value
+            // There's a named param without value
             $this->addNamed($this->currentName, $value);
             $this->currentName = "";
         }
@@ -115,7 +117,7 @@ class ArgumentParser
 
     protected function isLongParam(string $str): bool
     {
-        return substr($str, 0, 2) === "--";
+        return mb_substr($str, 0, 2) === "--";
     }
 
     protected function isShortParam(string $str): bool

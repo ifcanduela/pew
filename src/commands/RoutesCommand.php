@@ -1,7 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\commands;
-
 
 use Exception;
 use ifcanduela\router\Route;
@@ -19,7 +20,7 @@ class RoutesCommand extends Command
      * @return void
      * @throws Exception
      */
-    public function run(CommandArguments $arguments, Router $router)
+    public function run(CommandArguments $arguments, Router $router): void
     {
         $headers = ["Methods", "Path", "Handler", "Name"];
         $list = [$headers];
@@ -63,13 +64,13 @@ class RoutesCommand extends Command
      * @param array $routes
      * @param int[] $lengths
      */
-    protected function printRoutes($routes, $lengths)
+    protected function printRoutes($routes, $lengths): void
     {
         foreach ($routes as $r) {
-            $name    = "<info>"      . str_pad($r[0], $lengths[0], " ", STR_PAD_RIGHT) . "</>";
-            $method  = "<comment>"   . str_pad($r[1], $lengths[1], " ", STR_PAD_RIGHT) . "</>";
-            $handler = "<success>"   . str_pad($r[2], $lengths[2], " ", STR_PAD_RIGHT) . "</>";
-            $path    = "<info><options=bold>"      . $r[3] . "</></>";
+            $name = "<info>" . str_pad($r[0], $lengths[0], " ", STR_PAD_RIGHT) . "</>";
+            $method = "<comment>" . str_pad($r[1], $lengths[1], " ", STR_PAD_RIGHT) . "</>";
+            $handler = "<success>" . str_pad($r[2], $lengths[2], " ", STR_PAD_RIGHT) . "</>";
+            $path = "<info><options=bold>" . $r[3] . "</></>";
             $this->message($name . "  " . $method . "  " . $handler . "  " . $path);
         }
     }

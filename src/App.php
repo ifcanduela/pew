@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew;
 
@@ -32,7 +34,8 @@ use function pew\str;
  */
 class App
 {
-    use CanEmitEvents, CanListenToEvents;
+    use CanEmitEvents;
+    use CanListenToEvents;
 
     protected array $middleware = [];
 
@@ -60,7 +63,7 @@ class App
 
         $this->initApplication($appFolder, $configFileName);
 
-        # Initialize the database manager
+        // Initialize the database manager
         if ($this->get("db_config")) {
             TableManager::instance($this->container->get("tableManager"));
         }
@@ -87,7 +90,7 @@ class App
      *
      * @return void
      */
-    protected function initFrameworkContainer()
+    protected function initFrameworkContainer(): void
     {
         $containerFilename = __DIR__ . "/config/bootstrap.php";
 
@@ -105,7 +108,7 @@ class App
      * @param string $configFileName
      * @return void
      */
-    protected function initApplication(string $appFolder, string $configFileName = "config")
+    protected function initApplication(string $appFolder, string $configFileName = "config"): void
     {
         if (realpath($appFolder)) {
             $guessedAppPath = $appFolder;
@@ -122,7 +125,7 @@ class App
         $this->container->set("app_path", $appPath);
         $this->container->set("app", $this);
 
-        # Import app-defined configuration
+        // Import app-defined configuration
         $this->loadAppConfig($configFileName);
         $this->loadAppBootstrap();
     }
@@ -183,7 +186,7 @@ class App
      * @param mixed $value
      * @return void
      */
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
         $this->container->set($key, $value);
     }
@@ -209,7 +212,7 @@ class App
      * @return void
      * @throws Exception
      */
-    public function run()
+    public function run(): void
     {
         $errorHandler = $this->container->get("error_handler");
         $errorHandler->register();
@@ -218,7 +221,7 @@ class App
         $request = $this->container->get("request");
 
         try {
-            # Process the request
+            // Process the request
             $response = $this->handle($request);
         } catch (Exception $e) {
             $response = $this->handleError($e);
@@ -240,17 +243,17 @@ class App
     {
         $injector = $this->container->get(Injector::class);
 
-        # Add get and post parameters to the injection container
+        // Add get and post parameters to the injection container
         $injector->prependContainer($request->request->all());
         $injector->prependContainer($request->query->all());
 
-        # Resolve the route
+        // Resolve the route
         $router = $this->container->get(Router::class);
         $route = $router->resolve($request->getPathInfo(), $request->getMethod());
         $this->emit("route.resolved", $route);
         $this->container->set(Route::class, $route);
 
-        # Add route parameters to the injection container
+        // Add route parameters to the injection container
         $injector->prependContainer($route->getParams());
 
         static::log("Matched route " . $route->getPath());
@@ -260,7 +263,7 @@ class App
         if ($result instanceof Response) {
             static::log("Middleware returned response");
         } else {
-            # Resolve the route to a callable or a controller class
+            // Resolve the route to a callable or a controller class
             $resolver = new ActionResolver($route);
             $handler = $resolver->getController($this->container->get("controller_namespace"));
             $this->emit("request.handler", $handler);
@@ -283,7 +286,7 @@ class App
             $this->emit("timer.stop", ["app.action"]);
         }
 
-        # Process whatever the handler returned into a Response object
+        // Process whatever the handler returned into a Response object
         $response = $this->transformActionResult($result);
         $this->emit("response.start", $response);
 
@@ -309,17 +312,17 @@ class App
      */
     protected function runBeforeMiddleware(Route $route, Injector $injector): ?Response
     {
-        # Get the "before" middleware services for the route
+        // Get the "before" middleware services for the route
         $middlewareClasses = $route->getBefore() ?: [];
 
         foreach ($middlewareClasses as $middlewareClass) {
-            # Create an instance of the service
+            // Create an instance of the service
             $mw = $injector->createInstance($middlewareClass);
             $this->middleware[$middlewareClass] = $mw;
             $result = $injector->callMethod($mw, "before");
 
             if ($result instanceof Response) {
-                # Short-circuit the request if any middleware returns a response
+                // Short-circuit the request if any middleware returns a response
                 return $result;
             }
         }
@@ -339,7 +342,7 @@ class App
      */
     protected function runAfterMiddleware(Route $route, Response $response, Injector $injector): Response
     {
-        # Get the "after" middleware services for the route
+        // Get the "after" middleware services for the route
         $middlewareClasses = $route->getAfter() ?: [];
 
         $injector->prependContainer([
@@ -350,12 +353,12 @@ class App
         ]);
 
         foreach ($middlewareClasses as $middlewareClass) {
-            # Check if the middleware was activated before calling the action
+            // Check if the middleware was activated before calling the action
             if (array_key_exists($middlewareClass, $this->middleware)) {
-                # Reuse the instance
+                // Reuse the instance
                 $mw = $this->middleware[$middlewareClass];
             } else {
-                # Create a new instance
+                // Create a new instance
                 $mw = $injector->createInstance($middlewareClass);
             }
 
@@ -381,10 +384,10 @@ class App
     protected function handleCallback(callable $handler, Injector $injector)
     {
         static::log("Request handler is anonymous callback");
-        # Create a basic controller as a host for the callback
+        // Create a basic controller as a host for the callback
         $controller = $injector->createInstance(Controller::class);
 
-        # Call the handler using the basic controller as context
+        // Call the handler using the basic controller as context
         return $injector->callFunction($handler, $controller);
     }
 
@@ -400,7 +403,7 @@ class App
      */
     protected function handleAction(string $controllerClass, string $actionName, Injector $injector)
     {
-        # Guess the template path and filename
+        // Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->container->get("controller_namespace"));
         $actionId = (string) str($actionName)->snake();
         $actionMethod = (string) str($actionName)->camel();
@@ -409,24 +412,24 @@ class App
         $this->container->set("controller_slug", basename($controllerPath));
         $this->container->set("action_slug", $actionId);
 
-        $this->emit("request.actionResolved", "$controllerClass::$actionMethod");
+        $this->emit("request.actionResolved", "${controllerClass}::${actionMethod}");
 
         static::log("Request handler is {$controllerPath}/{$actionMethod}");
 
-        # Set up the template
+        // Set up the template
         $view = $this->container->get("view");
         $view->template($template);
 
-        # Create the controller
+        // Create the controller
         $controller = $injector->createInstance($controllerClass);
         $result = null;
 
-        # Run the before-action function, if present
+        // Run the before-action function, if present
         if (method_exists($controller, "beforeAction")) {
             $result = $injector->callMethod($controller, "beforeAction");
         }
 
-        # Run the action if `beforeAction` did not return a result
+        // Run the action if `beforeAction` did not return a result
         if ($result === null) {
             $result = $injector->callMethod($controller, $actionMethod);
         }
@@ -443,7 +446,7 @@ class App
      */
     protected function handleError(Throwable $e): Response
     {
-        # If debug mode is on, let the error handler take care of it
+        // If debug mode is on, let the error handler take care of it
         if ($this->container->get("debug")) {
             throw $e;
         }
@@ -477,19 +480,19 @@ class App
      */
     public function getControllerPath(string $controllerClass, string $baseNamespace): string
     {
-        # Get the namespace of the controller relative to the base controller namespace
-        # by removing \app\controllers (by default) from the beginning
+        // Get the namespace of the controller relative to the base controller namespace
+        // by removing \app\controllers (by default) from the beginning
         $relativeNamespace = (string) str($controllerClass)->after($baseNamespace);
         $parts = explode("\\", $relativeNamespace);
-        # The last segment is the short class name
+        // The last segment is the short class name
         $controllerClassName = array_pop($parts);
-        # The other segments will be the path to the controller templates in the
-        # `views` folder
+        // The other segments will be the path to the controller templates in the
+        // `views` folder
         $controllerPath = implode(DIRECTORY_SEPARATOR, array_filter($parts));
-        # Convert the short class name into a slug to use as folder name
+        // Convert the short class name into a slug to use as folder name
         $controllerSlug = (string) str($controllerClassName)->before("Controller")->snake();
 
-        # Make the controller slug available for use elsewhere
+        // Make the controller slug available for use elsewhere
         $this->container->set("controller_slug", $controllerSlug);
 
         return implode(DIRECTORY_SEPARATOR, array_filter([$controllerPath, $controllerSlug]));
@@ -506,28 +509,29 @@ class App
         $request = $this->container->get("request");
         $response = $this->container->get("response");
 
-        # If $actionResult is `false`, return the global response
+        // If $actionResult is `false`, return the global response
         if ($actionResult === false) {
             return $response;
         }
 
-        # If it's already a response, return it
+        // If it's already a response, return it
         if ($actionResult instanceof Response) {
             return $actionResult;
         }
 
-        # Check if the request is JSON and return an appropriate response
+        // Check if the request is JSON and return an appropriate response
         if ($request->acceptsJson()) {
             return new JsonResponse($actionResult);
         }
 
-        # If the action result is a string, use as the content of the response
+        // If the action result is a string, use as the content of the response
         if (is_string($actionResult)) {
             $response->setContent($actionResult);
+
             return $response;
         }
 
-        # Use the action result to render the view
+        // Use the action result to render the view
         $view = $this->container->get(View::class);
         $content = $view->render($actionResult);
         $response->setContent($content);
@@ -545,7 +549,7 @@ class App
      * @param int $level
      * @return void
      */
-    public static function log(string $message, $level = Logger::DEBUG)
+    public static function log(string $message, $level = Logger::DEBUG): void
     {
         $logger = static::$instance->container->get("app_log");
         $logger->log($level, $message);

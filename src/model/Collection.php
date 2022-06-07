@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\model;
 
@@ -10,5 +12,4 @@ use pew\lib\Collection as BaseCollection;
  */
 class Collection extends BaseCollection
 {
-
 }

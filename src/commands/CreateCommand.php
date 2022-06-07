@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace pew\commands;
 
@@ -23,7 +25,7 @@ class CreateCommand extends Command
      * @param CommandArguments $arguments
      * @return void
      */
-    public function run(CommandArguments $arguments)
+    public function run(CommandArguments $arguments): void
     {
         if ($arguments->has("type")) {
             $type = $arguments->get("type");
@@ -49,7 +51,7 @@ class CreateCommand extends Command
      * @param CommandArguments $arguments
      * @return void
      */
-    public function command(CommandArguments $arguments)
+    public function command(CommandArguments $arguments): void
     {
         $arg = $arguments->at(0);
         $description = $arguments->get("description", "");
@@ -97,7 +99,7 @@ PHP;
      * @param CommandArguments $arguments
      * @return void
      */
-    public function controller(CommandArguments $arguments)
+    public function controller(CommandArguments $arguments): void
     {
         $className = $arguments->at(0);
 
@@ -135,7 +137,7 @@ PHP;
      * @param CommandArguments $arguments
      * @return void
      */
-    public function middleware(CommandArguments $arguments)
+    public function middleware(CommandArguments $arguments): void
     {
         $className = $arguments->at(0);
 
@@ -171,7 +173,7 @@ PHP;
      * @param CommandArguments $arguments
      * @return void
      */
-    public function model(CommandArguments $arguments)
+    public function model(CommandArguments $arguments): void
     {
         $className = $arguments->at(0);
 
@@ -207,7 +209,7 @@ PHP;
      * @param string $filename
      * @return void
      */
-    protected function createFile(string $content, string $filename)
+    protected function createFile(string $content, string $filename): void
     {
         if (!file_exists($filename)) {
             file_put_contents($filename, $content);
