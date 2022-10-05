@@ -39,7 +39,7 @@ class App
 
     protected Container $container;
 
-    protected static App $instance;
+    protected static ?App $instance;
 
     /**
      * Bootstrap a web app.

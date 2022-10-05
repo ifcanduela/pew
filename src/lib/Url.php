@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace pew\lib;
 
 use pew\request\Request;
+
 use function pew\str;
 
 /**

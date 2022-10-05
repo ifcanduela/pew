@@ -18,6 +18,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use RuntimeException;
+
 use function Symfony\Component\String\s;
 
 /**
@@ -53,16 +54,16 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
     protected Record $record;
 
     /** @var string Name of the column holding the record creation timestamp. */
-    public static $createdFieldName = "created";
+    public static string $createdFieldName = "created";
 
     /** @var string Name of the column holding the record update timestamp. */
-    public static $updatedFieldName = "updated";
+    public static string $updatedFieldName = "updated";
 
     /** @var bool Flag to signify a record not retrieved from or yet stored into the database  */
     public bool $isNew = true;
 
     /**
-     * Create an new record.
+     * Create a new record.
      */
     public function __construct(array $attributes = [])
     {

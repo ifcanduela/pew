@@ -205,10 +205,6 @@ function pew(string $key)
 {
     $app = App::instance();
 
-    if (!$app) {
-        throw new \RuntimeException("The application has not been initialized");
-    }
-
     return $app->get($key);
 }
 

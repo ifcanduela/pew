@@ -424,7 +424,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Get the keys of the collection.
      *
-     * @return static<int|string>
+     * @return static
      */
     public function keys(): Collection
     {

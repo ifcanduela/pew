@@ -37,7 +37,7 @@ class View
     /** @var array Rendered partial blocks */
     protected array $blocks = [];
 
-    /** @var SplStack<string> Stack of block names */
+    /** @var SplStack<array> Stack of blocks */
     protected SplStack $blockStack;
 
     /** @var array */
