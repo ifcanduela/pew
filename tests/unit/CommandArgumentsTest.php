@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use pew\console\CommandArguments;
 
 class CommandArgumentsTest extends PHPUnit\Framework\TestCase
 {
-    public function testCommandArgumentsBasics()
+    public function testCommandArgumentsBasics(): void
     {
         $ca = new CommandArguments([1, 2, 3, "--no-log", "--debug"]);
 
@@ -16,12 +18,12 @@ class CommandArgumentsTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(2, $ca->at(1));
         $this->assertEquals(3, $ca->at(2));
         $this->assertNull($ca->at(3));
-        
+
         $this->assertEquals(false, $ca->get("log"));
         $this->assertEquals(true, $ca->get("debug"));
     }
 
-    public function testNamedArguments()
+    public function testNamedArguments(): void
     {
         $ca = new CommandArguments(["--mode", "test", "--no-print"]);
 
@@ -35,7 +37,7 @@ class CommandArgumentsTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(false, $ca->print);
     }
 
-    public function testShortArguments()
+    public function testShortArguments(): void
     {
         $ca = new CommandArguments(["-m", "-n", "alpha"]);
 
@@ -52,7 +54,7 @@ class CommandArgumentsTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("beta", $ca->get("n"));
     }
 
-    public function testFormatting()
+    public function testFormatting(): void
     {
         $ca = new CommandArguments(["--mode=test"]);
 
@@ -66,7 +68,7 @@ class CommandArgumentsTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("loose-arg", $ca->get(0));
     }
 
-    public function testGetDefaultValue()
+    public function testGetDefaultValue(): void
     {
         $ca = new CommandArguments(["--alpha", "beta"]);
 

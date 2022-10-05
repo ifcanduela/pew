@@ -110,9 +110,13 @@ class ArgumentParser
         }
     }
 
-    protected function isNamedParameter(string $str): bool
+    protected function isNamedParameter(mixed $str): bool
     {
-        return $str[0] === "-";
+        if (is_string($str)) {
+            return $str[0] === "-";
+        }
+
+        return false;
     }
 
     protected function isLongParam(string $str): bool

@@ -1,42 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 use pew\console\command;
-use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\Output;
 
-class TestOutput implements OutputInterface
+class TestOutput extends Output
 {
-    public function write($messages, bool $newline = false, int $options = 0)
+    public function write($messages, bool $newline = false, int $options = 0): void
     {
         if (!is_array($messages)) {
             $messages = [$messages];
         }
 
         foreach ($messages as $message) {
-            echo $message;
+            $this->doWrite($message, false);
         }
     }
 
-    public function writeln($messages, int $options = 0)
+    public function writeln($messages, int $options = 0): void
     {
         foreach ($messages as $message) {
-            echo $message . PHP_EOL;
+            $this->doWrite($message, true);
         }
     }
 
-    public function setVerbosity(int $level) {}
-    public function getVerbosity() {}
-    public function isQuiet() {}
-    public function isVerbose() {}
-    public function isVeryVerbose() {}
-    public function isDebug() {}
-    public function setDecorated(bool $decorated) {}
-    public function isDecorated() {}
-    public function setFormatter(OutputFormatterInterface $formatter) {}
-    public function getFormatter() {}
+    protected function doWrite(string $message, bool $newline): void
+    {
+        echo $message . ($newline ? PHP_EOL : "");
+    }
 }
 
 class CommandTest extends \PHPUnit\Framework\TestCase
@@ -52,9 +47,9 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         ];
     }
 
-    public function testCreateCommand()
+    public function testCreateCommand(): void
     {
-        $c = new class(...$this->args) extends Command {
+        $c = new class (...$this->args) extends Command {
             public function run()
             {
                 return true;
@@ -65,10 +60,12 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($c->run());
     }
 
-    public function testMessages()
+    public function testMessages(): void
     {
-        $c = new class(...$this->args) extends Command {};
-        $c->output = new TestOutput();
+        $input = new ArgvInput();
+        $output = new TestOutput();
+
+        $c = new class ($input, $output) extends Command {};
 
         ob_start();
         $c->message("hello");
@@ -77,9 +74,10 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("hello", trim($result));
     }
 
-    public function testSuccessMessage()
+    public function testSuccessMessage(): void
     {
-        $c = new class(...$this->args) extends Command {};
+        $c = new class (...$this->args) extends Command {
+        };
         $c->output = new TestOutput();
 
         ob_start();
@@ -89,9 +87,10 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("<success>hello</>", trim($result));
     }
 
-    public function testInfoMessage()
+    public function testInfoMessage(): void
     {
-        $c = new class(...$this->args) extends Command {};
+        $c = new class (...$this->args) extends Command {
+        };
         $c->output = new TestOutput();
 
         ob_start();
@@ -101,9 +100,10 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("<info>hello</>", trim($result));
     }
 
-    public function testWarningMessage()
+    public function testWarningMessage(): void
     {
-        $c = new class(...$this->args) extends Command {};
+        $c = new class (...$this->args) extends Command {
+        };
         $c->output = new TestOutput();
 
         ob_start();
@@ -113,9 +113,10 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("<warn>hello</>", trim($result));
     }
 
-    public function testErrorMessage()
+    public function testErrorMessage(): void
     {
-        $c = new class(...$this->args) extends Command {};
+        $c = new class (...$this->args) extends Command {
+        };
         $c->output = new TestOutput();
 
         ob_start();
@@ -125,9 +126,10 @@ class CommandTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("<error>hello</>", trim($result));
     }
 
-    public function testLogMessage()
+    public function testLogMessage(): void
     {
-        $c = new class(...$this->args) extends Command {};
+        $c = new class (...$this->args) extends Command {
+        };
         $c->output = new TestOutput();
 
         ob_start();
