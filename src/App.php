@@ -25,8 +25,6 @@ use pew\response\HttpException;
 use pew\response\JsonResponse;
 use pew\response\Response;
 
-use function pew\str;
-
 /**
  * The App class is a request/response processor.
  *
@@ -78,10 +76,14 @@ class App
      *
      * Will return null if the application has not been initialized.
      *
-     * @return static|null
+     * @return App
      */
-    public static function instance(): ?App
+    public static function instance(): App
     {
+        if (!isset(static::$instance)) {
+            throw new RuntimeException("The Application has not been initialized");
+        }
+
         return static::$instance;
     }
 

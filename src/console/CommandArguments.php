@@ -83,7 +83,7 @@ class CommandArguments
     /**
      * Get the value of a parameter.
      *
-     * @param string|int $key
+     * @param string|int|string[]|int[] $key
      * @param mixed $defaultValue
      * @return mixed
      */

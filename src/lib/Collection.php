@@ -56,7 +56,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $offset
      * @return bool
      */
-    #[\ReturnTypeWillChange]
     public function offsetExists($offset): bool
     {
         return array_key_exists($offset, $this->items);
@@ -68,7 +67,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $offset
      * @return mixed
      */
-    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->items[$offset];
@@ -81,7 +79,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $value
      * @return void
      */
-    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value = null): void
     {
         if (is_null($offset)) {
@@ -97,7 +94,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param mixed $offset
      * @return void
      */
-    #[\ReturnTypeWillChange]
     public function offsetUnset($offset): void
     {
         unset($this->items[$offset]);
@@ -218,7 +214,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      *
      * Callback signature is function($value, $key): bool
      *
-     * @param callable $callback
+     * @param callable|null $callback
      * @param int $flag
      * @return static
      */
@@ -247,7 +243,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Flatten the items in the collection into a single-dimensional array.
+     * Flatten the items in the collection into a one-dimensional array.
      *
      * @return static
      */
@@ -374,7 +370,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * Find the index of the first element in the collection that satisfies a condition.
      *
      * @param callable $callback
-     * @return mixed
+     * @return int|string|null
      */
     public function findIndex(callable $callback)
     {
@@ -391,7 +387,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * Find the index of the first element in the collection that satisfies a condition.
      *
      * @param callable $callback
-     * @return mixed
+     * @return int|string|null
      */
     public function findKey(callable $callback)
     {
@@ -428,7 +424,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Get the keys of the collection.
      *
-     * @return static
+     * @return static<int|string>
      */
     public function keys(): Collection
     {
@@ -528,7 +524,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
      * @param int $count
      * @return mixed
      */
-    public function random(int $count = 1)
+    public function random(int $count = 1): ?Collection
     {
         if (!$this->items) {
             return null;
