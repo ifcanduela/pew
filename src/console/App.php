@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
+use pew\di\Injector;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\Output;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 use function pew\str;
@@ -18,22 +20,24 @@ use function pew\slug;
 
 class App extends \pew\App
 {
-    /** @var array */
     public array $availableCommands = [];
 
-    /** @var ArgvInput */
-    public ArgvInput $input;
+    public InputInterface $input;
 
-    /** @var Output */
-    public Output $output;
+    public OutputInterface $output;
 
     public function __construct(string $appFolder, string $configFileName = "config")
     {
         parent::__construct($appFolder, $configFileName);
+
         $this->input = new ArgvInput();
         $this->output = new ConsoleOutput();
+
         $this->output->getFormatter()->setStyle("warn", new OutputFormatterStyle("black", "yellow"));
         $this->output->getFormatter()->setStyle("success", new OutputFormatterStyle("cyan", "default"));
+
+        $this->container->set(InputInterface::class, $this->input);
+        $this->container->set(OutputInterface::class, $this->output);
 
         $this->initCommandList();
     }
@@ -369,12 +373,12 @@ class App extends \pew\App
     {
         $commandClassName = $commandDefinition->className;
 
-        /** @var Command $command */
-        $command = new $commandClassName(
-            $this->input,
-            $this->output
-        );
+        /** @var Injector $injector */
+        $injector = $this->container->get(Injector::class);
 
+        /** @var Command $command */
+        $command = $injector->createInstance($commandClassName);
+        dd($command);
         if (is_callable([$command, $commandDefinition->method])) {
             $injector = $this->get("injector");
             $this->set(CommandArguments::class, $arguments);

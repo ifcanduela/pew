@@ -18,8 +18,8 @@ use function pew\slug;
 /**
  * Base class for command-line scripts.
  *
- * Commands has to implement a method which will be called from the console
- * app, the default being `run`.
+ * Commands must implement a method to be called from the console app, the
+ * default being `run`.
  *
  * The init() and finish() methods are called by the console app before and
  * after calling the `run` (or other action) method. Values from the container
@@ -28,10 +28,10 @@ use function pew\slug;
 abstract class Command
 {
     /** @var string */
-    public $name = "";
+    public string $name = "";
 
     /** @var string */
-    public $description = "";
+    public string $description = "";
 
     /** @var InputInterface */
     public InputInterface $input;
@@ -46,7 +46,7 @@ abstract class Command
     private FormatterHelper $formatterHelper;
 
     /** @var string */
-    public $defaultCommand = "run";
+    public string $defaultCommand = "run";
 
     /**
      * Command constructor.
@@ -185,7 +185,7 @@ abstract class Command
      * @param mixed $defaultAnswer
      * @return mixed
      */
-    final public function choose(string $question, array $options, $defaultAnswer = 0)
+    final public function choose(string $question, array $options, mixed $defaultAnswer = null): mixed
     {
         $q = new ChoiceQuestion($question, $options, $defaultAnswer);
 
