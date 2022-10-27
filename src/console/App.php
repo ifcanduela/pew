@@ -59,12 +59,11 @@ class App extends \pew\App
 
         if (str_contains($arguments["command"], ":")) {
             [$commandName, $actionSlug] = explode(":", $arguments["command"]);
-            $action = (string) str($actionSlug)->camel();
         } else {
-            [$commandName, $action] = [$arguments["command"], ""];
+            $commandName = $arguments["command"];
         }
 
-        $commandInfo = $this->findCommand($commandName, $action);
+        $commandInfo = $this->findCommand($commandName, $actionSlug ?? "");
 
         if (!($commandInfo instanceof CommandDefinition)) {
             $this->commandMissing($commandName, $actionSlug ?? null, $commandInfo ?? []);
