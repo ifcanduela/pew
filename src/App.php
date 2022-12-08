@@ -7,15 +7,14 @@ namespace pew;
 use Closure;
 use Exception;
 use InvalidArgumentException;
+use Monolog\Level;
 use ReflectionException;
 use RuntimeException;
 use Throwable;
-
 use ifcanduela\events\CanEmitEvents;
 use ifcanduela\events\CanListenToEvents;
-use ifcanduela\router\Router;
 use ifcanduela\router\Route;
-use Monolog\Logger;
+use ifcanduela\router\Router;
 use pew\di\Container;
 use pew\di\Injector;
 use pew\model\TableManager;
@@ -68,7 +67,7 @@ class App
 
         $this->emit("app.init");
 
-        static::log("App path set to {$this->container->get("app_path")}", Logger::INFO);
+        static::log("App path set to {$this->container->get("app_path")}", Level::Info);
     }
 
     /**
@@ -115,13 +114,13 @@ class App
         if (realpath($appFolder)) {
             $guessedAppPath = $appFolder;
         } else {
-            $guessedAppPath = getcwd() . "/{$appFolder}";
+            $guessedAppPath = getcwd() . "/$appFolder";
         }
 
         $appPath = realpath($guessedAppPath);
 
         if ($appPath === false) {
-            throw new InvalidArgumentException("The app path does not exist: `{$guessedAppPath}`");
+            throw new InvalidArgumentException("The app path does not exist: `$guessedAppPath`");
         }
 
         $this->container->set("app_path", $appPath);
@@ -145,7 +144,7 @@ class App
 
         $appPath = $this->container->get("app_path");
         $configFolder = $this->container->get("config_folder");
-        $filename = "{$appPath}/{$configFolder}/{$configFileName}.php";
+        $filename = "$appPath/$configFolder/$configFileName.php";
 
         return $this->container->loadFile($filename);
     }
@@ -159,7 +158,7 @@ class App
     {
         $appPath = $this->container->get("app_path");
         $configFolder = $this->container->get("config_folder");
-        $filename = "{$appPath}/{$configFolder}/bootstrap.php";
+        $filename = "$appPath/$configFolder/bootstrap.php";
 
         if (is_readable($filename)) {
             require_once $filename;
@@ -176,7 +175,7 @@ class App
      * @param string $key
      * @return mixed
      */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
         return $this->container->get($key);
     }
@@ -188,7 +187,7 @@ class App
      * @param mixed $value
      * @return void
      */
-    public function set(string $key, $value): void
+    public function set(string $key, mixed $value): void
     {
         $this->container->set($key, $value);
     }
@@ -207,12 +206,12 @@ class App
     /**
      * Application entry point, manages controllers, actions and views.
      *
-     * This function is responsible of creating an instance of the appropriate
+     * This function is responsible for creating an instance of the appropriate
      * Controller class and calling its action() method, which will handle
      * the controller call.
      *
      * @return void
-     * @throws Exception
+     * @throws Throwable
      */
     public function run(): void
     {
@@ -240,6 +239,7 @@ class App
      * @param Request $request
      * @return Response
      * @throws Exception
+     * @throws Throwable
      */
     protected function handle(Request $request): Response
     {
@@ -266,8 +266,8 @@ class App
             static::log("Middleware returned response");
         } else {
             // Resolve the route to a callable or a controller class
-            $resolver = new ActionResolver($route);
-            $handler = $resolver->getController($this->container->get("controller_namespace"));
+            $resolver = new ActionResolver($route, $this->container->get("controller_namespace"));
+            $handler = $resolver->getController();
             $this->emit("request.handler", $handler);
             $actionName = $resolver->getAction($this->container->get("default_action"));
             $this->emit("request.actionName", $actionName);
@@ -383,7 +383,7 @@ class App
      * @throws ReflectionException
      * @throws di\KeyNotFoundException
      */
-    protected function handleCallback(callable $handler, Injector $injector)
+    protected function handleCallback(callable $handler, Injector $injector): mixed
     {
         static::log("Request handler is anonymous callback");
         // Create a basic controller as a host for the callback
@@ -403,7 +403,7 @@ class App
      * @throws ReflectionException
      * @throws di\KeyNotFoundException
      */
-    protected function handleAction(string $controllerClass, string $actionName, Injector $injector)
+    protected function handleAction(string $controllerClass, string $actionName, Injector $injector): mixed
     {
         // Guess the template path and filename
         $controllerPath = $this->getControllerPath($controllerClass, $this->container->get("controller_namespace"));
@@ -414,9 +414,9 @@ class App
         $this->container->set("controller_slug", basename($controllerPath));
         $this->container->set("action_slug", $actionId);
 
-        $this->emit("request.actionResolved", "${controllerClass}::${actionMethod}");
+        $this->emit("request.actionResolved", "$controllerClass::$actionMethod");
 
-        static::log("Request handler is {$controllerPath}/{$actionMethod}");
+        static::log("Request handler is $controllerPath/$actionMethod");
 
         // Set up the template
         $view = $this->container->get("view");
@@ -444,7 +444,7 @@ class App
      *
      * @param Exception $e
      * @return Response
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     protected function handleError(Throwable $e): Response
     {
@@ -462,8 +462,8 @@ class App
         $view = $this->get(View::class);
         $template = "errors/view";
 
-        if ($view->exists("errors/{$errorCode}")) {
-            $template = "errors/{$errorCode}";
+        if ($view->exists("errors/$errorCode")) {
+            $template = "errors/$errorCode";
         }
 
         $response = new Response();
@@ -506,7 +506,7 @@ class App
      * @param mixed $actionResult
      * @return Response
      */
-    protected function transformActionResult($actionResult): Response
+    protected function transformActionResult(mixed $actionResult): Response
     {
         $request = $this->container->get("request");
         $response = $this->container->get("response");
@@ -548,10 +548,10 @@ class App
      * DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT and EMERGENCY.
      *
      * @param string $message
-     * @param int $level
+     * @param int|Level $level
      * @return void
      */
-    public static function log(string $message, $level = Logger::DEBUG): void
+    public static function log(string $message, int|Level $level = Level::Debug): void
     {
         $logger = static::$instance->container->get("app_log");
         $logger->log($level, $message);

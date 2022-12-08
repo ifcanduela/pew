@@ -9,6 +9,7 @@ use BadMethodCallException;
 use Exception;
 use IteratorAggregate;
 use JsonSerializable;
+use PdoStatement;
 use pew\model\relation\BelongsTo;
 use pew\model\relation\HasAndBelongsToMany;
 use pew\model\relation\HasMany;
@@ -27,27 +28,27 @@ use function Symfony\Component\String\s;
 class ActiveRecord implements JsonSerializable, IteratorAggregate
 {
     /** @var string Database table for the subject of the model. */
-    public $tableName;
+   public string $tableName = "";
 
     /** @var string Database connection name. */
-    public $connectionName;
+    public string $connectionName;
 
     /** @var string|string[] Name of the primary key fields of the table the Model manages. */
-    public $primaryKey = "id";
+    public string|array $primaryKey = "id";
 
     /** @var string[] List of class properties to serialize as JSON. */
-    public $serialize = [];
+    public array $serialize = [];
 
     /** @var string[] List of database columns to exclude from JSON serialization. */
-    public $doNotSerialize = [];
+    public array $doNotSerialize = [];
 
     /** @var array Cached results for model get methods. */
     protected array $getterResults = [];
 
-    /** @var string[] List of getter method names. */
+    /** @var array[] List of getter method names. */
     protected static array $getterMethods = [];
 
-    /** @var string[] List of setter method names. */
+    /** @var array[] List of setter method names. */
     protected static array $setterMethods = [];
 
     /** @var Record Current record data. */
@@ -68,7 +69,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
     public function __construct(array $attributes = [])
     {
         // Update the table name if it's empty
-        if (!$this->tableName) {
+        if (mb_strlen($this->tableName) === 0) {
             $this->tableName = $this->getTableManager()->tableName();
         }
 
@@ -107,13 +108,13 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      *
      * @return mixed
      */
-    public function primaryKeyValue()
+    public function primaryKeyValue(): mixed
     {
         return $this->record->get($this->primaryKey);
     }
 
     /**
-     * Create a record from a array of keys and values.
+     * Create a record from an array of keys and values.
      *
      * @param array $data
      * @param bool $isNew
@@ -171,7 +172,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      * @param ?array $attributes Associative array of column names and values
      * @return self|array An associative array of current column names and values or the object itself
      */
-    public function attributes(array $attributes = null)
+    public function attributes(array $attributes = null): array|static
     {
         if (!is_null($attributes)) {
             foreach ($attributes as $key => $value) {
@@ -204,6 +205,9 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         return $this->record->has($key) || property_exists($this, $key);
     }
 
+    /**
+     * @throws Exception
+     */
     public function getAttribute(string $key)
     {
         if ($this->record->has($key)) {
@@ -214,9 +218,12 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             return $this->{$key};
         }
 
-        throw new \Exception("Model attribute `{$key}` not found");
+        throw new Exception("Model attribute `$key` not found");
     }
 
+    /**
+     * @throws Exception
+     */
     public function setAttribute(string $key, $value): void
     {
         if ($this->record->has($key)) {
@@ -231,7 +238,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             return;
         }
 
-        throw new \Exception("Model attribute `{$key}` not found");
+        throw new Exception("Model attribute `$key` not found");
     }
 
     /**
@@ -256,11 +263,10 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
     /**
      * Deletes the current record.
      *
-     * @return \PdoStatement|array|int
+     * @return PdoStatement|array|int
      */
-    public function delete()
+    public function delete(): int|array|PdoStatement
     {
-        /** @var Table */
         $table = $this->getTableManager()->createDelete();
 
         $table->where([
@@ -276,12 +282,12 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      * @param array $values
      * @param ?array $condition
      *
-     * @return \PdoStatement|array|int Number of affected rows.
+     * @return PdoStatement|array|int Number of affected rows.
      */
-    public static function updateAll(array $values, array $condition = null)
+    public static function updateAll(array $values, array $condition = null): int|array|PdoStatement
     {
         $record = new static();
-        $table = $record->tableManager;
+        $table = $record->getTableManager();
         $table->createUpdate();
         $table->set($values);
 
@@ -297,9 +303,9 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      *
      * @param array|null $condition
      *
-     * @return \PdoStatement|array|int Number of affected rows.
+     * @return PdoStatement|array|int Number of affected rows.
      */
-    public static function deleteAll(array $condition = null)
+    public static function deleteAll(array $condition = null): int|array|PdoStatement
     {
         $record = (new static());
         $table = $record->getTableManager()->createDelete();
@@ -346,7 +352,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      *
      * @return Table
      */
-    public static function find()
+    public static function find(): Table
     {
         $table = TableManager::instance()->create(static::class);
 
@@ -364,9 +370,9 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      * primary key.
      *
      * @param mixed $id A primary key value, or an array of attributes
-     * @return null|static
+     * @return ActiveRecord|Record|null
      */
-    public static function findOne($id)
+    public static function findOne(mixed $id): Record|ActiveRecord|null
     {
         $table = TableManager::instance()->create(static::class);
 
@@ -427,13 +433,16 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      * @param mixed $value Value to store
      * @return self
      */
-    public function __set(string $key, $value)
+    public function __set(string $key, mixed $value)
     {
         $className = static::class;
         $propertyName = s($key)->camel()->toString();
         $columnName = s($key)->snake()->toString();
 
-        if (!array_key_exists($propertyName, static::$setterMethods[$className])) {
+        if (
+            !array_key_exists($className, static::$setterMethods) ||
+            !array_key_exists($propertyName, static::$setterMethods[$className])
+        ) {
             $methodName = "set" . ucfirst($propertyName);
             static::$setterMethods[$className][$propertyName] = method_exists($this, $methodName) ? $methodName : false;
         }
@@ -445,7 +454,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
         } elseif ($this->record->has($columnName)) {
             $this->record->set($columnName, $value);
         } else {
-            throw new RuntimeException("Record attribute `{$key}` does not exist in `{$className}`");
+            throw new RuntimeException("Record attribute `$key` does not exist in `$className`");
         }
 
         return $this;
@@ -486,7 +495,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
 
         $className = static::class;
 
-        throw new Exception("Record attribute `{$key}` does not exist in `${className}`");
+        throw new Exception("Record attribute `$key` does not exist in `$className`");
     }
 
     /**
@@ -505,7 +514,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      *
      * @param mixed $key Key to delete
      */
-    public function __unset($key): void
+    public function __unset(mixed $key): void
     {
         if ($this->record->has($key)) {
             $this->record->unset($key);
@@ -517,7 +526,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      *
      * @param string $method
      * @param array  $arguments
-     * @return mixed
+     * @return Collection<ActiveRecord|Record>|ActiveRecord|Record|null
      */
     public static function __callStatic(string $method, array $arguments)
     {
@@ -537,7 +546,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             return static::find()->where([$field => $value])->one();
         }
 
-        throw new BadMethodCallException("Method `" . static::class . "::{$method}()` does not exist");
+        throw new BadMethodCallException("Method `" . static::class . "::$method()` does not exist");
     }
 
     /**
@@ -737,7 +746,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             $farKeyName = (new $className())->getTableManager()->primaryKey();
         }
 
-        $on = ["{$associationTableName}.{$farForeignKeyName}" => "{$farTableName}.{$farKeyName}"];
+        $on = ["$associationTableName.$farForeignKeyName" => "$farTableName.$farKeyName"];
 
         return (new HasAndBelongsToMany($className::find(), $nearKeyName, $nearForeignKeyName, $this->primaryKeyValue()))
             ->through($associationTableName, $on);
@@ -747,9 +756,9 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
      * Check if a model has a relationship method for a field.
      *
      * @param string $key
-     * @return string|bool False if the relationship does not exist, the getter name otherwise.
+     * @return bool|string False if the relationship does not exist, the getter name otherwise.
      */
-    private function hasGetterMethod(string $key)
+    private function hasGetterMethod(string $key): bool|string
     {
         // Generate a getter method name if it does not yet exist
         if (!isset(static::$getterMethods[static::class][$key])) {
@@ -757,7 +766,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
             static::$getterMethods[static::class][$key] = method_exists($this, $methodName) ? $methodName : false;
         }
 
-        return static::$getterMethods[static::class][$key];
+        return static::$getterMethods[static::class][$key] ?? false;
     }
 
     /**
@@ -775,10 +784,10 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
 
     /**
      * @param string $getter Name of the getter method
-     * @param array|ActiveRecord $values Value of the related property
+     * @param Collection|ActiveRecord|array $values Value of the related property
      * @return void
      */
-    public function attachRelated(string $getter, $values): void
+    public function attachRelated(string $getter, Collection|ActiveRecord|array $values): void
     {
         $this->getterResults[$getter] = $values;
     }

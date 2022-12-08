@@ -2,6 +2,7 @@
 
 use ifcanduela\router\Route;
 use ifcanduela\router\Router;
+use Monolog\Level;
 use pew\App;
 use pew\request\Request;
 
@@ -121,7 +122,7 @@ class AppTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("test", $app->get("env"), "Current Environment");
         $this->assertEquals(["\\", ".", "|"], $app->get("ignore_url_separator"), "URL Separators to Ignore");
         $this->assertEquals(["json", "html", "php"], $app->get("ignore_url_suffixes"), "URL Suffixes to Ignore");
-        $this->assertEquals(300, $app->get("log_level"), "Log Level");
+        $this->assertEquals(Level::Warning, $app->get("log_level"), "Log Level");
         $this->assertEquals($rootPath, $app->get("root_path"), "Root Path");
         $this->assertEquals($wwwPath, $app->get("www_path"), "Public Path");
 

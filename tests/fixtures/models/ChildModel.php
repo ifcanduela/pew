@@ -4,7 +4,7 @@ namespace app\models;
 
 class ChildModel extends \pew\Model
 {
-    public $connectionName = 'test';
+    public string $connectionName = 'test';
 
     public function getTestValue()
     {

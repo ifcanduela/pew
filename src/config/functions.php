@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace pew;
 
+use InvalidArgumentException;
 use pew\lib\Url;
 use Symfony\Component\String\AbstractString;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -19,9 +20,9 @@ use function Symfony\Component\String\s;
  *
  * @param array $array
  * @param callable $callback
- * @return mixed
+ * @return int|string|null
  */
-function array_find_key(array $array, callable $callback)
+function array_find_key(array $array, callable $callback): int|string|null
 {
     foreach ($array as $key => $value) {
         $match = $callback($value, $key);
@@ -41,7 +42,7 @@ function array_find_key(array $array, callable $callback)
  * @param callable $callback
  * @return mixed
  */
-function array_find_value(array $array, callable $callback)
+function array_find_value(array $array, callable $callback): mixed
 {
     foreach ($array as $key => $value) {
         $match = $callback($value, $key);
@@ -57,12 +58,12 @@ function array_find_value(array $array, callable $callback)
 /**
  * Get an element from an array using a character-delimited list of indexes.
  *
- * @param array|object $array
+ * @param object|array $array
  * @param string $path
  * @param string $separator
  * @return mixed
  */
-function array_path($array, string $path, string $separator = ".")
+function array_path(object|array $array, string $path, string $separator = "."): mixed
 {
     $steps = explode($separator, $path);
     $step = array_shift($steps);
@@ -94,13 +95,13 @@ function array_path($array, string $path, string $separator = ".")
  * @param int $options
  * @return mixed
  */
-function file_get_json(string $filename, bool $assoc = true, int $depth = 512, int $options = 0)
+function file_get_json(string $filename, bool $assoc = true, int $depth = 512, int $options = 0): mixed
 {
     $json = file_get_contents($filename);
     $data = json_decode($json, $assoc, $depth, $options);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \InvalidArgumentException("JSON decoding error: " . json_last_error_msg());
+        throw new InvalidArgumentException("JSON decoding error: " . json_last_error_msg());
     }
 
     return $data;
@@ -118,12 +119,12 @@ function file_get_json(string $filename, bool $assoc = true, int $depth = 512, i
  * @param int $depth
  * @return void
  */
-function file_put_json(string $filename, $data, int $options = 0, int $depth = 512): void
+function file_put_json(string $filename, mixed $data, int $options = 0, int $depth = 512): void
 {
     $json = json_encode($data, $options, $depth);
 
     if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \InvalidArgumentException("JSON encoding error: " . json_last_error_msg());
+        throw new InvalidArgumentException("JSON encoding error: " . json_last_error_msg());
     }
 
     file_put_contents($filename, $json);
@@ -132,11 +133,11 @@ function file_put_json(string $filename, $data, int $options = 0, int $depth = 5
 /**
  * Helper for flash data.
  *
- * @param string $key Flash data key to read
- * @param mixed $default Value to return in case the keys don't exist
+ * @param string|null $key Flash data key to read
+ * @param mixed|null $default Value to return in case the keys don't exist
  * @return mixed Value of the key
  */
-function flash(string $key = null, $default = null)
+function flash(string $key = null, mixed $default = null): mixed
 {
     static $session;
 
@@ -201,7 +202,7 @@ function is_route(string $routeName, string $path = null, string $method = null)
  * @param string $key Key to read
  * @return mixed The value for the key
  */
-function pew(string $key)
+function pew(string $key): mixed
 {
     $app = App::instance();
 
@@ -211,10 +212,10 @@ function pew(string $key)
 /**
  * A quick way to get the filesystem root directory or any file below it.
  *
- * If the framework files reside in C:\htdocs\pewexample, this call
+ * If the framework files reside in C:\htdocs\pew-example, this call
  *     `echo root('app\libs\my_lib.php');`
  * will print
- *     `C:\htdocs\pewexample\app\libs\my_lib.php`
+ *     `C:\htdocs\pew-example\app\libs\my_lib.php`
  *
  * This function does not handle `.` and `..` in any special way and is not
  * concerned with whether the path exists or not.
@@ -233,9 +234,8 @@ function root(...$path): string
     array_unshift($path, $root_path);
 
     $path = join(DIRECTORY_SEPARATOR, array_filter($path));
-    $path = preg_replace('~[\\\/]+~', DIRECTORY_SEPARATOR, $path);
 
-    return $path;
+    return preg_replace('~[\\\/]+~', DIRECTORY_SEPARATOR, $path);
 }
 
 /**
@@ -245,7 +245,7 @@ function root(...$path): string
  * in the URL.
  *
  * @param string $routeName The route name
- * @param string ...$params Route parametes
+ * @param string ...$params Route parameters
  * @return Url A URL object
  */
 function route(string $routeName, string ...$params): Url
@@ -266,11 +266,11 @@ function route(string $routeName, string ...$params): Url
  *
  * Accepts a period-delimited string of sub-indices.
  *
- * @param string $path Keys to access
- * @param mixed $default Value to return in case the keys don't exist
+ * @param string|null $path Keys to access
+ * @param mixed|null $default Value to return in case the keys don't exist
  * @return mixed Value of the key, or the Session object if no path is specified
  */
-function session(string $path = null, $default = null)
+function session(string $path = null, mixed $default = null): mixed
 {
     static $session;
 
@@ -282,32 +282,30 @@ function session(string $path = null, $default = null)
         return $session;
     }
 
-    return array_path($session->all(), $path, ".") ?? $default;
+    return array_path($session->all(), $path) ?? $default;
 }
 
 /**
  * Create a slug from a string or string-like value.
  *
- * @param mixed $string
+ * @param string|AbstractString $string
  * @param string $separator
  * @param string $language
  * @return AbstractString
  */
-function slug($string, string $separator = "-", string $language = "en"): AbstractString
+function slug(AbstractString|string $string, string $separator = "-", string $language = "en"): AbstractString
 {
-    $slug = (new AsciiSlugger($language))
+    return (new AsciiSlugger($language))
         // Create a basic slug
         ->slug((string) $string, $separator)
         // Enforce spaces between words
-        ->replaceMatches("~([^A-Z])([A-Z])~", "\$1{$separator}\$2")
+        ->replaceMatches("~([^A-Z])([A-Z])~", "\$1$separator\$2")
         // Enforce spaces before numbers
-        ->replaceMatches("~(\\d+)~", "{$separator}\$1")
+        ->replaceMatches("~(\\d+)~", "$separator\$1")
         // Collapse multiple consecutive separators
-        ->replaceMatches("~[{$separator}]+~", "{$separator}")
+        ->replaceMatches("~[$separator]+~", "$separator")
         ->trim($separator)
         ->lower();
-
-    return $slug;
 }
 
 /**
@@ -316,7 +314,7 @@ function slug($string, string $separator = "-", string $language = "en"): Abstra
  * @param mixed $string
  * @return AbstractString
  */
-function str($string): AbstractString
+function str(mixed $string): AbstractString
 {
     return s((string) $string);
 }

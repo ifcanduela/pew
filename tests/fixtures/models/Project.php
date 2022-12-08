@@ -11,8 +11,8 @@ namespace app\models;
  */
 class Project extends \pew\Model
 {
-    public $connectionName = 'test';
-    public $tableName = 'projects';
+    public string $connectionName = 'test';
+    public string $tableName = 'projects';
     public $extraField = 'extraValue';
     private $privateField = 'privateValue';
 

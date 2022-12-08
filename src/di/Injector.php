@@ -33,10 +33,10 @@ class Injector
     /**
      * Add a value container to the end of the list.
      *
-     * @param array|ArrayAccess $container An array or array-like object
+     * @param ArrayAccess|array $container An array or array-like object
      * @return self
      */
-    public function appendContainer($container): self
+    public function appendContainer(ArrayAccess|array $container): self
     {
         $this->containers[] = $container;
 
@@ -46,10 +46,10 @@ class Injector
     /**
      * Add a value container to the beginning of the list.
      *
-     * @param array|ArrayAccess $container An array or array-like object
+     * @param ArrayAccess|array $container An array or array-like object
      * @return self
      */
-    public function prependContainer($container): self
+    public function prependContainer(ArrayAccess|array $container): self
     {
         array_unshift($this->containers, $container);
 
@@ -80,9 +80,10 @@ class Injector
             $typeName = "";
             $paramType = $param->getType();
             $paramName = $param->getName();
+            $isBuiltin = $paramType && $paramType->isBuiltin();
 
             // First try: class typehint
-            if ($paramType instanceof ReflectionNamedType) {
+            if (!$isBuiltin && $paramType instanceof ReflectionNamedType) {
                 $typeName = $paramType->getName();
                 $classExists = class_exists($typeName);
                 $interfaceExists = interface_exists($typeName);
@@ -130,10 +131,10 @@ class Injector
 
             if (!$found) {
                 if ($paramType instanceof ReflectionNamedType) {
-                    $paramName = "\${$paramName} ({$paramType->getName()})";
+                    $paramName = "\$$paramName ({$paramType->getName()})";
                 }
 
-                throw new KeyNotFoundException("Could not find a definition for `{$paramName}` in `{$method->getName()}`");
+                throw new KeyNotFoundException("Could not find a definition for `$paramName` in `{$method->getName()}`");
             }
 
             $injections[] = $injection;
@@ -149,7 +150,7 @@ class Injector
      * @return mixed The value of the key
      * @throws KeyNotFoundException When the key is not found
      */
-    protected function findKey(string $key)
+    protected function findKey(string $key): mixed
     {
         foreach ($this->containers as $c) {
             if (isset($c[$key])) {
@@ -167,7 +168,7 @@ class Injector
             }
         }
 
-        throw new KeyNotFoundException("Key not found: `{$key}`");
+        throw new KeyNotFoundException("Key not found: `$key`");
     }
 
     /**
@@ -202,7 +203,7 @@ class Injector
      * @throws KeyNotFoundException
      * @throws ReflectionException
      */
-    public function callMethod($object, string $methodName)
+    public function callMethod(object|string $object, string $methodName): mixed
     {
         if (is_string($object)) {
             $object = $this->createInstance($object);
@@ -211,7 +212,7 @@ class Injector
         if (!is_object($object)) {
             $method = __METHOD__;
 
-            throw new InvalidArgumentException("Invalid argument supplied to `{$method}`: \$object must be an object.");
+            throw new InvalidArgumentException("Invalid argument supplied to `$method`: \$object must be an object.");
         }
 
         $method = new ReflectionMethod($object, $methodName);
@@ -224,12 +225,12 @@ class Injector
      * Invokes a function.
      *
      * @param callable $callable An object on which to invoke the method
-     * @param object $boundObject Optional object to bind the closure to
+     * @param object|null $boundObject Optional object to bind the closure to
      * @return mixed Result of calling the method on the object
      * @throws KeyNotFoundException
      * @throws ReflectionException
      */
-    public function callFunction(callable $callable, $boundObject = null)
+    public function callFunction(callable $callable, object $boundObject = null): mixed
     {
         if (!$callable instanceof Closure) {
             $callable = Closure::fromCallable($callable);
@@ -253,13 +254,13 @@ class Injector
      * @throws KeyNotFoundException
      * @throws ReflectionException
      */
-    public function call(callable $callable)
+    public function call(callable $callable): mixed
     {
-        if (is_string($callable) || $callable instanceof Closure) {
-            return $this->callFunction($callable);
+        if (is_array($callable)) {
+            return $this->callMethod(...$callable);
         }
 
-        return $this->callMethod(...$callable);
+        return $this->callFunction($callable);
     }
 
     /**
@@ -276,6 +277,6 @@ class Injector
             return $this->createInstance($className, true);
         }
 
-        throw new RuntimeException("Cannot auto-resolve `{$className}`: class not found");
+        throw new RuntimeException("Cannot auto-resolve `$className`: class not found");
     }
 }

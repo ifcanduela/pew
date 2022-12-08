@@ -13,29 +13,33 @@ class ActionResolver
 {
     public const NAMESPACE_SEPARATOR = "\\";
 
-    protected Route $route;
+    private Route $route;
+
+    private string $controllerNamespace;
 
     /**
      * Create an ActionResolver.
      *
      * @param Route $route
+     * @param string $controllerNamespace
      */
-    public function __construct(Route $route)
+    public function __construct(Route $route, string $controllerNamespace = "\\app\\controllers\\")
     {
         $this->route = $route;
+        $this->controllerNamespace = $controllerNamespace;
     }
 
     /**
      * Get the controller class name.
      *
-     * @param string $controllerNamespace
      * @return string|callable
      */
-    public function getController(string $controllerNamespace = "\\app\\controllers\\")
+    public function getController(): callable|string
     {
-        $controllerNamespace = (string) str($controllerNamespace)
+        $controllerNamespace = str($this->controllerNamespace)
             ->ensureStart(static::NAMESPACE_SEPARATOR)
-            ->ensureEnd(static::NAMESPACE_SEPARATOR);
+            ->ensureEnd(static::NAMESPACE_SEPARATOR)
+            ->toString();
 
         // The handler can be a string like "controller@action" or a callback function
         $handler = $this->route->getHandler();
@@ -51,7 +55,8 @@ class ActionResolver
             ]);
             $namespace = str($ns)
                 ->ensureStart(static::NAMESPACE_SEPARATOR)
-                ->ensureEnd(static::NAMESPACE_SEPARATOR);
+                ->ensureEnd(static::NAMESPACE_SEPARATOR)
+                ->toString();
 
             // Check if the controller class exists -- it may have an optional "Controller" suffix
             foreach ([$controllerClassName, $controllerClassName . "Controller"] as $c) {
@@ -61,7 +66,7 @@ class ActionResolver
                 }
             }
 
-            throw new RuntimeException("No controller found for handler `{$handler}`");
+            throw new RuntimeException("No controller found for handler `$handler`");
         }
 
         return $handler;

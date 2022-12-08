@@ -71,19 +71,19 @@ abstract class Command
     /**
      * Print a command-line message.
      *
-     * @param string|array $text
+     * @param array|string $text
      * @param bool $newLine
      * @param string $format
      * @return void
      */
-    final public function message($text, bool $newLine = true, string $format = ""): void
+    final public function message(array|string $text, bool $newLine = true, string $format = ""): void
     {
         if (!is_array($text)) {
             $text = [$text];
         }
 
         if ($format) {
-            $text = array_map(fn ($t) => "{$format}{$t}</>", $text);
+            $text = array_map(fn ($t) => "$format$t</>", $text);
         }
 
         $this->output->write($text, $newLine);
@@ -92,11 +92,11 @@ abstract class Command
     /**
      * Print an info message with light blue text.
      *
-     * @param string|array $text
+     * @param array|string $text
      * @param bool $newLine
      * @return void
      */
-    final public function info($text, bool $newLine = true): void
+    final public function info(array|string $text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<info>");
     }
@@ -104,11 +104,11 @@ abstract class Command
     /**
      * Print a success message with green text.
      *
-     * @param string|array $text
+     * @param array|string $text
      * @param bool $newLine
      * @return void
      */
-    final public function success($text, bool $newLine = true): void
+    final public function success(array|string $text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<success>");
     }
@@ -116,11 +116,11 @@ abstract class Command
     /**
      * Print a warning message with yellow text.
      *
-     * @param string|array $text
+     * @param array|string $text
      * @param bool $newLine
      * @return void
      */
-    final public function warning($text, bool $newLine = true): void
+    final public function warning(array|string $text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<warn>");
     }
@@ -128,11 +128,11 @@ abstract class Command
     /**
      * Print an error message with red text.
      *
-     * @param string|array $text
+     * @param array|string $text
      * @param bool $newLine
      * @return void
      */
-    final public function error($text, bool $newLine = true): void
+    final public function error(array|string $text, bool $newLine = true): void
     {
         $this->message($text, $newLine, "<error>");
     }

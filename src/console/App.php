@@ -6,8 +6,10 @@ namespace pew\console;
 
 use ifcanduela\abbrev\Abbrev;
 use pew\di\Injector;
+use pew\di\KeyNotFoundException;
 use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -46,6 +48,8 @@ class App extends \pew\App
      * Run a command.
      *
      * @return void
+     * @throws KeyNotFoundException
+     * @throws ReflectionException
      */
     public function run(): void
     {
@@ -98,14 +102,14 @@ class App extends \pew\App
         // Print the default command first, if present
         if ($defaultCommandName) {
             $defaultCommand = $commandInfo["commands"][$defaultCommandName];
-            $name = "<info>{$commandName}</info>";
+            $name = "<info>$commandName</info>";
 
             if ($defaultCommand->description) {
                 $description = $defaultCommand->description;
-                $name .= " -> {$description}";
+                $name .= " -> $description";
             }
         } else {
-            $name = "<comment>{$commandName}</comment>";
+            $name = "<comment>$commandName</comment>";
         }
 
         // Base command name
@@ -115,11 +119,11 @@ class App extends \pew\App
         foreach ($commandInfo["commands"] as $subcommand => $commandDefinition) {
             // Skip the default command
             if ($subcommand !== $defaultCommandName) {
-                $name = "  <info>{$commandName}:{$subcommand}</info>";
+                $name = "  <info>$commandName:$subcommand</info>";
 
                 if ($commandDefinition->description) {
                     $description = $commandDefinition->description;
-                    $name .= " -> {$description}";
+                    $name .= " -> $description";
                 }
 
                 $this->output->writeln($name);
@@ -137,7 +141,7 @@ class App extends \pew\App
         $appPath = $this->get("app_path");
         $appNamespace = $this->get("app_namespace");
         $commandsNamespace = $this->get("commands_namespace");
-        $appCommandsNamespace = "{$appNamespace}{$commandsNamespace}\\";
+        $appCommandsNamespace = "$appNamespace$commandsNamespace\\";
 
         // Framework-defined commands
         $commandFiles = glob(dirname(__DIR__) . "/commands/*Command.php");
@@ -147,7 +151,7 @@ class App extends \pew\App
         }
 
         // App-defined commands
-        $commandFiles = glob("{$appPath}/{$commandsNamespace}/*Command.php");
+        $commandFiles = glob("$appPath/$commandsNamespace/*Command.php");
 
         foreach ($commandFiles as $commandFile) {
             $this->addCommand($commandFile, $appCommandsNamespace);
@@ -165,12 +169,12 @@ class App extends \pew\App
     {
         // Full class name with namespace
         $className = pathinfo($commandFilename, PATHINFO_FILENAME);
-        $fullClassName = "{$namespace}{$className}";
+        $fullClassName = "$namespace$className";
 
         try {
             $reflectionClass = new ReflectionClass($fullClassName);
-        } catch (\ReflectionException $e) {
-            $this->output->writeln("Error reading Command class file: {$commandFilename} ({$namespace})");
+        } catch (ReflectionException) {
+            $this->output->writeln("Error reading Command class file: $commandFilename ($namespace)");
 
             return;
         }
@@ -218,7 +222,7 @@ class App extends \pew\App
 
             // Check that the method is in the whitelist
             if (in_array($methodName, $methodNames, true)) {
-                $commandName = $isDefault ? $name : "{$name}:{$methodSlug}";
+                $commandName = $isDefault ? $name : "$name:$methodSlug";
                 $comment = $method->getDocComment();
                 $description = "";
 
@@ -283,34 +287,35 @@ class App extends \pew\App
      * Print a help message when no command was found.
      *
      * @param string $commandName
+     * @param string|null $actionSlug
      * @param array $suggestions
      * @return void
      */
     protected function commandMissing(string $commandName, ?string $actionSlug, array $suggestions = []): void
     {
         if ($actionSlug) {
-            $commandName .= ":{$actionSlug}";
+            $commandName .= ":$actionSlug";
         }
 
         if (!$suggestions) {
-            $this->output->writeln("Command <error>{$commandName}</error> not found");
+            $this->output->writeln("Command <error>$commandName</error> not found");
             $this->output->writeln("Did you mean:");
 
             $suggestions = array_keys($this->availableCommands);
         } else {
-            $this->output->writeln("Command <error>{$commandName}</error> is ambiguous");
+            $this->output->writeln("Command <error>$commandName</error> is ambiguous");
             $this->output->writeln("Did you mean:");
         }
 
         foreach ($suggestions as $suggestion) {
-            $this->output->writeln("    <info>{$suggestion}</info>");
+            $this->output->writeln("    <info>$suggestion</info>");
         }
     }
 
     /**
      * Retrieve all arguments of a command call.
      *
-     * Returns an array with `command` and `argumgents` keys
+     * Returns an array with `command` and `arguments` keys
      *
      * @return array
      */
@@ -333,7 +338,7 @@ class App extends \pew\App
      * @param string $subcommandName
      * @return CommandDefinition|array
      */
-    protected function findCommand(string $commandName, string $subcommandName)
+    protected function findCommand(string $commandName, string $subcommandName): array|CommandDefinition
     {
         // Find main command by name
         $commandNames = array_keys($this->availableCommands);
@@ -367,8 +372,9 @@ class App extends \pew\App
      * @param CommandDefinition $commandDefinition
      * @param CommandArguments $arguments
      * @return mixed
+     * @throws KeyNotFoundException|ReflectionException
      */
-    protected function handleCommand(CommandDefinition $commandDefinition, CommandArguments $arguments)
+    protected function handleCommand(CommandDefinition $commandDefinition, CommandArguments $arguments): mixed
     {
         $commandClassName = $commandDefinition->className;
 
@@ -377,7 +383,7 @@ class App extends \pew\App
 
         /** @var Command $command */
         $command = $injector->createInstance($commandClassName);
-        dd($command);
+
         if (is_callable([$command, $commandDefinition->method])) {
             $injector = $this->get("injector");
             $this->set(CommandArguments::class, $arguments);
@@ -386,7 +392,7 @@ class App extends \pew\App
         }
 
         $actionSlug = (string) slug($commandDefinition->method);
-        $this->output->writeln("Command <error>{$commandDefinition->name}:{$actionSlug}</error> not found");
+        $this->output->writeln("Command <error>$commandDefinition->name:$actionSlug</error> not found");
 
         return false;
     }

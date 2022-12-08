@@ -14,7 +14,7 @@ class RedirectResponse extends Response
      * Creates a RedirectResponse wrapper.
      *
      * @param string $uri
-     * @param ?SymfonyResponse $response
+     * @param SymfonyRedirectResponse|null $response
      * @param ?Session $session
      */
     public function __construct(string $uri, SymfonyRedirectResponse $response = null, Session $session = null)

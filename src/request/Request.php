@@ -18,13 +18,13 @@ class Request extends \Symfony\Component\HttpFoundation\Request
     /**
      * Request constructor.
      *
-     * @param ?array $query
-     * @param ?array $request
-     * @param ?array $attributes
-     * @param ?array $cookies
-     * @param ?array $files
-     * @param ?array $server
-     * @param ?string $content
+     * @param array $query
+     * @param array $request
+     * @param array $attributes
+     * @param array $cookies
+     * @param array $files
+     * @param array $server
+     * @param null $content
      */
     public function __construct(array $query = [], array $request = [], array $attributes = [], array $cookies = [], array $files = [], array $server = [], $content = null)
     {
@@ -36,8 +36,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
 
             if ($bodyIsJson) {
                 // Decode the JSON body and replace the POST parameter bag
-                $data = $this->toArray();
-                $this->request->replace(is_array($data) ? $data : []);
+                $this->request->replace($this->toArray());
             }
         }
     }
@@ -54,7 +53,7 @@ class Request extends \Symfony\Component\HttpFoundation\Request
             // Find out the script filename
             $scriptFileName = preg_quote(pathinfo($this->getScriptName(), PATHINFO_BASENAME));
             // Ensure the URL does not contain the script filename
-            $this->appUrl = preg_replace("/{$scriptFileName}$/", "", $appUrl);
+            $this->appUrl = preg_replace("/$scriptFileName$/", "", $appUrl);
         }
 
         return $this->appUrl;
@@ -101,10 +100,10 @@ class Request extends \Symfony\Component\HttpFoundation\Request
      * If `$key` is `null`, all values will be returned in an array.
      *
      * @param string|null $key
-     * @param mixed $default
-     * @return mixed|null
+     * @param mixed|null $default
+     * @return mixed
      */
-    public function post($key = null, $default = null)
+    public function post(string $key = null, mixed $default = null): mixed
     {
         if (is_null($key)) {
             return $this->request->all();

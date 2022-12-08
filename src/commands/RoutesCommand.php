@@ -44,9 +44,9 @@ class RoutesCommand extends Command
             . str_repeat("-", $longest[1]) . "  "
             . str_repeat("-", $longest[2]) . "  "
             . str_repeat("-", $longest[3]);
-        $head = str_pad($headers[0], $longest[0], " ", STR_PAD_RIGHT) . "  "
-            . str_pad($headers[1], $longest[1], " ", STR_PAD_RIGHT) . "  "
-            . str_pad($headers[2], $longest[2], " ", STR_PAD_RIGHT) . "  "
+        $head = str_pad($headers[0], $longest[0]) . "  "
+            . str_pad($headers[1], $longest[1]) . "  "
+            . str_pad($headers[2], $longest[2]) . "  "
             . $headers[3];
 
         $this->message($sep);
@@ -64,12 +64,12 @@ class RoutesCommand extends Command
      * @param array $routes
      * @param int[] $lengths
      */
-    protected function printRoutes($routes, $lengths): void
+    protected function printRoutes(array $routes, array $lengths): void
     {
         foreach ($routes as $r) {
-            $name = "<info>" . str_pad($r[0], $lengths[0], " ", STR_PAD_RIGHT) . "</>";
-            $method = "<comment>" . str_pad($r[1], $lengths[1], " ", STR_PAD_RIGHT) . "</>";
-            $handler = "<success>" . str_pad($r[2], $lengths[2], " ", STR_PAD_RIGHT) . "</>";
+            $name = "<info>" . str_pad($r[0], $lengths[0]) . "</>";
+            $method = "<comment>" . str_pad($r[1], $lengths[1]) . "</>";
+            $handler = "<success>" . str_pad($r[2], $lengths[2]) . "</>";
             $path = "<info><options=bold>" . $r[3] . "</></>";
             $this->message($name . "  " . $method . "  " . $handler . "  " . $path);
         }

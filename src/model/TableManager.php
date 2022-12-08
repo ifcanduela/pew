@@ -10,6 +10,7 @@ use LogicException;
 use ReflectionClass;
 use Doctrine\Inflector\InflectorFactory;
 
+use ReflectionException;
 use function pew\str;
 
 /**
@@ -87,10 +88,10 @@ class TableManager
      * Set the default database connection to use.
      *
      * @param string $connectionName
-     * @param null|Database|callable $databaseConnection
+     * @param callable|Database|null $databaseConnection
      * @return void
      */
-    public function setDefaultConnectionName(string $connectionName, $databaseConnection = null): void
+    public function setDefaultConnectionName(string $connectionName, callable|Database $databaseConnection = null): void
     {
         $this->defaultConnectionName = $connectionName;
 
@@ -113,10 +114,10 @@ class TableManager
      * Set a database connection.
      *
      * @param string $connectionName
-     * @param Database|callable $databaseConnection
+     * @param callable|Database $databaseConnection
      * @return void
      */
-    public function setConnection(string $connectionName, $databaseConnection): void
+    public function setConnection(string $connectionName, callable|Database $databaseConnection): void
     {
         if (is_callable($databaseConnection)) {
             $this->connectionCallbacks[$connectionName] = $databaseConnection;
@@ -147,7 +148,7 @@ class TableManager
             return $this->connections[$connectionName];
         }
 
-        throw new InvalidArgumentException("Connection `{$connectionName}` not found");
+        throw new InvalidArgumentException("Connection `$connectionName` not found");
     }
 
     /**
@@ -165,13 +166,13 @@ class TableManager
             try {
                 $reflectionClass = new ReflectionClass($recordClass);
                 $defaultProperties = $reflectionClass->getDefaultProperties();
-            } catch (\ReflectionException $e) {
-                throw new LogicException("Missing record class `${recordClass}`");
+            } catch (ReflectionException) {
+                throw new LogicException("Missing record class `$recordClass`");
             }
 
             // Cache the properties
             $this->cachedRecordClasses[$recordClass] = [
-                $defaultProperties["tableName"] ?? static::guessTableName($recordClass),
+                mb_strlen($defaultProperties["tableName"]) ? $defaultProperties["tableName"] : static::guessTableName($recordClass),
                 $defaultProperties["connectionName"] ?? $connectionName ?? $this->defaultConnectionName,
             ];
         }

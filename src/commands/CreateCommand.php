@@ -10,14 +10,15 @@ use pew\model\TableManager;
 
 use function pew\str;
 use function pew\slug;
+use function pew\root;
 
 class CreateCommand extends Command
 {
     /** @var string */
-    public $name = "create";
+    public string $name = "create";
 
     /** @var string */
-    public $description = "Generates app files.";
+    public string $description = "Generates app files.";
 
     /**
      * Create files for application components.
@@ -74,21 +75,21 @@ namespace app\\commands;
 use pew\\console\\Command;
 use pew\\console\\CommandArguments;
 
-class {$className} extends Command
+class $className extends Command
 {
-    public \$name = "{$commandName}";
+    public \$name = "$commandName";
 
-    public \$description = "{$description}";
+    public \$description = "$description";
 
     public function run(CommandArguments \$args)
     {
-        \$this->info("{$commandName}");
+        \$this->info("$commandName");
     }
 }
 
 PHP;
 
-        $filename = \root("app", "commands", "{$className}.php");
+        $filename = root("app", "commands", "$className.php");
 
         $this->createFile($fileContents, $filename);
     }
@@ -117,17 +118,17 @@ namespace app\\controllers;
 
 use pew\\Controller;
 
-class {$className} extends Controller
+class $className extends Controller
 {
     public function index()
     {
-        return \$this->render("{$slug}/index");
+        return \$this->render("$slug/index");
     }
 }
 
 PHP;
 
-        $filename = \root("app", "controllers", "{$className}.php");
+        $filename = root("app", "controllers", "$className.php");
         $this->createFile($fileContents, $filename);
     }
 
@@ -148,7 +149,7 @@ namespace app\\middleware;
 
 use pew\\request\\Middleware;
 
-class {$className} extends Middleware
+class $className extends Middleware
 {
     public function before()
     {
@@ -163,7 +164,7 @@ class {$className} extends Middleware
 
 PHP;
 
-        $filename = \root("app", "middleware", "{$className}.php");
+        $filename = root("app", "middleware", "$className.php");
         $this->createFile($fileContents, $filename);
     }
 
@@ -190,14 +191,14 @@ namespace app\\models;
 
 use pew\\Model;
 
-class {$className} extends Model
+class $className extends Model
 {
-    public \$tableName = "{$tableName}";
+    public \$tableName = "$tableName";
 }
 
 PHP;
 
-        $filename = \root("app", "models", "{$className}.php");
+        $filename = root("app", "models", "$className.php");
 
         $this->createFile($fileContents, $filename);
     }
@@ -213,9 +214,9 @@ PHP;
     {
         if (!file_exists($filename)) {
             file_put_contents($filename, $content);
-            $this->success("{$filename} created.");
+            $this->success("$filename created.");
         } else {
-            $this->error("{$filename} already exists.");
+            $this->error("$filename already exists.");
         }
     }
 }

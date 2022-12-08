@@ -64,10 +64,10 @@ class CommandArguments
     /**
      * Check if a parameter exists.
      *
-     * @param string|int $key
+     * @param int|string $key
      * @return bool
      */
-    public function has($key): bool
+    public function has(int|string $key): bool
     {
         if (array_key_exists($key, $this->named)) {
             return true;
@@ -83,11 +83,11 @@ class CommandArguments
     /**
      * Get the value of a parameter.
      *
-     * @param string|int|string[]|int[] $key
-     * @param mixed $defaultValue
+     * @param int|string|int[]|string[] $key
+     * @param mixed|null $defaultValue
      * @return mixed
      */
-    public function get($key, $defaultValue = null)
+    public function get(array|int|string $key, mixed $defaultValue = null): mixed
     {
         if (!is_array($key)) {
             $key = [$key];
@@ -110,10 +110,10 @@ class CommandArguments
      * Get a positional arguments.
      *
      * @param int $index
-     * @param mixed $defaultValue
+     * @param mixed|null $defaultValue
      * @return mixed
      */
-    public function at(int $index, $defaultValue = null)
+    public function at(int $index, mixed $defaultValue = null): mixed
     {
         if (array_key_exists($index, $this->positional)) {
             return $this->positional[$index];

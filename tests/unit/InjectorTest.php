@@ -39,7 +39,7 @@ use pew\di\Injector;
 
 class InjectorTest extends PHPUnit\Framework\TestCase
 {
-    public function testCallAnonymousFunction()
+    public function testCallAnonymousFunction(): void
     {
         $t1 = new \types\Type1();
         $t2 = new \types\Type2();
@@ -60,7 +60,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($injections, [$t2, false]);
     }
 
-    public function testCallStdFunction()
+    public function testCallStdFunction(): void
     {
         $values = [
             'str' => "baz bar foo",
@@ -84,7 +84,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("foo", $foo);
     }
 
-    public function testCreateInstance()
+    public function testCreateInstance(): void
     {
         $t1 = new \types\Type1();
         $t2 = new \types\Type2();
@@ -100,7 +100,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($type3->type1, $t1);
     }
 
-    public function testCreateInstanceWithoutConstructor()
+    public function testCreateInstanceWithoutConstructor(): void
     {
         $injector = new Injector([]);
 
@@ -109,7 +109,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(\types\Type1::class, get_class($type1));
     }
 
-    public function testCallMethodOnObject()
+    public function testCallMethodOnObject(): void
     {
         $t2 = new \types\Type2;
 
@@ -122,9 +122,9 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($t2, $t);
     }
 
-    public function testCallMethodWithoutObject($value='')
+    public function testCallMethodWithoutObject($value=''): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(\TypeError::class);
 
         $t2 = new \types\Type2;
 
@@ -136,7 +136,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $t = $injector->callMethod($invalid, 'method');
     }
 
-    public function testAddContainers()
+    public function testAddContainers(): void
     {
         $t1 = new \types\Type1();
         $t2 = new \types\Type2();
@@ -159,7 +159,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($type3->type1, $t1);
     }
 
-    public function testUseDefaultParamValue()
+    public function testUseDefaultParamValue(): void
     {
         $injector = new Injector([]);
 
@@ -172,7 +172,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($injections, 2);
     }
 
-    public function testGetInjections()
+    public function testGetInjections(): void
     {
         $callback = function () {};
         $arrays = [1, 2, 3, 4];
@@ -187,7 +187,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals([$callback, $arrays], $injections);
     }
 
-    public function testGetInjectionMissing()
+    public function testGetInjectionMissing(): void
     {
         $this->expectException(\pew\di\KeyNotFoundException::class);
 
@@ -201,7 +201,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $injections = $injector->getInjections($functionReflector);
     }
 
-    public function testCallGenericFunction()
+    public function testCallGenericFunction(): void
     {
         $injector = new Injector([
             "alpha" => "ALPHA",
@@ -215,7 +215,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("ALPHA BETA", $result);
     }
 
-    public function testCallGenericMethod()
+    public function testCallGenericMethod(): void
     {
         $injector = new Injector([]);
 
@@ -232,7 +232,7 @@ class InjectorTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($type1, $result);
     }
 
-    public function testAutoResolve()
+    public function testAutoResolve(): void
     {
         $injector = new Injector();
         $type1 = $injector->autoResolve(\types\Type1::class);

@@ -4,5 +4,5 @@ namespace app\models;
 
 class Tag extends \pew\Model
 {
-    public $connectionName = 'test';
+    public string $connectionName = 'test';
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace pew\model;
 
+use InvalidArgumentException;
+
 /**
  * Simple key/value container.
  */
@@ -52,13 +54,13 @@ class Record
      * @param string $fieldName
      * @return mixed
      */
-    public function get(string $fieldName)
+    public function get(string $fieldName): mixed
     {
         if ($this->has($fieldName)) {
             return $this->fields[$fieldName];
         }
 
-        throw new \InvalidArgumentException("Field `{$fieldName}` not found in record");
+        throw new InvalidArgumentException("Field `$fieldName` not found in record");
     }
 
     /**
@@ -68,7 +70,7 @@ class Record
      * @param mixed $value
      * @return void
      */
-    public function set(string $fieldName, $value): void
+    public function set(string $fieldName, mixed $value): void
     {
         if ($this->has($fieldName)) {
             $this->fields[$fieldName] = $value;
@@ -76,7 +78,7 @@ class Record
             return;
         }
 
-        throw new \InvalidArgumentException("Field `{$fieldName}` not found in record");
+        throw new InvalidArgumentException("Field `$fieldName` not found in record");
     }
 
     /**
@@ -115,7 +117,7 @@ class Record
             return;
         }
 
-        throw new \InvalidArgumentException("Field `{$fieldName}` not found in record");
+        throw new InvalidArgumentException("Field `$fieldName` not found in record");
     }
 
     /**
@@ -125,7 +127,7 @@ class Record
      * @param mixed $value
      * @return void
      */
-    public function __set(string $prop, $value): void
+    public function __set(string $prop, mixed $value): void
     {
         $this->set($prop, $value);
     }
@@ -138,7 +140,7 @@ class Record
      */
     public function __get(string $prop)
     {
-        $this->get($prop);
+        return $this->get($prop);
     }
 
     /**

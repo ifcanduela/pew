@@ -16,10 +16,10 @@ class HasAndBelongsToMany extends Relationship
     protected string $through = "";
 
     /** @var array|string Join condition */
-    protected $on;
+    protected string|array $on;
 
     /**
-     * Specify a association table for the relationship.
+     * Specify an association table for the relationship.
      *
      * @param string $table Name of the association table
      * @param array $on Condition to join the far table to the association table.

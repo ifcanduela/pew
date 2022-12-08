@@ -96,7 +96,7 @@ class Table
      *
      * @param string $tableName Name of the table
      * @param Database $db Database instance to use
-     * @param string|null $recordClass
+     * @param string $recordClass
      */
     public function __construct(string $tableName, Database $db, string $recordClass = "")
     {
@@ -116,7 +116,7 @@ class Table
     public function init(): void
     {
         if (!$this->db->tableExists($this->tableName)) {
-            throw new TableNotFoundException("Table `{$this->tableName}` not found");
+            throw new TableNotFoundException("Table `$this->tableName` not found");
         }
 
         // Some metadata about the table
@@ -147,12 +147,12 @@ class Table
     /**
      * Get or set the table name for the current model.
      *
-     * @param string|null $tableName
+     * @param string $tableName
      * @return string
      */
-    public function tableName(string $tableName = null)
+    public function tableName(string $tableName = ""): string
     {
-        if ($tableName) {
+        if (mb_strlen($tableName)) {
             $this->tableName = $tableName;
         }
 
@@ -164,7 +164,7 @@ class Table
      *
      * @return string
      */
-    public function primaryKey()
+    public function primaryKey(): string
     {
         return $this->tableData["primary_key"];
     }
@@ -178,7 +178,7 @@ class Table
      * @param boolean $asKeys Return the column names as keys in an associative array.
      * @return array
      */
-    public function columnNames($asKeys = true)
+    public function columnNames(bool $asKeys = true): array
     {
         return $asKeys
             ? $this->tableData["column_names"]
@@ -190,7 +190,7 @@ class Table
      *
      * @return self
      */
-    public function createSelect()
+    public function createSelect(): static
     {
         $this->query = Query::select();
         $this->query->from($this->tableName);
@@ -203,7 +203,7 @@ class Table
      *
      * @return self
      */
-    public function createUpdate()
+    public function createUpdate(): static
     {
         $this->query = Query::update();
         $this->query->table($this->tableName);
@@ -216,7 +216,7 @@ class Table
      *
      * @return self
      */
-    public function createInsert()
+    public function createInsert(): static
     {
         $this->query = Query::insert();
         $this->query->into($this->tableName);
@@ -229,7 +229,7 @@ class Table
      *
      * @return self
      */
-    public function createDelete()
+    public function createDelete(): static
     {
         $this->query = Query::delete();
         $this->query->table($this->tableName);
@@ -253,7 +253,7 @@ class Table
      * @return array|int An array of rows or an integer with the amount of affected rows
      * @throws PDOException When the query fails
      */
-    public function query($query, array $data = [])
+    public function query(string $query, array $data = []): int|array
     {
         // Trim whitespace around the SQL
         $query = trim($query);
@@ -294,9 +294,9 @@ class Table
      *
      * If a class for the retrieved record cannot be found, an array will be returned.
      *
-     * @return Record|array|null
+     * @return ActiveRecord|Record|array|null
      */
-    public function one()
+    public function one(): ActiveRecord|Record|array|null
     {
         $this->limit(1);
         $result = $this->all();
@@ -309,7 +309,7 @@ class Table
      *
      * If a class for the retrieved records cannot be found, arrays will be returned.
      *
-     * @return Collection
+     * @return Collection<Record|ActiveRecord>
      */
     public function all(): Collection
     {
@@ -353,7 +353,7 @@ class Table
      * If the $primary_key field is set, it performs an UPDATE. If not, it
      * INSERTs the data.
      *
-     * @param Record $model
+     * @param ActiveRecord $model
      * @return array The record attributes on success, false otherwise
      */
     public function save(ActiveRecord $model): array
@@ -397,9 +397,9 @@ class Table
      *
      * @param array $record An array or array-like object with column names and values
      * @param ?string $timestampField The name of the column that stores the creation timestamp
-     * @return mixed The primary key value of the inserted item.
+     * @return false|string The primary key value of the inserted item.
      */
-    protected function insertRecord(array $record, string $timestampField = null)
+    protected function insertRecord(array $record, string $timestampField = null): bool|string
     {
         // Set creation timestamp
         if ($timestampField && $this->hasColumn($timestampField)) {
@@ -419,7 +419,7 @@ class Table
      * @param ?string $timestampField The name of the column that stores the update timestamp
      * @return mixed The primary key value of the updated item.
      */
-    protected function updateRecord(array $record, string $timestampField = null)
+    protected function updateRecord(array $record, string $timestampField = null): mixed
     {
         $primaryKeyName = $this->primaryKey();
 
@@ -443,13 +443,13 @@ class Table
      * not, the $where field is used to delete conditionally. If $id is boolean
      * true, it clears the full table.
      *
-     * @param mixed $id The value of the PK field of the row to delete, null to
+     * @param mixed|null $id The value of the PK field of the row to delete, null to
      *                  use the model's $where conditions, or boolean true to
      *                  delete every record in the table
      *
-     * @return PdoStatement|array|int True on success, false other wise
+     * @return PdoStatement|array|int True on success, false otherwise
      */
-    public function deleteRecord($id = null)
+    public function deleteRecord(mixed $id = null): int|array|PdoStatement
     {
         $query = Query::delete($this->tableName);
 
@@ -471,9 +471,9 @@ class Table
     /**
      * Returns the primary key value created in the last INSERT statement.
      *
-     * @return mixed The primary key value of the last inserted row
+     * @return false|string The primary key value of the last inserted row
      */
-    public function lastInsertId()
+    public function lastInsertId(): false|string
     {
         return $this->db->lastInsertId();
     }
@@ -527,7 +527,7 @@ class Table
      *
      * @return array|int|PdoStatement
      */
-    public function run()
+    public function run(): int|array|PdoStatement
     {
         return $this->db->run($this->query);
     }
@@ -619,8 +619,8 @@ class Table
      */
     public function __call(string $method, array $arguments)
     {
-        if (!$this->query) {
-            throw new RuntimeException("Method `{$method}` called before initializing a query");
+        if (!isset($this->query)) {
+            throw new RuntimeException("Method `$method` called before initializing a query");
         }
 
         if (is_callable([$this->query, $method])) {
@@ -629,6 +629,6 @@ class Table
             return $this;
         }
 
-        throw new BadMethodCallException("Invalid method `{$method}`");
+        throw new BadMethodCallException("Invalid method `$method`");
     }
 }

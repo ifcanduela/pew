@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace pew\lib;
 
 use ArrayAccess;
+use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\Session\Session as SymfonySession;
 
 /**
@@ -19,7 +20,7 @@ class Session extends SymfonySession implements ArrayAccess
      * @param mixed  $value
      * @return void
      */
-    public function addFlash(string $key, $value): void
+    public function addFlash(string $key, mixed $value): void
     {
         $this->getFlashBag()->add($key, $value);
     }
@@ -34,11 +35,11 @@ class Session extends SymfonySession implements ArrayAccess
      * 3. The third arguments is a default value to return in case the key provided in
      *    case 2 is not available.
      *
-     * @param string $key
-     * @param mixed $default
+     * @param string|null $key
+     * @param mixed|null $default
      * @return mixed
      */
-    public function getFlash(string $key = null, $default = null)
+    public function getFlash(string $key = null, mixed $default = null): mixed
     {
         if (null === $key) {
             return $this->getFlashBag()->all();
@@ -52,14 +53,14 @@ class Session extends SymfonySession implements ArrayAccess
     /**
      * Get a session variable.
      *
-     * @param string $key
+     * @param string $offset
      * @return mixed
      */
-    #[\ReturnTypeWillChange]
-    public function offsetGet($key)
+    #[ReturnTypeWillChange]
+    public function offsetGet($offset): mixed
     {
         $sessionData = $this->all();
-        $indexes = explode(".", $key);
+        $indexes = explode(".", $offset);
         $firstIndex = array_shift($indexes);
 
         if (!$this->has($firstIndex)) {
@@ -84,37 +85,37 @@ class Session extends SymfonySession implements ArrayAccess
     /**
      * Set a session variable.
      *
-     * @param string $key
+     * @param string $offset
      * @param mixed $value
      * @return void
      */
-    #[\ReturnTypeWillChange]
-    public function offsetSet($key, $value): void
+    #[ReturnTypeWillChange]
+    public function offsetSet($offset, mixed $value): void
     {
-        $this->set($key, $value);
+        $this->set($offset, $value);
     }
 
     /**
      * Check a session variable.
      *
-     * @param string $key
+     * @param string $offset
      * @return bool
      */
-    #[\ReturnTypeWillChange]
-    public function offsetExists($key)
+    #[ReturnTypeWillChange]
+    public function offsetExists($offset): bool
     {
-        return $this->has($key);
+        return $this->has($offset);
     }
 
     /**
      * Unset a session variable.
      *
-     * @param string $key
+     * @param string $offset
      * @return void
      */
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($key): void
+    #[ReturnTypeWillChange]
+    public function offsetUnset($offset): void
     {
-        $this->remove($key);
+        $this->remove($offset);
     }
 }

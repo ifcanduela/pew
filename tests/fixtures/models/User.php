@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use pew\model\Table;
+
 /**
  * Class User
  *
@@ -12,8 +14,8 @@ namespace app\models;
  */
 class User extends \pew\Model
 {
-    public $connectionName = 'test';
-    public $tableName = 'users';
+    public string $connectionName = 'test';
+    public string $tableName = 'users';
 
     public function getProject()
     {
@@ -25,7 +27,7 @@ class User extends \pew\Model
         return $this->hasOne(Profile::class);
     }
 
-    public static function find()
+    public static function find(): Table
     {
         return parent::find()->where(["created_at" => ["IS NOT", null]]);
     }

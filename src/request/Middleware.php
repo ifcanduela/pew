@@ -17,7 +17,7 @@ abstract class Middleware
      * @param string $uri
      * @return RedirectResponse
      */
-    final public function redirect(string $uri)
+    final public function redirect(string $uri): RedirectResponse
     {
         return new RedirectResponse($uri);
     }

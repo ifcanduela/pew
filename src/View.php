@@ -66,7 +66,7 @@ class View
      * @param mixed $value
      * @return self
      */
-    public function set(string $key, $value): self
+    public function set(string $key, mixed $value): self
     {
         $this->variables[$key] = $value;
 
@@ -77,10 +77,10 @@ class View
      * Get the value of a template variable.
      *
      * @param string $key
-     * @param mixed $default
+     * @param mixed|null $default
      * @return mixed
      */
-    public function get(string $key, $default = null)
+    public function get(string $key, mixed $default = null): mixed
     {
         return $this->variables[$key] ?? $default;
     }
@@ -124,13 +124,13 @@ class View
      *
      * Template names are resolved using the configured template directories and template file extension.
      *
-     * @param null|string|array $template Template name, relative to one of the template directories.
+     * @param array|string|null $template Template name, relative to one of the template directories.
      * @param array $data Template data
      * @return string
      * @throws Exception
      * @throws RuntimeException
      */
-    public function render($template = "", array $data = []): string
+    public function render(array|string|null $template = "", array $data = []): string
     {
         if (count(func_get_args()) === 1) {
             if (is_array($template)) {
@@ -151,7 +151,7 @@ class View
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new RuntimeException("Template `{$template}` not found");
+            throw new RuntimeException("Template `$template` not found");
         }
 
         // Save the current layout, in case the template sets its own
@@ -165,7 +165,7 @@ class View
             $layoutFile = $this->resolve($this->layout);
 
             if ($layoutFile === false) {
-                throw new RuntimeException("Layout `{$this->layout}` not found");
+                throw new RuntimeException("Layout `$this->layout` not found");
             }
 
             $this->layout = "";
@@ -217,7 +217,7 @@ class View
      * @param string $templateFile Template file name and extension
      * @return string|bool The location of the template, or false
      */
-    protected function resolve(string $templateFile)
+    protected function resolve(string $templateFile): bool|string
     {
         $templateFileName = str($templateFile)->ensureEnd($this->extension());
 
@@ -238,7 +238,7 @@ class View
      * @param string $folder Folder where templates should be located
      * @return self|string Folder where templates should be located
      */
-    public function folder(string $folder = "")
+    public function folder(string $folder = ""): string|static
     {
         if ($folder) {
             $this->folderStack->push(rtrim($folder, "\\/"));
@@ -255,7 +255,7 @@ class View
      * @param string $template Name of the template
      * @return self|string Name of the template
      */
-    public function template(string $template = "")
+    public function template(string $template = ""): string|static
     {
         if ($template) {
             $this->template = $template;
@@ -272,7 +272,7 @@ class View
      * @param string $extension View file extension
      * @return self|string View file extension
      */
-    public function extension(string $extension = "")
+    public function extension(string $extension = ""): string|static
     {
         if ($extension) {
             $this->extension = (string) str($extension)->ensureStart(".");
@@ -288,10 +288,10 @@ class View
      *
      * Use `$view->layout(false)` or `$view->layout("")` to disable layout rendering.
      *
-     * @param string|bool|null $layout Name of the layout, or `false` to disable.
+     * @param bool|string|null $layout Name of the layout, or `false` to disable.
      * @return self|string Name of the layout
      */
-    public function layout($layout = null)
+    public function layout(bool|string $layout = null): string|static
     {
         if ($layout !== null) {
             $this->layout = (string) $layout;
@@ -320,7 +320,7 @@ class View
      * @param string|null $title The title of the view
      * @return self|string The title of the view
      */
-    public function title($title = null)
+    public function title(string $title = null): string|static
     {
         if ($title !== null) {
             $this->title = $title;
@@ -357,7 +357,7 @@ class View
         $templateFile = $this->resolve($template);
 
         if ($templateFile === false) {
-            throw new RuntimeException("Partial template `{$template}` not found");
+            throw new RuntimeException("Partial template `$template` not found");
         }
 
         $preservedLayout = $this->layout;
@@ -375,8 +375,8 @@ class View
      * This method encapsulates the replacement of template variables, avoiding the
      * creation of extra variables in its scope.
      *
-     * @param string $filename Template file name
-     * @param array $data Template data
+     * @internal string $filename Template file name
+     * @internal array $data Template data
      * @return string
      * @throws Exception
      */
@@ -468,7 +468,7 @@ class View
      * @param mixed $value
      * @return string
      */
-    public function escape($value): string
+    public function escape(mixed $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES);
     }

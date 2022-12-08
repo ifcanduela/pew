@@ -35,11 +35,9 @@ class ArgumentParser
                     if (mb_strpos($param, "=")) {
                         // It's a short param with a value
                         [$this->currentName, $value] = explode("=", $this->currentName, 2);
-                        $names = mb_str_split($this->currentName, 1);
-                    } else {
-                        // It's a short param
-                        $names = mb_str_split($this->currentName, 1);
                     }
+
+                    $names = mb_str_split($this->currentName);
 
                     foreach ($names as $n) {
                         $this->addNamed($n, $value);
@@ -76,7 +74,7 @@ class ArgumentParser
      * @param mixed $value
      * @return void
      */
-    protected function addPositional($value): void
+    protected function addPositional(mixed $value): void
     {
         $this->positionalArguments[] = $value;
     }
@@ -91,7 +89,7 @@ class ArgumentParser
      * @param mixed $value
      * @return void
      */
-    protected function addNamed(string $name, $value): void
+    protected function addNamed(string $name, mixed $value): void
     {
         if ($value === true && mb_substr($name, 0, 3) === "no-") {
             $name = mb_substr($name, 3);

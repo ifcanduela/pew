@@ -4,7 +4,7 @@ namespace app\models;
 
 class ParentModel extends \pew\Model
 {
-    public $connectionName = 'test';
+    public string $connectionName = 'test';
 
     public function getChild()
     {

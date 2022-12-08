@@ -1,5 +1,7 @@
 <?php
 
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use pew\model\Table;
 use pew\model\TableManager;
 use ifcanduela\db\Database;
@@ -12,13 +14,13 @@ use app\models\ComplexTableName;
 
 class ActiveRecordTest extends PHPUnit\Framework\TestCase
 {
-    public $db;
+    public Database $db;
 
-    protected function getLogger()
+    protected function getLogger(): Logger
     {
-        $logger = new \Monolog\Logger('SQL Logger');
+        $logger = new Logger('SQL Logger');
         $logfile = __DIR__ . '/../app/logs/app.log';
-        $logger->pushHandler(new \Monolog\Handler\StreamHandler($logfile, \Monolog\Logger::INFO));
+        $logger->pushHandler(new StreamHandler($logfile, Logger::INFO));
 
         return $logger;
     }
@@ -74,26 +76,26 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         TableManager::instance()->setConnection("test", $db);
     }
 
-    public function testNewRecord()
+    public function testNewRecord(): void
     {
-        $model = new Project;
+        $model = new Project();
 
         $this->assertInstanceOf(Project::class, $model);
-        # non-initialised table columns
+        // non-initialised table columns
         $this->assertEquals([
-                'id' => null,
-                'name' => null,
-                'extraField' => 'extraValue',
-            ], $model->attributes());
+            'id' => null,
+            'name' => null,
+            'extraField' => 'extraValue',
+        ], $model->attributes());
 
         $this->assertNull($model->id);
         $this->assertNull($model->name);
 
-        # assign a value to a database field
+        // assign a value to a database field
         $model->name = 'Project Zeta';
-        # save the record
+        // save the record
         $this->assertTrue($model->save());
-        # the primary key is now populated
+        // the primary key is now populated
         $this->assertNotNull($model->id);
 
         $loaded = Project::find()->where(["name" => "Project Zeta"])->one();
@@ -105,23 +107,23 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
             $fields[] = $field;
         }
 
-        # check the iterated fields
+        // check the iterated fields
         $this->assertEquals(['extraField', 'id', 'name'], $fields);
-        # check the fields serialized into JSON
+        // check the fields serialized into JSON
         $serialized = json_decode(json_encode($model), true);
         $this->assertEquals("Project Zeta", $serialized["name"]);
         $this->assertEquals("extraValue", $serialized["extraField"]);
-        # check the fields excluded from JSON serialization
+        // check the fields excluded from JSON serialization
         $model->doNotSerialize = ['name', 'id'];
         $this->assertEquals(["extraField" => "extraValue"], json_decode(json_encode($model), true));
 
-        # delete the record we created
+        // delete the record we created
         $model->delete();
         $loaded = Project::find()->where(["name" => "Project Zeta"])->one();
         $this->assertNull($loaded);
     }
 
-    public function testCreateRecordWithAttributes()
+    public function testCreateRecordWithAttributes(): void
     {
         $p = new Project([
             "name" => "Project Eta",
@@ -132,25 +134,25 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals("someValue", $p->extraField);
     }
 
-    public function testGuessRecordTableName()
+    public function testGuessRecordTableName(): void
     {
-        $t = new Tag;
+        $t = new Tag();
         $this->assertEquals("tags", $t->tableName);
 
-        $ctn = new ComplexTableName;
+        $ctn = new ComplexTableName();
         $this->assertEquals("complex_table_names", $ctn->tableName);
     }
 
-    public function testRecordFromQuery()
+    public function testRecordFromQuery(): void
     {
-        # retrieve a list of records based on an SQL query
+        // retrieve a list of records based on an SQL query
         $projects = Project::fromQuery('SELECT * FROM projects WHERE id > 1');
 
         $this->assertInstanceOf(\pew\model\Collection::class, $projects);
         $this->assertInstanceOf(Project::class, $projects[0]);
     }
 
-    public function testOverloadFindStaticMethod()
+    public function testOverloadFindStaticMethod(): void
     {
         $finder = User::find();
 
@@ -158,20 +160,20 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(2, count($finder->all()));
     }
 
-    public function testRecordFromArray()
+    public function testRecordFromArray(): void
     {
-        # create a new record using an array
+        // create a new record using an array
         $model = Project::fromArray([
                 'id' => 99,
                 'name' => 'test project',
             ]);
 
-        # record fields are populated
+        // record fields are populated
         $this->assertEquals(99, $model->id);
         $this->assertEquals('test project', $model->name);
     }
 
-    public function testRecordToArray()
+    public function testRecordToArray(): void
     {
         $model = Project::fromArray([
                 "id" => 99,
@@ -189,7 +191,7 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($expected, $model->toArray());
     }
 
-    public function testJsonSerialization()
+    public function testJsonSerialization(): void
     {
         $model = Project::fromArray([
                 "id" => 99,
@@ -218,7 +220,7 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertStringContainsString('"users": []', $result);
     }
 
-    public function testSetterAndGetterMethods()
+    public function testSetterAndGetterMethods(): void
     {
         $p = new Project();
         $p->privateField = "setter test";
@@ -250,7 +252,7 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertFalse(isset($p->name));
     }
 
-    public function testStaticMethods()
+    public function testStaticMethods(): void
     {
         $project1 = Project::findOne(1);
         $projectAlpha = Project::findOneByName("Project Alpha");
@@ -266,28 +268,28 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         }
     }
 
-    public function testExplicitRelationship()
+    public function testExplicitRelationship(): void
     {
         $model = Project::findOne(1);
 
         $this->assertEquals(2, count($model->explicitUsers));
     }
 
-    public function testHasManyRelation()
+    public function testHasManyRelation(): void
     {
         $model = Project::findOne(1);
 
         $this->assertEquals(2, count($model->users));
     }
 
-    public function testBelongsToRelation()
+    public function testBelongsToRelation(): void
     {
         $model = User::findOne(1)->project;
 
         $this->assertInstanceOf(Project::class, $model);
     }
 
-    public function testHasOneRelation()
+    public function testHasOneRelation(): void
     {
         $u1 = User::findOne(1);
         $u2 = User::findOne(2);
@@ -296,7 +298,7 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertNull($u2->profile);
     }
 
-    public function testHasAndBelongsToManyRelation()
+    public function testHasAndBelongsToManyRelation(): void
     {
         $p1 = Project::findOne(1);
         $p2 = Project::findOne(2);
@@ -311,7 +313,7 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(1, $p2tags->count());
     }
 
-    public function testLoadRelationships()
+    public function testLoadRelationships(): void
     {
         $projects = Project::find()->with("users", "tags")->all();
         $this->assertEquals(4, $projects->count());
@@ -328,15 +330,15 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(0, $p2->users->count());
     }
 
-    public function testDeleteRecord()
+    public function testDeleteRecord(): void
     {
         $model = new Project();
-        # assign a value to a database field
+        // assign a value to a database field
         $model->name = 'Project Zeta';
-        # save the record
+        // save the record
         $model->save();
 
-        # delete record #4, inserted in testNewRecord()
+        // delete record #4, inserted in testNewRecord()
         $loaded = Project::findOne($model->id);
         $this->assertInstanceOf(Project::class, $loaded);
         $loaded->delete();
@@ -345,7 +347,7 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertNull($loaded);
     }
 
-    public function testRecordIsNew()
+    public function testRecordIsNew(): void
     {
         $new = new Project();
         $this->assertTrue($new->isNew);
@@ -357,10 +359,10 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertFalse($new->isNew);
     }
 
-    public function testUpdateQueries()
+    public function testUpdateQueries(): void
     {
         User::update()
-            ->set(["created_at" => 15000000,])
+            ->set(["created_at" => 15000000])
             ->where(["id" => ["IN", [1, 2]]])
             ->run();
 
@@ -375,18 +377,18 @@ class ActiveRecordTest extends PHPUnit\Framework\TestCase
         $this->assertEquals(16000000, $user->created_at);
     }
 
-    public function testDeleteAll()
+    public function testDeleteAll(): void
     {
-        # delete one record in the table
+        // delete one record in the table
         Project::deleteAll(['id' => ['>', 2]]);
         $this->assertEquals(2, Project::find()->count());
 
-        # delete all records in the table
+        // delete all records in the table
         Project::deleteAll();
         $this->assertEquals(0, Project::find()->count());
     }
 
-    public function testChildModelWithSameGetter()
+    public function testChildModelWithSameGetter(): void
     {
         $p = new ParentModel();
 

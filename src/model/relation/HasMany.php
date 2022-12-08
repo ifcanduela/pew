@@ -29,7 +29,7 @@ class HasMany extends Relationship
      * @param array $relatedKeys
      * @return Collection
      */
-    public function find(array $relatedKeys)
+    public function find(array $relatedKeys): Collection
     {
         $related = $this->finder->andWhere([$this->foreignKeyName => ["IN", $relatedKeys]])->all();
 

@@ -182,6 +182,7 @@ class Url
      *
      * This value will always include :// at the end.
      *
+     * @param bool $withSeparator
      * @return string
      */
     public function getScheme(bool $withSeparator = true): string
@@ -282,12 +283,12 @@ class Url
      * Get the port number.
      *
      * By default, port 80 is ignored and any other value will have a colon (:) prepended.
-     * If $asNumber is true, the actual port number will be returned as an number.
+     * If $asNumber is true, the actual port number will be returned as a number.
      *
      * @param bool $asNumber Avoid prefixing the port number with a `:`
      * @return string|int
      */
-    public function getPort(bool $asNumber = false)
+    public function getPort(bool $asNumber = false): int|string
     {
         if ($asNumber) {
             return $this->port;
@@ -371,7 +372,7 @@ class Url
      * @param mixed $value
      * @return Url
      */
-    public function setQueryParam(string $param, $value): Url
+    public function setQueryParam(string $param, mixed $value): Url
     {
         $this->query[$param] = $value;
 
@@ -419,10 +420,10 @@ class Url
      * Get a query param.
      *
      * @param string $param
-     * @param mixed $default
+     * @param mixed|null $default
      * @return mixed
      */
-    public function getQueryParam(string $param, $default = null)
+    public function getQueryParam(string $param, mixed $default = null): mixed
     {
         return $this->query[$param] ?? $default;
     }
@@ -476,7 +477,7 @@ class Url
     }
 
     /**
-     * Convert the Url object to a Url string.
+     * Convert the Url object to a URL string.
      *
      * @return string
      */
@@ -492,7 +493,7 @@ class Url
     }
 
     /**
-     * Convert the Url object to a Url string.
+     * Convert the Url object to a URL string.
      *
      * @return string
      */

@@ -21,7 +21,7 @@ abstract class Relationship
     public string $foreignKeyName;
 
     /** @var mixed Value of the column to match */
-    public $keyValue;
+    public mixed $keyValue;
 
     /**
      * Relationship constructor.
@@ -31,7 +31,7 @@ abstract class Relationship
      * @param string $foreignKeyName
      * @param mixed $keyValue
      */
-    public function __construct(Table $finder, string $localKeyName, string $foreignKeyName, $keyValue)
+    public function __construct(Table $finder, string $localKeyName, string $foreignKeyName, mixed $keyValue)
     {
         $this->finder = $finder;
         $this->localKeyName = $localKeyName;
@@ -58,7 +58,7 @@ abstract class Relationship
      *
      * @return mixed
      */
-    abstract public function fetch();
+    abstract public function fetch(): mixed;
 
     /**
      * Find all related records for a group of records.
@@ -66,7 +66,7 @@ abstract class Relationship
      * @param array $relatedKeys
      * @return mixed
      */
-    abstract public function find(array $relatedKeys);
+    abstract public function find(array $relatedKeys): mixed;
 
     /**
      * Get the field the records are grouped around.

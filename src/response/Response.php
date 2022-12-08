@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace pew\response;
 
+use BadMethodCallException;
 use pew\lib\Session as Session;
 use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * This class represents a response.
+ *
+ * @method static send()
+ * @method static setContent(?string $content)
  */
 class Response
 {
@@ -45,11 +49,11 @@ class Response
     /**
      * Set a cookie on the response.
      *
-     * @param SymfonyCookie|string $cookie
+     * @param string|SymfonyCookie $cookie
      * @param string|null $value
      * @return self
      */
-    public function cookie($cookie, string $value = null): Response
+    public function cookie(SymfonyCookie|string $cookie, string $value = null): Response
     {
         if ($cookie instanceof SymfonyCookie) {
             $this->response->headers->setCookie($cookie);
@@ -127,6 +131,6 @@ class Response
             return $this->response->{$method}(...$arguments);
         }
 
-        throw new \BadMethodCallException("Method `${method}` not found");
+        throw new BadMethodCallException("Method `$method` not found");
     }
 }

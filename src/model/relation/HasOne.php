@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace pew\model\relation;
 
+use pew\model\ActiveRecord;
 use pew\model\Collection;
 use pew\model\Record;
 
@@ -15,9 +16,9 @@ class HasOne extends Relationship
     /**
      * Get a list of related records.
      *
-     * @return Record|array|null
+     * @return ActiveRecord|Record|array|null
      */
-    public function fetch()
+    public function fetch(): Record|ActiveRecord|array|null
     {
         return $this->finder->andWhere([$this->foreignKeyName => $this->keyValue])->one();
     }

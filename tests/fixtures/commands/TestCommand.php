@@ -4,9 +4,9 @@ namespace app\commands;
 
 class TestCommand extends \pew\console\Command
 {
-    public $name = "test";
+    public string $name = "test";
 
-    public $description = "Test command";
+    public string $description = "Test command";
 
     public function run()
     {

@@ -48,7 +48,7 @@ class Controller
      * @param mixed $data
      * @return JsonResponse
      */
-    public function json($data): JsonResponse
+    public function json(mixed $data): JsonResponse
     {
         return new JsonResponse($data);
     }
@@ -60,8 +60,8 @@ class Controller
      * to `$view->template(string $template)` has been made beforehand.
      *
      * @param string $template
-     * @param ?array $data
-     * @return HtmlResponse
+     * @param array $data
+     * @return Response
      * @throws Exception
      */
     public function render(string $template, array $data = []): Response

@@ -16,8 +16,8 @@ class JsonResponse extends Response
      * If no folder is provided, the current working directory is used.
      *
      * @param mixed $data
-     * @param SymfonyResponse $response
-     * @param Session $session
+     * @param SymfonyJsonResponse|null $response
+     * @param Session|null $session
      */
     public function __construct($data = null, SymfonyJsonResponse $response = null, Session $session = null)
     {

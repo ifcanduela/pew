@@ -6,6 +6,7 @@ use ifcanduela\db\Database;
 use ifcanduela\router\Router;
 
 use Monolog\Handler\StreamHandler;
+use Monolog\Level;
 use Monolog\Logger;
 
 use pew\di\Container;
@@ -44,7 +45,7 @@ $container["default_layout"] = "";
 $container["env"] = "dev";
 $container["ignore_url_separator"] = ["\\", ".", "|"];
 $container["ignore_url_suffixes"] = ["json", "html", "php"];
-$container["log_level"] = Logger::WARNING;
+$container["log_level"] = Level::Warning;
 $container["views_folder"] = "views";
 
 $container["views_path"] = fn (Container $c) => $c["app_path"] . DIRECTORY_SEPARATOR . $c["views_folder"];
@@ -90,7 +91,7 @@ $container[Database::class] = function (Container $c): Database {
     $useDb = $c["use_db"] ?? "default";
 
     if (!array_key_exists($useDb, $dbConfig)) {
-        throw new RuntimeException("Database configuration preset `{$useDb}` does not exist");
+        throw new RuntimeException("Database configuration preset `$useDb` does not exist");
     }
 
     $tableManager = $c["tableManager"];
@@ -105,7 +106,7 @@ $container["db_config"] = fn (Container $c): array => require $c["app_path"] . "
 $container["db_log"] = function (Container $c): LoggerInterface {
     $logger = new Logger("DB log");
     $logfile = $c["app_path"] . "/logs/db.log";
-    $logger->pushHandler(new StreamHandler($logfile, Logger::DEBUG));
+    $logger->pushHandler(new StreamHandler($logfile, Level::Debug));
 
     return $logger;
 };
@@ -135,7 +136,7 @@ $container["path"] = function (Container $c): string {
     $ignoreUrlSuffixes = join("|", $c["ignore_url_suffixes"]);
     $ignoreUrlSeparator = join("", $c["ignore_url_separator"]);
 
-    $pathInfo = preg_replace("/[{$ignoreUrlSeparator}]({$ignoreUrlSuffixes})$/", "", $pathInfo);
+    $pathInfo = preg_replace("/[$ignoreUrlSeparator]($ignoreUrlSuffixes)$/", "", $pathInfo);
 
     return "/" . trim($pathInfo, "/");
 };
@@ -151,7 +152,7 @@ $container->alias("response", Response::class);
 $container[Router::class] = function (Container $c): Router {
     $appFolder = $c["app_path"];
     $configFolder = $c["config_folder"];
-    $routesPath = "{$appFolder}/{$configFolder}/routes.php";
+    $routesPath = "$appFolder/$configFolder/routes.php";
 
     $router = new Router();
     $router->loadFile($routesPath);
@@ -219,7 +220,7 @@ $container["views_path"] = function (Container $c): string {
     $appPath = $c["app_path"];
     $viewsFolder = $c["views_folder"];
 
-    return realpath("{$appPath}/{$viewsFolder}/");
+    return realpath("$appPath/$viewsFolder/");
 };
 
 return $container;
