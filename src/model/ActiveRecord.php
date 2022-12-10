@@ -784,10 +784,10 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
 
     /**
      * @param string $getter Name of the getter method
-     * @param Collection|ActiveRecord|array $values Value of the related property
+     * @param Collection|ActiveRecord|array|null $values Value of the related property
      * @return void
      */
-    public function attachRelated(string $getter, Collection|ActiveRecord|array $values): void
+    public function attachRelated(string $getter, Collection|ActiveRecord|array|null $values): void
     {
         $this->getterResults[$getter] = $values;
     }
