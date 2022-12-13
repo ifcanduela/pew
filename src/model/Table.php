@@ -6,6 +6,7 @@ namespace pew\model;
 
 use BadMethodCallException;
 use Exception;
+use Error;
 use ifcanduela\db\Database;
 use ifcanduela\db\Query;
 use PDOException;
@@ -40,6 +41,9 @@ use function pew\str;
  * @method Table orderBy(string $fieldAndDirection)
  * @method Table limit(int $limit)
  * @method Table offset(int $offset)
+ * @method Table set(array $values)
+ * @method Table into(string $table)
+ * @method Table values(array ...$values)
  */
 class Table
 {
@@ -583,7 +587,7 @@ class Table
         try {
             /** @var Relationship $relationship */
             $relationship = $ref->{$getterMethodName}();
-        } catch (Exception $e) {
+        } catch (Exception|Error) {
         }
 
         if (isset($relationship) && $relationship instanceof Relationship) {

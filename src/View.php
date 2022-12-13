@@ -399,7 +399,7 @@ class View
     }
 
     /**
-     * Checks whether or not a block has been defined.
+     * Checks whether a block has been defined.
      *
      * @param string $name
      * @return bool

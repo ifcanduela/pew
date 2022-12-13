@@ -287,8 +287,7 @@ class ActiveRecord implements JsonSerializable, IteratorAggregate
     public static function updateAll(array $values, array $condition = null): int|array|PdoStatement
     {
         $record = new static();
-        $table = $record->getTableManager();
-        $table->createUpdate();
+        $table = $record->getTableManager()->createUpdate();
         $table->set($values);
 
         if ($condition) {
