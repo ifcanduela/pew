@@ -42,7 +42,9 @@ class ActionResolver
             ->toString();
 
         // The handler can be a string like "controller@action" or a callback function
-        $handler = $this->route->getHandler();
+        $handler = $this->route->hasParam("controller")
+            ? $this->route->getParam("controller")
+            : $this->route->getHandler();
 
         if (is_string($handler)) {
             $controllerClassName = $this->getControllerClassName($handler);
