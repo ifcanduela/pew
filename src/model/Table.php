@@ -344,7 +344,7 @@ class Table
         // Replace the column list with COUNT(*)
         $query->columns("COUNT(*) as row_count");
         // Remove limit and offset
-        $query->limit(0, 0);
+        $query->limit(1, 0);
         // Query the database
         $result = $this->db->run($query);
 
