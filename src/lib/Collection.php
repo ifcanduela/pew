@@ -349,9 +349,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     public function index(callable|string $field): Collection
     {
         $items = [];
+        $isCallable = is_callable($field);
 
         foreach ($this->items as $key => $value) {
-            if (is_callable($field)) {
+            if ($isCallable) {
                 $index = $field($value, $key);
                 $items[$index] = $value;
             } else {
